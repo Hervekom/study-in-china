@@ -34,6 +34,19 @@ export const Navbar: React.FC<NavbarProps> = ({
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const desktopLinks = siteConfig.navLinks.filter(l => !['#home', '#resources'].includes(l.href));
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setMobileMenuOpen(false);
+        setUserDropdownOpen(false);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
+
   const handleNavClick = (href: string) => {
     setMobileMenuOpen(false);
     if (href === '#compare') {
@@ -82,23 +95,24 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
         </div>
       )}
-      <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between transition-all duration-200 ${scrolled ? 'py-3' : 'py-4'}`}>
+      <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4 xl:gap-8 transition-all duration-200 ${scrolled ? 'py-2.5' : 'py-3.5'}`}>
         {/* Zone 1: Wordmark */}
         <button
-          onClick={() => onNavigate('home')}
-          className="flex items-center gap-2 group text-[#18151B] transition-colors text-left"
+          onClick={() => { setMobileMenuOpen(false); onNavigate('home'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+          className="flex items-center gap-2 group text-[#18151B] transition-colors text-left min-w-0 shrink"
+          aria-label={`${siteConfig.brandName} home`}
         >
-          <div className="w-8 h-8 rounded-lg bg-[#6D1838] flex items-center justify-center text-white font-bold text-xs shadow-xs group-hover:bg-[#58122c] transition-colors">
+          <div className="w-9 h-9 shrink-0 rounded-lg bg-[#6D1838] flex items-center justify-center text-white font-bold text-xs shadow-xs group-hover:bg-[#58122c] transition-colors">
             SIC
           </div>
-          <span className="text-lg sm:text-xl font-extrabold tracking-tight text-[#18151B] whitespace-nowrap truncate max-w-[52vw] sm:max-w-none">
+          <span className="text-lg sm:text-xl font-extrabold tracking-tight text-[#18151B] whitespace-nowrap truncate">
             {siteConfig.brandName}
           </span>
         </button>
 
-        {/* Zone 2: Navigation Links */}
-        <nav className="hidden xl:flex items-center gap-5 text-sm font-medium text-[#575260]">
-          {siteConfig.navLinks.map((link) => (
+        {/* Zone 2: Navigation Links (large screens) */}
+        <nav aria-label="Main" className="hidden xl:flex items-center gap-1 text-[#575260]">
+          {desktopLinks.map((link) => (
             <a
               key={link.label}
               href={link.href}
@@ -106,218 +120,193 @@ export const Navbar: React.FC<NavbarProps> = ({
                 e.preventDefault();
                 handleNavClick(link.href);
               }}
-              className="hover:text-[#6D1838] transition-colors relative py-1 text-[13px] font-medium whitespace-nowrap"
+              className="px-2.5 py-2 rounded-lg text-sm font-medium whitespace-nowrap hover:text-[#6D1838] hover:bg-[#FAF2F5]/70 transition-colors"
             >
               {link.label}
             </a>
           ))}
-          <button
-            onClick={() => onNavigate('admin')}
-            className="text-[12px] font-bold text-[#6D1838] hover:bg-[#FAF2F5] px-2.5 py-1 rounded-lg border border-[#EAD5DE] transition-colors flex items-center gap-1"
-          >
-            <UserCheck className="w-3.5 h-3.5" />
-            <span>Admin</span>
-          </button>
         </nav>
 
-        {/* Zone 3: User Auth / Portal / Apply CTA */}
-        <div className="hidden sm:flex items-center gap-2.5">
+        {/* Zone 3: Account + Apply */}
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           {isAuthenticated ? (
             <div className="relative">
               <button
                 onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                className="flex items-center gap-2 py-1.5 px-3 bg-neutral-50 hover:bg-neutral-100 border border-neutral-200 rounded-xl transition-colors text-xs font-semibold"
+                aria-expanded={userDropdownOpen}
+                aria-label="Account menu"
+                className="h-10 flex items-center gap-2 pl-1.5 pr-2 sm:pr-3 bg-white hover:bg-neutral-50 border border-neutral-200 rounded-xl transition-colors text-xs font-semibold"
               >
-                <div className="w-6 h-6 rounded-full bg-[#6D1838] text-white flex items-center justify-center font-bold text-[10px]">
-                  {profile?.firstName?.[0] || 'U'}
-                </div>
-                <span className="truncate max-w-[100px] text-[#18151B]">
+                <span className="w-7 h-7 rounded-full bg-[#6D1838] text-white flex items-center justify-center font-bold text-[11px]">
+                  {(profile?.firstName?.[0] || user?.email?.[0] || 'U').toUpperCase()}
+                </span>
+                <span className="hidden md:inline truncate max-w-[110px] text-[#18151B]">
                   {profile?.firstName || 'My Account'}
                 </span>
-                <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold uppercase ${
-                  isAdmin ? 'bg-[#FAF2F5] text-[#6D1838]' : 'bg-neutral-200 text-neutral-700'
-                }`}>
-                  {isAdmin ? 'Admin' : 'Student'}
-                </span>
-                <ChevronDown className="w-3 h-3 text-neutral-400" />
+                <ChevronDown className={`hidden sm:block w-3.5 h-3.5 text-neutral-400 transition-transform ${userDropdownOpen ? 'rotate-180' : ''}`} />
               </button>
 
               {userDropdownOpen && (
-                <div
-                  className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-neutral-200 py-1.5 z-50 animate-in fade-in"
-                  onClick={() => setUserDropdownOpen(false)}
-                >
-                  <div className="px-3.5 py-2 border-b border-neutral-100">
-                    <p className="font-bold text-xs text-[#18151B]">{profile?.firstName} {profile?.lastName}</p>
-                    <p className="text-[11px] text-neutral-400 truncate">{user?.email}</p>
-                  </div>
-
-                  <button
-                    onClick={() => onNavigate('dashboard')}
-                    className="w-full text-left px-3.5 py-2 text-xs text-[#18151B] hover:bg-[#FAF2F5] hover:text-[#6D1838] flex items-center gap-2"
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setUserDropdownOpen(false)} />
+                  <div
+                    className="absolute right-0 mt-2 w-60 bg-white rounded-xl shadow-xl border border-neutral-200 py-1.5 z-50 animate-in fade-in"
+                    onClick={() => setUserDropdownOpen(false)}
                   >
-                    <LayoutDashboard className="w-3.5 h-3.5 text-[#6D1838]" />
-                    <span>Student Dashboard</span>
-                  </button>
+                    <div className="px-3.5 py-2.5 border-b border-neutral-100">
+                      <p className="font-bold text-sm text-[#18151B] truncate">{[profile?.firstName, profile?.lastName].filter(Boolean).join(' ') || 'My Account'}</p>
+                      <p className="text-[11px] text-neutral-500 truncate">{user?.email}</p>
+                      {isAdmin && <span className="inline-block mt-1 text-[9px] px-1.5 py-0.5 rounded font-bold uppercase bg-[#FAF2F5] text-[#6D1838]">Admin</span>}
+                    </div>
 
-                  {isAdmin && (
                     <button
-                      onClick={() => onNavigate('admin')}
-                      className="w-full text-left px-3.5 py-2 text-xs text-[#6D1838] font-bold hover:bg-[#FAF2F5] flex items-center gap-2"
+                      onClick={() => onNavigate('dashboard')}
+                      className="w-full text-left px-3.5 py-2.5 text-sm text-[#18151B] hover:bg-[#FAF2F5] hover:text-[#6D1838] flex items-center gap-2"
                     >
-                      <UserCheck className="w-3.5 h-3.5 text-[#6D1838]" />
-                      <span>Admissions Directorate</span>
+                      <LayoutDashboard className="w-4 h-4 text-[#6D1838]" />
+                      <span>My Dashboard</span>
                     </button>
-                  )}
 
-                  <div className="border-t border-neutral-100 my-1" />
+                    {isAdmin && (
+                      <button
+                        onClick={() => onNavigate('admin')}
+                        className="w-full text-left px-3.5 py-2.5 text-sm text-[#6D1838] font-semibold hover:bg-[#FAF2F5] flex items-center gap-2"
+                      >
+                        <UserCheck className="w-4 h-4" />
+                        <span>Admin Portal</span>
+                      </button>
+                    )}
 
-                  <button
-                    onClick={async () => {
-                      await logout();
-                      onNavigate('login');
-                    }}
-                    className="w-full text-left px-3.5 py-2 text-xs text-rose-600 hover:bg-rose-50 flex items-center gap-2"
-                  >
-                    <LogOut className="w-3.5 h-3.5" />
-                    <span>Sign Out</span>
-                  </button>
-                </div>
+                    <div className="border-t border-neutral-100 my-1" />
+
+                    <button
+                      onClick={async () => {
+                        await logout();
+                        onNavigate('home');
+                      }}
+                      className="w-full text-left px-3.5 py-2.5 text-sm text-rose-600 hover:bg-rose-50 flex items-center gap-2"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      <span>Sign Out</span>
+                    </button>
+                  </div>
+                </>
               )}
             </div>
           ) : (
             <button
-              onClick={() => onNavigate('login')}
-              className="px-3.5 py-2 text-xs font-semibold text-neutral-700 hover:text-[#6D1838] hover:bg-neutral-100 rounded-xl transition-colors flex items-center gap-1.5"
+              onClick={() => onOpenAuth('login')}
+              aria-label="Sign in"
+              className="h-10 px-2.5 sm:px-3.5 text-sm font-semibold text-neutral-700 hover:text-[#6D1838] hover:bg-neutral-100 rounded-xl transition-colors flex items-center gap-1.5"
             >
-              <User className="w-3.5 h-3.5" />
-              <span>Sign In</span>
+              <User className="w-4 h-4" />
+              <span className="hidden sm:inline">Sign In</span>
             </button>
           )}
 
           <button
-            onClick={() => onNavigate('dashboard')}
-            className="px-3 py-2 text-xs font-semibold text-[#18151B] hover:text-[#6D1838] hover:bg-neutral-100 rounded-xl transition-colors flex items-center gap-1.5"
-            title="Track application progress, documents & JW202"
+            onClick={() => { setMobileMenuOpen(false); onOpenApplication(); }}
+            className="h-10 px-3.5 sm:px-5 text-sm font-semibold text-white bg-[#6D1838] hover:bg-[#58122c] active:bg-[#4A1028] rounded-xl transition-all shadow-sm hover:shadow flex items-center gap-2 whitespace-nowrap"
           >
-            <LayoutDashboard className="w-3.5 h-3.5 text-[#6D1838]" />
-            <span>Student Portal</span>
+            <span className="sm:hidden">Apply</span>
+            <span className="hidden sm:inline">Apply Now</span>
+            <ArrowRight className="hidden sm:block w-4 h-4" />
           </button>
 
-          <button
-            onClick={onOpenApplication}
-            className="px-4 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold text-white bg-[#6D1838] hover:bg-[#58122c] active:bg-[#4A1028] rounded-xl transition-all shadow-sm hover:shadow flex items-center gap-2 whitespace-nowrap"
-          >
-            <span>Start Your Application</span>
-            <ArrowRight className="w-4 h-4" />
-          </button>
-        </div>
-
-        {/* Mobile Hamburger toggle */}
-        <div className="flex sm:hidden items-center gap-1.5">
-          <button
-            onClick={() => onNavigate('dashboard')}
-            className="px-2.5 py-1.5 text-xs font-semibold text-[#6D1838] bg-[#FAF2F5] border border-[#EAD5DE] rounded-lg"
-          >
-            Portal
-          </button>
-          <button
-            onClick={onOpenApplication}
-            className="px-3 py-1.5 text-xs font-semibold text-white bg-[#6D1838] rounded-lg"
-          >
-            Apply
-          </button>
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-1.5 text-[#18151B] hover:bg-neutral-100 rounded-lg transition-colors"
-            aria-label="Toggle mobile menu"
+            className="xl:hidden w-10 h-10 flex items-center justify-center text-[#18151B] hover:bg-neutral-100 rounded-xl transition-colors"
+            aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
+            aria-expanded={mobileMenuOpen}
           >
             {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
         </div>
       </div>
 
-      {/* Mobile Drawer Menu */}
+      {/* Drawer Menu (phones, tablets, small laptops) */}
       {mobileMenuOpen && (
-        <div className="xl:hidden border-b border-neutral-200 bg-white/98 backdrop-blur-xl px-4 pt-3 pb-6 space-y-3 shadow-xl animate-in slide-in-from-top-2 duration-200">
-          <div className="grid grid-cols-2 gap-2 text-xs font-medium text-[#18151B] pt-2">
-            {siteConfig.navLinks.map((link) => (
-              <a
-                key={link.label}
-                href={link.href}
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleNavClick(link.href);
-                }}
-                className="p-2 rounded-lg hover:bg-[#FAF2F5] hover:text-[#6D1838] transition-colors"
-              >
-                {link.label}
-              </a>
-            ))}
-          </div>
+        <div className="xl:hidden border-t border-neutral-100 bg-white shadow-xl animate-in slide-in-from-top-2 duration-200 max-h-[calc(100dvh-64px)] overflow-y-auto">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-3 pb-6 space-y-4">
+            <nav aria-label="Main" className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+              {siteConfig.navLinks.map((link) => (
+                <a
+                  key={link.label}
+                  href={link.href}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleNavClick(link.href);
+                  }}
+                  className="px-3 py-3 rounded-xl text-sm font-medium text-[#18151B] hover:bg-[#FAF2F5] hover:text-[#6D1838] transition-colors"
+                >
+                  {link.label}
+                </a>
+              ))}
+            </nav>
 
-          <div className="pt-3 border-t border-neutral-100 space-y-2">
-            {!isAuthenticated ? (
+            <div className="pt-3 border-t border-neutral-100 grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {!isAuthenticated ? (
+                <button
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    onOpenAuth('login');
+                  }}
+                  className="w-full py-3 text-sm font-semibold text-neutral-800 bg-neutral-100 hover:bg-neutral-200 rounded-xl flex items-center justify-center gap-2"
+                >
+                  <User className="w-4 h-4" />
+                  <span>Sign In / Create Account</span>
+                </button>
+              ) : (
+                <button
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    onNavigate('dashboard');
+                  }}
+                  className="w-full py-3 text-sm font-semibold text-neutral-800 bg-neutral-100 hover:bg-neutral-200 rounded-xl flex items-center justify-center gap-2"
+                >
+                  <LayoutDashboard className="w-4 h-4 text-[#6D1838]" />
+                  <span>My Dashboard</span>
+                </button>
+              )}
+
               <button
                 onClick={() => {
                   setMobileMenuOpen(false);
-                  onOpenAuth('login');
+                  onOpenApplication();
                 }}
-                className="w-full py-2.5 text-center text-xs font-bold text-neutral-800 bg-neutral-100 hover:bg-neutral-200 rounded-xl flex items-center justify-center gap-1.5"
+                className="w-full py-3 text-sm font-bold text-white bg-[#6D1838] rounded-xl shadow-xs flex items-center justify-center gap-2"
               >
-                <User className="w-3.5 h-3.5" />
-                <span>Sign In / Create Account</span>
+                <span>Start Your Application (${pricing.depositUSD} Deposit)</span>
+                <ArrowRight className="w-4 h-4" />
               </button>
-            ) : (
-              <div className="p-3 bg-[#FAF2F5] rounded-xl flex items-center justify-between text-xs">
-                <div>
-                  <span className="font-bold text-[#18151B] block">{profile?.firstName} {profile?.lastName}</span>
-                  <span className="text-[10px] text-neutral-500 uppercase">{profile?.role} Account</span>
-                </div>
+
+              {isAdmin && (
+                <button
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    onNavigate('admin');
+                  }}
+                  className="w-full py-3 text-sm font-semibold text-[#6D1838] bg-[#FAF2F5] border border-[#EAD5DE] rounded-xl flex items-center justify-center gap-2"
+                >
+                  <UserCheck className="w-4 h-4" />
+                  <span>Admin Portal</span>
+                </button>
+              )}
+
+              {isAuthenticated && (
                 <button
                   onClick={async () => {
                     setMobileMenuOpen(false);
                     await logout();
-                    onNavigate('login');
+                    onNavigate('home');
                   }}
-                  className="text-rose-600 font-bold text-xs"
+                  className="w-full py-3 text-sm font-semibold text-rose-600 hover:bg-rose-50 rounded-xl flex items-center justify-center gap-2"
                 >
-                  Sign Out
+                  <LogOut className="w-4 h-4" />
+                  <span>Sign Out{profile?.firstName ? ` (${profile.firstName})` : ''}</span>
                 </button>
-              </div>
-            )}
-
-            <button
-              onClick={() => {
-                setMobileMenuOpen(false);
-                onNavigate('dashboard');
-              }}
-              className="w-full py-2.5 text-center text-xs font-bold text-neutral-800 bg-neutral-100 hover:bg-neutral-200 rounded-xl flex items-center justify-center gap-2"
-            >
-              <LayoutDashboard className="w-4 h-4 text-[#6D1838]" />
-              <span>Student Application Portal</span>
-            </button>
-
-            <button
-              onClick={() => {
-                setMobileMenuOpen(false);
-                onOpenApplication();
-              }}
-              className="w-full py-3 text-center text-sm font-bold text-white bg-[#6D1838] rounded-xl shadow-xs flex items-center justify-center gap-2"
-            >
-              <span>Start Your Application (${pricing.depositUSD} Deposit)</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
-
-            <button
-              onClick={() => {
-                setMobileMenuOpen(false);
-                onNavigate('admin');
-              }}
-              className="w-full py-2 text-center text-[11px] font-bold text-[#6D1838] hover:underline"
-            >
-              Admissions Officer Admin View →
-            </button>
+              )}
+            </div>
           </div>
         </div>
       )}
