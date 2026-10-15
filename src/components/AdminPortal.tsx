@@ -22,7 +22,8 @@ import {
   RefreshCw,
   FileText,
   UserCheck,
-  Award
+  Award,
+  LogOut,
 } from 'lucide-react';
 import { StudentApplication, ApplicationStatus, DocumentItem } from '../types';
 import { siteConfig, pricing } from '../data/siteConfig';
@@ -35,6 +36,7 @@ import {
   setActiveApplicationId
 } from '../data/applicationStorage';
 import { useAuth } from '../context/AuthContext';
+import { DEMO_MODE } from '../lib/supabase';
 
 interface AdminPortalProps {
   onBackToHome: () => void;
@@ -42,12 +44,24 @@ interface AdminPortalProps {
   onGoToApply: () => void;
 }
 
+const formatStatus = (status: string) => status.replace(/_/g, ' ').toUpperCase();
+
+const statusBadgeClass = (status: string) => {
+  if (['admission_granted', 'jw202_issued', 'visa_preparation', 'pre_departure', 'completed'].includes(status)) {
+    return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+  }
+  if (['document_review', 'final_payment_pending'].includes(status)) {
+    return 'bg-amber-50 text-amber-800 border-amber-200';
+  }
+  return 'bg-[#FAF2F5] text-[#6D1838] border-[#EAD5DE]';
+};
+
 export const AdminPortal: React.FC<AdminPortalProps> = ({
   onBackToHome,
   onGoToDashboard,
   onGoToApply,
 }) => {
-  const { isAdmin, loginAsDemo } = useAuth();
+  const { isAdmin, loginAsDemo, logout } = useAuth();
   const [applications, setApplications] = useState<StudentApplication[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
@@ -229,24 +243,33 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
             </p>
           </div>
 
-          <div className="p-3.5 bg-neutral-50 rounded-xl border border-neutral-200 text-xs text-neutral-600 text-left">
-            <span className="font-bold text-[#18151B] block mb-1">Evaluator Quick Access:</span>
-            <p className="text-[11px] text-[#575260]">
-              You can instantly authenticate as Senior Admissions Director Elena Zhao to inspect applicant dossiers and review documents.
-            </p>
-          </div>
+          {DEMO_MODE && (
+            <div className="p-3.5 bg-neutral-50 rounded-xl border border-neutral-200 text-xs text-neutral-600 text-left">
+              <span className="font-bold text-[#18151B] block mb-1">Evaluator Quick Access (demo):</span>
+              <p className="text-[11px] text-[#575260]">
+                Local demo mode: authenticate as a sample admissions director to explore the portal.
+              </p>
+            </div>
+          )}
 
           <div className="space-y-2 pt-2">
             <button
-              onClick={() => loginAsDemo('admin')}
-              className="w-full py-2.5 bg-[#6D1838] hover:bg-[#58122c] text-white rounded-xl text-xs font-bold transition-colors shadow-sm flex items-center justify-center gap-2"
+              onClick={() => {
+                if (DEMO_MODE) {
+                  loginAsDemo('admin');
+                } else {
+                  window.history.pushState({}, '', '/login');
+                  window.dispatchEvent(new PopStateEvent('popstate'));
+                }
+              }}
+              className="w-full py-3 bg-[#6D1838] hover:bg-[#58122c] text-white rounded-xl text-sm font-bold transition-colors shadow-sm flex items-center justify-center gap-2"
             >
               <UserCheck className="w-4 h-4" />
-              <span>Authenticate as Admissions Director</span>
+              <span>{DEMO_MODE ? 'Authenticate as Admissions Director' : 'Sign in with a staff account'}</span>
             </button>
             <button
               onClick={onBackToHome}
-              className="w-full py-2.5 border border-neutral-300 text-neutral-700 hover:bg-neutral-100 rounded-xl text-xs font-semibold transition-colors"
+              className="w-full py-3 border border-neutral-300 text-neutral-700 hover:bg-neutral-100 rounded-xl text-sm font-semibold transition-colors"
             >
               Return to Website
             </button>
@@ -268,39 +291,56 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
 
       {/* Top Bar */}
       <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-neutral-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             <button
               onClick={onBackToHome}
-              className="p-1.5 -ml-1 text-neutral-500 hover:text-neutral-900 hover:bg-neutral-100 rounded-lg transition-colors flex items-center gap-1.5 text-xs font-semibold"
+              aria-label="Back to website"
+              className="w-9 h-9 sm:w-auto sm:h-auto sm:px-2 sm:py-1.5 -ml-1 shrink-0 text-neutral-500 hover:text-neutral-900 hover:bg-neutral-100 rounded-lg transition-colors flex items-center justify-center gap-1.5 text-xs font-semibold"
             >
               <ArrowLeft className="w-4 h-4" />
-              <span className="hidden sm:inline">Back to Website</span>
+              <span className="hidden md:inline">Back to Website</span>
             </button>
-            <div className="h-4 w-px bg-neutral-200" />
-            <div className="flex items-center gap-2">
-              <span className="w-6 h-6 rounded bg-[#6D1838] text-white font-bold text-xs flex items-center justify-center">
-                CS
+            <div className="hidden sm:block h-4 w-px bg-neutral-200" />
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="w-7 h-7 shrink-0 rounded-md bg-[#6D1838] text-white font-bold text-[10px] flex items-center justify-center">
+                SIC
               </span>
-              <span className="font-extrabold text-sm sm:text-base text-[#18151B]">
-                Admissions Directorate & Operations Portal
-              </span>
+              <div className="min-w-0 leading-tight">
+                <span className="block font-extrabold text-sm sm:text-base text-[#18151B] truncate">
+                  <span className="sm:hidden">Admin Portal</span>
+                  <span className="hidden sm:inline">Admissions Admin Portal</span>
+                </span>
+                <span className="hidden sm:block text-[11px] text-[#575260] truncate">Applications, documents & payments</span>
+              </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             <button
               onClick={() => onGoToDashboard()}
-              className="px-3 py-1.5 border border-neutral-300 hover:bg-neutral-100 text-neutral-700 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5"
+              aria-label="Student dashboard view"
+              title="Student dashboard view"
+              className="h-9 px-2.5 sm:px-3 border border-neutral-300 hover:bg-neutral-100 text-neutral-700 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5"
             >
-              <Users className="w-3.5 h-3.5" />
-              <span>Student Dashboard View</span>
+              <Users className="w-4 h-4" />
+              <span className="hidden lg:inline">Student View</span>
             </button>
             <button
               onClick={onGoToApply}
-              className="px-3 py-1.5 bg-[#6D1838] hover:bg-[#58122c] text-white rounded-lg text-xs font-semibold transition-colors"
+              aria-label="New application"
+              className="h-9 px-2.5 sm:px-3 bg-[#6D1838] hover:bg-[#58122c] text-white rounded-lg text-xs font-semibold transition-colors flex items-center gap-1"
             >
-              + New Application
+              <span className="text-base leading-none">+</span>
+              <span className="hidden sm:inline">New Application</span>
+            </button>
+            <button
+              onClick={async () => { await logout(); onBackToHome(); }}
+              aria-label="Log out"
+              title="Log out"
+              className="h-9 w-9 border border-neutral-200 hover:bg-rose-50 hover:text-rose-700 text-neutral-600 rounded-lg transition-colors flex items-center justify-center"
+            >
+              <LogOut className="w-4 h-4" />
             </button>
           </div>
         </div>
@@ -309,7 +349,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
       {/* Main Container */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
         {/* KPI Metrics Header */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           <div className="p-4 bg-white rounded-2xl border border-neutral-200 shadow-xs">
             <span className="text-[10px] font-bold uppercase tracking-wider text-[#575260] block">
               Total Applicants
@@ -344,7 +384,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
             <span className="text-[10px] font-bold uppercase tracking-wider text-[#575260] block">
               Total Service Revenue
             </span>
-            <span className="text-2xl font-black text-[#6D1838] mt-1 block">
+            <span className="text-xl sm:text-2xl font-black text-[#6D1838] mt-1 block whitespace-nowrap">
               ${totalRevenue.toLocaleString()} USD
             </span>
             <span className="text-[11px] text-neutral-400">From Deposits & Balances</span>
@@ -352,19 +392,19 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
         </div>
 
         {/* Search & Filter Controls */}
-        <div className="bg-white rounded-2xl border border-neutral-200 p-4 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div className="relative w-full sm:w-80">
+        <div className="bg-white rounded-2xl border border-neutral-200 p-3 sm:p-4 shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+          <div className="relative w-full lg:w-80 shrink-0">
             <input
               type="text"
               placeholder="Search by student name, Ref ID, or program..."
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              className="w-full p-2.5 pl-9 text-xs bg-neutral-50 border border-neutral-300 rounded-xl focus:outline-none focus:border-[#6D1838]"
+              className="w-full p-3 pl-9 text-sm bg-neutral-50 border border-neutral-300 rounded-xl focus:outline-none focus:border-[#6D1838]"
             />
-            <Search className="w-4 h-4 text-neutral-400 absolute left-3 top-3" />
+            <Search className="w-4 h-4 text-neutral-400 absolute left-3 top-1/2 -translate-y-1/2" />
           </div>
 
-          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar w-full sm:w-auto">
+          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar w-full lg:w-auto -mx-1 px-1">
             {[
               { id: 'all', label: 'All Applications' },
               { id: 'needs_review', label: 'Needs Review' },
@@ -375,7 +415,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
               <button
                 key={tab.id}
                 onClick={() => setFilterStatus(tab.id)}
-                className={`px-3 py-1.5 text-xs font-semibold rounded-lg whitespace-nowrap transition-colors ${
+                className={`px-3 py-2 text-xs font-semibold rounded-lg whitespace-nowrap transition-colors ${
                   filterStatus === tab.id
                     ? 'bg-[#6D1838] text-white shadow-xs'
                     : 'bg-neutral-100 hover:bg-neutral-200 text-neutral-700'
@@ -387,59 +427,121 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
           </div>
         </div>
 
-        {/* Applications Data Table */}
-        <div className="bg-white rounded-2xl border border-neutral-200 shadow-xs overflow-hidden">
+        {/* Applications: cards on phones, table on larger screens */}
+        {filteredApps.length === 0 && (
+          <div className="bg-white rounded-2xl border border-dashed border-neutral-300 p-10 text-center">
+            <p className="text-sm font-bold text-[#18151B]">No applications found</p>
+            <p className="text-xs text-[#575260] mt-1">Try another filter or search term.</p>
+          </div>
+        )}
+
+        {/* Mobile cards */}
+        <div className="md:hidden space-y-3">
+          {filteredApps.map(app => (
+            <div key={app.id} className="bg-white rounded-2xl border border-neutral-200 shadow-xs p-4 space-y-3">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="font-bold text-sm text-[#18151B] truncate">{app.personal.firstName} {app.personal.lastName}</p>
+                  <p className="text-[11px] text-[#575260] truncate">{app.personal.nationality} · {app.personal.email}</p>
+                </div>
+                <span className="font-mono text-[10px] font-bold text-[#6D1838] bg-[#FAF2F5] px-2 py-0.5 rounded border border-[#EAD5DE] shrink-0">
+                  {app.id}
+                </span>
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-[#18151B] leading-snug">{app.preferences.specificProgram || app.preferences.preferredField || 'Open Academic Track'}</p>
+                <p className="text-[11px] text-[#575260]">{app.preferences.targetDegree} · {app.preferences.preferredField}</p>
+              </div>
+              <span className={`inline-flex px-2.5 py-1 rounded-full text-[10px] font-bold whitespace-nowrap border ${statusBadgeClass(app.status)}`}>
+                {formatStatus(app.status)}
+              </span>
+              <div className="grid grid-cols-3 gap-2 text-center">
+                {[
+                  { label: 'Deposit', paid: app.payments.deposit.paid, amount: pricing.depositUSD },
+                  { label: 'Admission', paid: Boolean(app.payments.admissionPayment?.paid), amount: pricing.admissionPaymentUSD },
+                  { label: 'Final', paid: app.payments.finalPayment.paid, amount: pricing.finalPaymentUSD },
+                ].map(pmt => (
+                  <div key={pmt.label} className={`rounded-xl border px-2 py-2 ${pmt.paid ? 'bg-emerald-50 border-emerald-200' : 'bg-neutral-50 border-neutral-200'}`}>
+                    <p className="text-[10px] uppercase tracking-wide text-[#575260] font-semibold">{pmt.label}</p>
+                    <p className={`text-xs font-bold ${pmt.paid ? 'text-emerald-700' : 'text-neutral-400'}`}>
+                      {pmt.paid ? `✓ $${pmt.amount.toLocaleString()}` : 'Pending'}
+                    </p>
+                  </div>
+                ))}
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => handleOpenDossier(app)}
+                  className="flex-1 py-2.5 bg-[#6D1838] hover:bg-[#58122c] text-white rounded-xl text-sm font-bold transition-colors"
+                >
+                  Manage Dossier
+                </button>
+                <button
+                  onClick={() => handleSwitchToStudentView(app.id)}
+                  className="px-3 border border-neutral-300 hover:bg-neutral-100 rounded-xl text-neutral-600 transition-colors flex items-center"
+                  aria-label="View as student"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Desktop / tablet table */}
+        {filteredApps.length > 0 && (
+        <div className="hidden md:block bg-white rounded-2xl border border-neutral-200 shadow-xs overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
+            <table className="w-full min-w-[900px] text-left text-xs">
               <thead className="bg-[#FAF7F9] text-[#575260] uppercase text-[10px] tracking-wider border-b border-neutral-200">
                 <tr>
-                  <th className="py-3 px-4">Ref ID</th>
-                  <th className="py-3 px-4">Applicant & Country</th>
-                  <th className="py-3 px-4">Target Program & Degree</th>
-                  <th className="py-3 px-4">Current Pipeline Status</th>
-                  <th className="py-3 px-4">Deposit (${pricing.depositUSD})</th>
-                  <th className="py-3 px-4">Admission (${pricing.admissionPaymentUSD})</th>
-                  <th className="py-3 px-4">Final (${pricing.finalPaymentUSD.toLocaleString()})</th>
+                  <th className="py-3 px-4 whitespace-nowrap">Ref ID</th>
+                  <th className="py-3 px-4">Applicant</th>
+                  <th className="py-3 px-4">Program & Degree</th>
+                  <th className="py-3 px-4">Status</th>
+                  <th className="py-3 px-4 whitespace-nowrap">Deposit</th>
+                  <th className="py-3 px-4 whitespace-nowrap">Admission</th>
+                  <th className="py-3 px-4 whitespace-nowrap">Final</th>
                   <th className="py-3 px-4 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-neutral-200">
                 {filteredApps.map(app => {
                   return (
-                    <tr key={app.id} className="hover:bg-[#FAF2F5]/20 transition-colors">
-                      <td className="py-3.5 px-4 font-mono font-bold text-[#6D1838]">
+                    <tr key={app.id} className="hover:bg-[#FAF2F5]/30 transition-colors align-middle">
+                      <td className="py-3.5 px-4 font-mono font-bold text-[#6D1838] whitespace-nowrap">
                         {app.id}
                       </td>
                       <td className="py-3.5 px-4">
                         <strong className="text-[#18151B] block">{app.personal.firstName} {app.personal.lastName}</strong>
                         <span className="text-[11px] text-[#575260]">{app.personal.nationality} · {app.personal.email}</span>
                       </td>
-                      <td className="py-3.5 px-4">
+                      <td className="py-3.5 px-4 max-w-[260px]">
                         <span className="font-bold text-[#18151B] block">{app.preferences.specificProgram || app.preferences.preferredField || 'Open Academic Track'}</span>
                         <span className="text-[11px] text-[#575260]">{app.preferences.targetDegree} · {app.preferences.preferredField}</span>
                       </td>
                       <td className="py-3.5 px-4">
-                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#FAF2F5] text-[#6D1838] border border-[#EAD5DE]">
-                          {app.status.replace('_', ' ').toUpperCase()}
+                        <span className={`inline-flex px-2.5 py-1 rounded-full text-[10px] font-bold whitespace-nowrap border ${statusBadgeClass(app.status)}`}>
+                          {formatStatus(app.status)}
                         </span>
                       </td>
-                      <td className="py-3.5 px-4">
+                      <td className="py-3.5 px-4 whitespace-nowrap">
                         {app.payments.deposit.paid ? (
-                          <span className="text-emerald-700 font-bold text-[11px]">✓ ${pricing.depositUSD} Paid</span>
+                          <span className="text-emerald-700 font-bold text-[11px]">✓ ${pricing.depositUSD}</span>
                         ) : (
                           <span className="text-neutral-400 text-[11px]">Pending</span>
                         )}
                       </td>
-                      <td className="py-3.5 px-4">
+                      <td className="py-3.5 px-4 whitespace-nowrap">
                         {app.payments.admissionPayment?.paid ? (
-                          <span className="text-emerald-700 font-bold text-[11px]">✓ ${pricing.admissionPaymentUSD} Paid</span>
+                          <span className="text-emerald-700 font-bold text-[11px]">✓ ${pricing.admissionPaymentUSD}</span>
                         ) : (
                           <span className="text-neutral-400 text-[11px]">Pending</span>
                         )}
                       </td>
-                      <td className="py-3.5 px-4">
+                      <td className="py-3.5 px-4 whitespace-nowrap">
                         {app.payments.finalPayment.paid ? (
-                          <span className="text-emerald-700 font-bold text-[11px]">✓ ${pricing.finalPaymentUSD.toLocaleString()} Paid</span>
+                          <span className="text-emerald-700 font-bold text-[11px]">✓ ${pricing.finalPaymentUSD.toLocaleString()}</span>
                         ) : (
                           <span className="text-neutral-400 text-[11px]">Pending</span>
                         )}
@@ -448,14 +550,15 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                         <div className="flex items-center justify-end gap-1.5">
                           <button
                             onClick={() => handleOpenDossier(app)}
-                            className="px-3 py-1.5 bg-[#6D1838] hover:bg-[#58122c] text-white rounded-lg text-xs font-bold transition-colors shadow-xs"
+                            className="px-3 py-2 bg-[#6D1838] hover:bg-[#58122c] text-white rounded-lg text-xs font-bold transition-colors shadow-xs whitespace-nowrap"
                           >
                             Manage Dossier
                           </button>
                           <button
                             onClick={() => handleSwitchToStudentView(app.id)}
-                            className="p-1.5 border border-neutral-300 hover:bg-neutral-100 rounded-lg text-neutral-600 transition-colors"
+                            className="p-2 border border-neutral-300 hover:bg-neutral-100 rounded-lg text-neutral-600 transition-colors"
                             title="View as Student"
+                            aria-label="View as student"
                           >
                             <ExternalLink className="w-3.5 h-3.5" />
                           </button>
@@ -468,16 +571,17 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
             </table>
           </div>
         </div>
+        )}
       </main>
 
       {/* ================= APPLICATION DOSSIER DRAWER / MODAL ================= */}
       {selectedApp && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-xs animate-in fade-in">
-          <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[92vh] flex flex-col border border-neutral-200 shadow-2xl overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-6 bg-black/60 backdrop-blur-xs animate-in fade-in">
+          <div className="bg-white rounded-t-2xl sm:rounded-2xl max-w-4xl w-full h-[94dvh] sm:h-auto sm:max-h-[92vh] flex flex-col border border-neutral-200 shadow-2xl overflow-hidden">
             {/* Drawer Header */}
-            <div className="p-5 border-b border-neutral-200 bg-[#FAF7F9] flex items-center justify-between">
-              <div>
-                <div className="flex items-center gap-2">
+            <div className="p-4 sm:p-5 border-b border-neutral-200 bg-[#FAF7F9] flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
                   <span className="font-mono text-xs font-bold text-[#6D1838] bg-[#FAF2F5] px-2 py-0.5 rounded border border-[#EAD5DE]">
                     {selectedApp.id}
                   </span>
@@ -485,20 +589,21 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                     Created on {selectedApp.createdAt.split('T')[0]}
                   </span>
                 </div>
-                <h2 className="text-lg sm:text-xl font-bold text-[#18151B] mt-0.5">
-                  Applicant Dossier: {selectedApp.personal.firstName} {selectedApp.personal.lastName}
+                <h2 className="text-base sm:text-xl font-bold text-[#18151B] mt-1">
+                  <span className="hidden sm:inline">Applicant Dossier: </span>{selectedApp.personal.firstName} {selectedApp.personal.lastName}
                 </h2>
               </div>
               <button
                 onClick={() => setSelectedApp(null)}
-                className="p-1.5 text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 rounded-lg font-bold"
+                aria-label="Close"
+                className="w-9 h-9 shrink-0 flex items-center justify-center text-neutral-500 hover:text-neutral-800 hover:bg-neutral-100 rounded-lg font-bold"
               >
                 ✕
               </button>
             </div>
 
             {/* Drawer Body */}
-            <div className="p-6 overflow-y-auto space-y-6 text-xs text-[#18151B]">
+            <div className="p-4 sm:p-6 overflow-y-auto space-y-5 sm:space-y-6 text-xs text-[#18151B] flex-1">
               {/* Pipeline Status Controller */}
               <div className="p-4 bg-gradient-to-br from-[#FAF2F5] to-[#F8F5FD] border border-[#EAD5DE] rounded-2xl space-y-3">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-[#6D1838]">
@@ -520,7 +625,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                       <option value="interview_evaluation">Faculty Evaluation / Interview</option>
                       <option value="admission_granted">Admission Offer Granted 🎉</option>
                       <option value="jw202_issued">JW202 / JW201 Form Issued 📄</option>
-                      <option value="final_payment_pending">Stage 2 Balance Pending ($1,575)</option>
+                      <option value="final_payment_pending">Final Payment Pending (${pricing.finalPaymentUSD.toLocaleString()})</option>
                       <option value="visa_preparation">Chinese Embassy Visa Preparation (X1/X2)</option>
                       <option value="pre_departure">Pre-Departure & Campus Arrival ✈️</option>
                     </select>
@@ -587,17 +692,17 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                   <h3 className="font-bold text-xs uppercase tracking-wider text-[#18151B] flex items-center gap-1.5">
                     <FileCheck className="w-4 h-4 text-[#6D1838]" /> Uploaded Student Documents ({selectedApp.documents.length})
                   </h3>
-                  <span className="text-[11px] text-neutral-400">Approve or request revision</span>
+                  <span className="hidden sm:inline text-[11px] text-neutral-400">Approve or request revision</span>
                 </div>
 
                 <div className="space-y-2">
                   {selectedApp.documents.map(doc => (
                     <div
                       key={doc.id}
-                      className="p-3 rounded-xl border border-neutral-200 bg-neutral-50 flex items-center justify-between gap-2"
+                      className="p-3 rounded-xl border border-neutral-200 bg-neutral-50 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5"
                     >
-                      <div>
-                        <div className="flex items-center gap-2">
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
                           <strong className="text-[#18151B]">{doc.title}</strong>
                           <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
                             doc.status === 'verified'
@@ -609,7 +714,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                             {doc.status.toUpperCase()}
                           </span>
                         </div>
-                        <p className="text-[11px] text-[#575260] mt-0.5">
+                        <p className="text-[11px] text-[#575260] mt-0.5 break-all">
                           {doc.name || 'Not uploaded yet'} {doc.fileSize && `· ${doc.fileSize}`}
                         </p>
                         {doc.feedback && (
@@ -619,11 +724,11 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                         )}
                       </div>
 
-                      <div className="flex items-center gap-1.5 shrink-0">
+                      <div className="flex items-center gap-1.5 shrink-0 w-full sm:w-auto">
                         {doc.status !== 'verified' && (
                           <button
                             onClick={() => handleApproveDoc(doc.id)}
-                            className="px-2.5 py-1 bg-emerald-700 hover:bg-emerald-800 text-white rounded text-[11px] font-bold transition-colors"
+                            className="flex-1 sm:flex-none px-3 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-[11px] font-bold transition-colors"
                           >
                             ✓ Approve
                           </button>
@@ -633,7 +738,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                             setFeedbackDoc(doc);
                             setFeedbackText('');
                           }}
-                          className="px-2.5 py-1 border border-neutral-300 hover:bg-neutral-100 text-neutral-700 rounded text-[11px] font-semibold transition-colors"
+                          className="flex-1 sm:flex-none px-3 py-2 border border-neutral-300 bg-white hover:bg-neutral-100 text-neutral-700 rounded-lg text-[11px] font-semibold transition-colors"
                         >
                           Request Fix
                         </button>
@@ -713,7 +818,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
             </div>
 
             {/* Drawer Footer */}
-            <div className="p-4 border-t border-neutral-200 bg-[#FAF7F9] flex items-center justify-between">
+            <div className="p-3 sm:p-4 border-t border-neutral-200 bg-[#FAF7F9] flex items-center justify-between gap-3" style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}>
               <button
                 onClick={() => handleSwitchToStudentView(selectedApp.id)}
                 className="text-xs font-bold text-[#6D1838] hover:underline flex items-center gap-1"
@@ -723,7 +828,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
               </button>
               <button
                 onClick={() => setSelectedApp(null)}
-                className="px-5 py-2 bg-neutral-900 text-white text-xs font-bold rounded-xl hover:bg-neutral-800 transition-colors"
+                className="px-6 py-2.5 bg-neutral-900 text-white text-sm font-bold rounded-xl hover:bg-neutral-800 transition-colors"
               >
                 Done
               </button>

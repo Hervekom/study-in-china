@@ -114,26 +114,26 @@ export const Hero: React.FC<HeroProps> = ({
                 src="/images/hero_china_students_1790254510954.jpg"
                 alt="International scholars studying in China"
                 referrerPolicy="no-referrer"
-                className="w-full h-[400px] sm:h-[480px] object-cover object-center transition-transform duration-700 group-hover:scale-[1.02]"
+                className="w-full h-[340px] sm:h-[480px] object-cover object-center transition-transform duration-700 group-hover:scale-[1.02]"
               />
               
               {/* Measured contrast scrim */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-transparent" />
 
               {/* Bottom Editorial Caption */}
-              <div className="absolute bottom-0 inset-x-0 p-5 text-white">
-                <div className="flex items-center justify-between text-xs text-white/80 pb-1.5 border-b border-white/15 mb-2">
+              <div className="absolute bottom-0 inset-x-0 p-4 sm:p-5 text-white">
+                <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-xs text-white/80 pb-1.5 border-b border-white/15 mb-2">
                   <span className="editorial-label text-white tracking-widest">
                     Academic Excellence
                   </span>
-                  <span className="flex items-center gap-1 text-[11px] text-white/90">
+                  <span className="flex items-center gap-1 text-[11px] text-white/90 whitespace-nowrap">
                     <MapPin className="w-3 h-3 text-[#E5D6F7]" /> Beijing · Shanghai · Hangzhou
                   </span>
                 </div>
                 <p className="text-sm font-medium text-white leading-snug">
                   English-Taught Bachelor's, Master's, PhD & Language Programs
                 </p>
-                <div className="mt-2.5 flex items-center justify-between text-xs text-white/80">
+                <div className="mt-2.5 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-xs text-white/80">
                   <span>Accessible Tuition Structure</span>
                   <span className="font-semibold text-[#F3EEFA]">CSC Scholarships Available</span>
                 </div>

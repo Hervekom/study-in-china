@@ -39,3 +39,10 @@ export const supabase: SupabaseClient = isSupabaseConfigured()
         },
       }
     );
+
+/**
+ * Demo mode = no Supabase configured (local testing).
+ * Test shortcuts (1-click demo logins, test credentials) are only shown in demo mode,
+ * never on the production site.
+ */
+export const DEMO_MODE = !isSupabaseConfigured();

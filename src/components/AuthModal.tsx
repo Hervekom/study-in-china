@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { X, Lock, Mail, User, ShieldCheck, Sparkles, AlertCircle, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { siteConfig } from '../data/siteConfig';
+import { DEMO_MODE } from '../lib/supabase';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -331,8 +332,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             </button>
           )}
 
-          {/* Quick Demo Switcher */}
-          <div className="pt-3 border-t border-neutral-100 space-y-2">
+          {/* Quick Demo Switcher (local demo only) */}
+          {DEMO_MODE && <div className="pt-3 border-t border-neutral-100 space-y-2">
             <span className="block text-[10px] font-bold uppercase tracking-wider text-neutral-400 text-center">
               Quick 1-Click Evaluator Access
             </span>
@@ -354,7 +355,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 <span>Demo Admin</span>
               </button>
             </div>
-          </div>
+          </div>}
         </form>
       </div>
     </div>

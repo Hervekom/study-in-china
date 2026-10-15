@@ -28,6 +28,7 @@ import { DegreeLevel, StudentApplication, DocumentItem, ProgramPreference } from
 import { siteConfig } from '../data/siteConfig';
 import { createNewApplication } from '../data/applicationStorage';
 import { applicationService } from '../services/applicationService';
+import { DEMO_MODE } from '../lib/supabase';
 import { paymentService, OFFICIAL_PRICING } from '../services/paymentService';
 import { notificationService } from '../services/notificationService';
 import { getIntakeOptions, getDefaultIntake } from '../utils/intakeUtils';
@@ -525,56 +526,61 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
     <div className="min-h-screen bg-[#FDFCFD] text-[#18151B]">
       {/* Top Banner & Header */}
       <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-neutral-200">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-2.5 sm:py-3 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             <button
               onClick={onBackToHome}
-              className="p-1.5 -ml-1 text-neutral-500 hover:text-neutral-900 hover:bg-neutral-100 rounded-lg transition-colors flex items-center gap-1.5 text-xs font-semibold"
+              aria-label="Back to website"
+              className="w-9 h-9 sm:w-auto sm:h-auto sm:px-2 sm:py-1.5 -ml-1 shrink-0 text-neutral-500 hover:text-neutral-900 hover:bg-neutral-100 rounded-lg transition-colors flex items-center justify-center gap-1.5 text-xs font-semibold"
               title="Return to website homepage"
             >
               <ArrowLeft className="w-4 h-4" />
-              <span className="hidden sm:inline">Back to Website</span>
+              <span className="hidden md:inline">Back to Website</span>
             </button>
-            <div className="h-4 w-px bg-neutral-200" />
-            <div className="flex items-center gap-2">
-              <span className="w-6 h-6 rounded bg-[#6D1838] text-white font-bold text-xs flex items-center justify-center">
-                CS
+            <div className="hidden sm:block h-4 w-px bg-neutral-200" />
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="w-7 h-7 shrink-0 rounded-md bg-[#6D1838] text-white font-bold text-[10px] flex items-center justify-center">
+                SIC
               </span>
-              <span className="font-extrabold text-sm sm:text-base text-[#18151B]">
-                {siteConfig.brandName} Application Portal
+              <span className="font-extrabold text-sm sm:text-base text-[#18151B] truncate">
+                <span className="sm:hidden">Application</span>
+                <span className="hidden sm:inline">{siteConfig.brandName} Application</span>
               </span>
             </div>
           </div>
 
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             {currentStep < 7 && (
               <>
-                <button
-                  type="button"
-                  onClick={handleFillDemoValues}
-                  className="px-2.5 py-1.5 bg-[#FAF2F5] hover:bg-[#F3EEFA] text-[#6D1838] border border-[#EAD5DE] rounded-lg text-xs font-semibold transition-colors flex items-center gap-1"
-                  title="Fill form with sample international applicant data for instant testing"
-                >
-                  <Sparkles className="w-3.5 h-3.5 text-[#6D1838]" />
-                  <span className="hidden md:inline">Auto-fill Demo Data</span>
-                  <span className="md:hidden">Demo</span>
-                </button>
+                {DEMO_MODE && (
+                  <button
+                    type="button"
+                    onClick={handleFillDemoValues}
+                    aria-label="Auto-fill demo data"
+                    className="h-9 px-2.5 bg-[#FAF2F5] hover:bg-[#F3EEFA] text-[#6D1838] border border-[#EAD5DE] rounded-lg text-xs font-semibold transition-colors flex items-center gap-1"
+                    title="Fill form with sample applicant data for testing"
+                  >
+                    <Sparkles className="w-4 h-4 text-[#6D1838]" />
+                    <span className="hidden md:inline">Auto-fill Demo</span>
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={handleSaveAndContinueLater}
-                  className="px-3 py-1.5 border border-neutral-300 hover:bg-neutral-100 text-neutral-700 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5"
+                  aria-label="Save and continue later"
+                  className="h-9 px-2.5 sm:px-3 border border-neutral-300 hover:bg-neutral-100 text-neutral-700 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5"
                 >
-                  <Save className="w-3.5 h-3.5" />
+                  <Save className="w-4 h-4" />
                   <span className="hidden sm:inline">Save & Continue Later</span>
-                  <span className="sm:hidden">Save</span>
                 </button>
               </>
             )}
             <button
               onClick={() => onGoToDashboard()}
-              className="px-3 py-1.5 bg-[#6D1838] hover:bg-[#58122c] text-white rounded-lg text-xs font-semibold transition-colors"
+              className="h-9 px-3 bg-[#6D1838] hover:bg-[#58122c] text-white rounded-lg text-xs font-semibold transition-colors whitespace-nowrap"
             >
-              Student Portal
+              <span className="sm:hidden">Portal</span>
+              <span className="hidden sm:inline">Student Portal</span>
             </button>
           </div>
         </div>
@@ -582,11 +588,11 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
         {/* Stepper Progress Bar */}
         <div className="max-w-5xl mx-auto px-4 sm:px-6 pb-3 pt-1">
           <div className="flex items-center justify-between text-xs font-medium text-[#575260] mb-2">
-            <span className="font-bold text-[#6D1838]">
+            <span className="font-bold text-[#6D1838] truncate pr-2">
               Step {currentStep} of 7: {stepsList[currentStep - 1].label}
             </span>
-            <span className="text-neutral-500 font-medium">
-              {Math.round((currentStep / 7) * 100)}% Complete
+            <span className="text-neutral-500 font-medium whitespace-nowrap">
+              {Math.round((currentStep / 7) * 100)}%<span className="hidden sm:inline"> Complete</span>
             </span>
           </div>
 
@@ -621,7 +627,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                     }`}
                   >
                     <span
-                      className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] ${
+                      className={`w-6 h-6 sm:w-5 sm:h-5 rounded-full flex items-center justify-center text-[10px] ${
                         isPassed
                           ? 'bg-emerald-600 text-white'
                           : isCurrent
@@ -631,7 +637,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                     >
                       {isPassed ? <Check className="w-2.5 h-2.5" /> : s.num}
                     </span>
-                    <span className="hidden sm:inline">{s.short}</span>
+                    <span className="hidden md:inline">{s.short}</span>
                   </button>
                 );
               })}
@@ -1465,14 +1471,14 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                       Upload clean scanned PDF or JPG copies. Max 10MB per document.
                     </p>
                   </div>
-                  <button
+                  {DEMO_MODE && <button
                     type="button"
                     onClick={handleFillDemoValues}
                     className="self-start sm:self-center px-3 py-1.5 bg-[#FAF2F5] hover:bg-[#F3EEFA] text-[#6D1838] border border-[#EAD5DE] rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm"
                   >
                     <Sparkles className="w-3.5 h-3.5" />
                     Load Sample Scans
-                  </button>
+                  </button>}
                 </div>
               </div>
 

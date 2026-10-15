@@ -54,6 +54,19 @@ interface StudentDashboardProps {
   initialAppId?: string;
 }
 
+const AdvisorAvatar: React.FC<{ src?: string; name: string; className: string }> = ({ src, name, className }) => {
+  const [failed, setFailed] = React.useState(false);
+  const initials = name.split(' ').map(p => p[0]).filter(Boolean).slice(0, 2).join('').toUpperCase();
+  if (!src || failed) {
+    return (
+      <div className={`${className} bg-[#6D1838] text-white font-bold flex items-center justify-center shrink-0`} aria-label={name}>
+        {initials}
+      </div>
+    );
+  }
+  return <img src={src} alt={name} onError={() => setFailed(true)} className={`${className} object-cover shrink-0`} />;
+};
+
 export const StudentDashboard: React.FC<StudentDashboardProps> = ({
   onBackToHome,
   onGoToApply,
@@ -66,7 +79,8 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
   const [activeTab, setActiveTab] = useState<'overview' | 'documents' | 'admission_visa' | 'payments' | 'predeparture' | 'messages'>('overview');
   
   // Auth context
-  const { logout } = useAuth();
+  const { logout, isAdmin } = useAuth();
+  const [switcherOpen, setSwitcherOpen] = useState(false);
 
   // Document upload modal state
   const [uploadModalDoc, setUploadModalDoc] = useState<DocumentItem | null>(null);
@@ -362,74 +376,87 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
 
       {/* Top Navigation Bar */}
       <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-neutral-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 sm:py-3 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             <button
               onClick={onBackToHome}
-              className="p-1.5 -ml-1 text-neutral-500 hover:text-neutral-900 hover:bg-neutral-100 rounded-lg transition-colors flex items-center gap-1.5 text-xs font-semibold"
+              aria-label="Back to website"
+              className="w-9 h-9 sm:w-auto sm:h-auto sm:px-2 sm:py-1.5 -ml-1 shrink-0 text-neutral-500 hover:text-neutral-900 hover:bg-neutral-100 rounded-lg transition-colors flex items-center justify-center gap-1.5 text-xs font-semibold"
             >
               <ArrowLeft className="w-4 h-4" />
-              <span className="hidden sm:inline">Back to Website</span>
+              <span className="hidden md:inline">Back to Website</span>
             </button>
-            <div className="h-4 w-px bg-neutral-200" />
-            <div className="flex items-center gap-2">
-              <span className="w-6 h-6 rounded bg-[#6D1838] text-white font-bold text-xs flex items-center justify-center">
+            <div className="hidden sm:block h-4 w-px bg-neutral-200" />
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="w-7 h-7 shrink-0 rounded-md bg-[#6D1838] text-white font-bold text-[10px] flex items-center justify-center">
                 SIC
               </span>
-              <span className="font-extrabold text-sm sm:text-base text-[#18151B]">
-                Student Admissions Dashboard
+              <span className="font-extrabold text-sm sm:text-base text-[#18151B] truncate">
+                <span className="sm:hidden">Dashboard</span>
+                <span className="hidden sm:inline">Student Dashboard</span>
               </span>
             </div>
           </div>
 
           {/* Quick Profile / Application Switcher & Actions */}
-          <div className="flex items-center gap-2 sm:gap-3">
-            <div className="relative group">
-              <button className="px-3 py-1.5 bg-neutral-100 hover:bg-neutral-200 text-neutral-800 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors">
-                <span className="truncate max-w-[130px] sm:max-w-[180px]">
-                  {activeApp.personal.firstName} ({activeApp.id})
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+            <div className="relative">
+              <button
+                onClick={() => setSwitcherOpen(o => !o)}
+                aria-expanded={switcherOpen}
+                className="h-9 px-2.5 sm:px-3 bg-neutral-100 hover:bg-neutral-200 text-neutral-800 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors"
+              >
+                <span className="font-mono truncate max-w-[92px] sm:max-w-[180px]">
+                  <span className="hidden sm:inline font-sans">{activeApp.personal.firstName} · </span>{activeApp.id}
                 </span>
-                <ChevronRight className="w-3.5 h-3.5 rotate-90 text-neutral-500" />
+                <ChevronRight className={`w-3.5 h-3.5 text-neutral-500 transition-transform ${switcherOpen ? '-rotate-90' : 'rotate-90'}`} />
               </button>
-              <div className="absolute right-0 mt-1 w-64 bg-white rounded-xl shadow-xl border border-neutral-200 py-1.5 hidden group-hover:block z-50">
-                <div className="px-3 py-1 text-[11px] font-bold text-neutral-400 uppercase tracking-wider">
-                  Switch Active Application
-                </div>
-                {applications.map(app => (
-                  <button
-                    key={app.id}
-                    onClick={() => handleSelectApp(app.id)}
-                    className={`w-full text-left px-3 py-2 text-xs flex items-center justify-between hover:bg-[#FAF2F5] transition-colors ${
-                      app.id === activeApp.id ? 'bg-[#FAF2F5] font-bold text-[#6D1838]' : 'text-neutral-700'
-                    }`}
-                  >
-                    <div>
-                      <p className="font-bold">{app.personal.firstName} {app.personal.lastName}</p>
-                      <p className="text-[10px] text-neutral-400">{app.id} · {app.preferences.specificProgram || app.preferences.preferredField || app.preferences.targetDegree}</p>
+              {switcherOpen && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setSwitcherOpen(false)} />
+                  <div className="absolute right-0 mt-1.5 w-[min(18rem,calc(100vw-2rem))] bg-white rounded-xl shadow-xl border border-neutral-200 py-1.5 z-50">
+                    <div className="px-3 py-1 text-[11px] font-bold text-neutral-400 uppercase tracking-wider">
+                      Switch Active Application
                     </div>
-                    {app.id === activeApp.id && <Check className="w-3.5 h-3.5 text-[#6D1838]" />}
-                  </button>
-                ))}
-                <div className="border-t border-neutral-100 mt-1 pt-1">
-                  <button
-                    onClick={onGoToApply}
-                    className="w-full text-left px-3 py-1.5 text-xs text-[#6D1838] font-bold hover:bg-[#FAF2F5]"
-                  >
-                    + Submit Another Application
-                  </button>
-                </div>
-              </div>
+                    {applications.map(app => (
+                      <button
+                        key={app.id}
+                        onClick={() => { handleSelectApp(app.id); setSwitcherOpen(false); }}
+                        className={`w-full text-left px-3 py-2.5 text-xs flex items-center justify-between gap-2 hover:bg-[#FAF2F5] transition-colors ${
+                          app.id === activeApp.id ? 'bg-[#FAF2F5] font-bold text-[#6D1838]' : 'text-neutral-700'
+                        }`}
+                      >
+                        <div className="min-w-0">
+                          <p className="font-bold truncate">{app.personal.firstName} {app.personal.lastName}</p>
+                          <p className="text-[10px] text-neutral-400 truncate">{app.id} · {app.preferences.specificProgram || app.preferences.preferredField || app.preferences.targetDegree}</p>
+                        </div>
+                        {app.id === activeApp.id && <Check className="w-3.5 h-3.5 text-[#6D1838] shrink-0" />}
+                      </button>
+                    ))}
+                    <div className="border-t border-neutral-100 mt-1 pt-1">
+                      <button
+                        onClick={onGoToApply}
+                        className="w-full text-left px-3 py-2.5 text-xs text-[#6D1838] font-bold hover:bg-[#FAF2F5]"
+                      >
+                        + Submit Another Application
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
 
-            <button
-              onClick={onGoToAdmin}
-              className="px-3 py-1.5 bg-[#FAF2F5] hover:bg-[#F3EEFA] text-[#6D1838] border border-[#EAD5DE] rounded-lg text-xs font-bold transition-colors flex items-center gap-1.5"
-              title="Open Admissions Officer view to review files, approve documents, or issue admission notices"
-            >
-              <UserCheck className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Admissions Admin Portal</span>
-              <span className="sm:hidden">Admin</span>
-            </button>
+            {isAdmin && (
+              <button
+                onClick={onGoToAdmin}
+                aria-label="Admin portal"
+                className="h-9 px-2.5 sm:px-3 bg-[#FAF2F5] hover:bg-[#F3EEFA] text-[#6D1838] border border-[#EAD5DE] rounded-lg text-xs font-bold transition-colors flex items-center gap-1.5"
+                title="Open the admissions admin portal"
+              >
+                <UserCheck className="w-4 h-4" />
+                <span className="hidden lg:inline">Admin Portal</span>
+              </button>
+            )}
 
             <button
               onClick={async () => {
@@ -440,11 +467,12 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
                   onBackToHome();
                 }
               }}
-              className="px-3 py-1.5 bg-neutral-100 hover:bg-rose-50 text-neutral-700 hover:text-rose-700 border border-neutral-200 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5"
-              title="Sign out of student account"
+              aria-label="Log out"
+              className="h-9 px-2.5 sm:px-3 bg-white hover:bg-rose-50 text-neutral-700 hover:text-rose-700 border border-neutral-200 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5"
+              title="Sign out"
             >
-              <LogOut className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Logout</span>
+              <LogOut className="w-4 h-4" />
+              <span className="hidden lg:inline">Logout</span>
             </button>
           </div>
         </div>
@@ -609,22 +637,22 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
         )}
 
         {/* Dashboard Navigation Tabs */}
-        <div className="flex items-center gap-2 border-b border-neutral-200 overflow-x-auto no-scrollbar pb-px">
+        <div className="sticky top-[53px] sm:top-[57px] z-20 -mx-4 px-4 sm:mx-0 sm:px-0 bg-[#FDFCFD]/95 backdrop-blur-md flex items-center gap-1 sm:gap-2 border-b border-neutral-200 overflow-x-auto no-scrollbar pb-px">
           {[
-            { id: 'overview', label: 'Overview & Progress Tracker', icon: Clock },
-            { id: 'documents', label: `Document Vault (${activeApp.documents.length})`, icon: FileText },
-            { id: 'admission_visa', label: 'Admission & Visa Documents', icon: Award },
-            { id: 'payments', label: 'Payments & Receipts', icon: CreditCard },
-            { id: 'predeparture', label: 'Pre-Departure & Arrival Guide', icon: Plane },
-            { id: 'messages', label: `Advisor Messages (${activeApp.messages.length})`, icon: MessageSquare },
+            { id: 'overview', label: 'Overview', icon: Clock },
+            { id: 'documents', label: `Documents (${activeApp.documents.length})`, icon: FileText },
+            { id: 'admission_visa', label: 'Admission & Visa', icon: Award },
+            { id: 'payments', label: 'Payments', icon: CreditCard },
+            { id: 'predeparture', label: 'Pre-Departure', icon: Plane },
+            { id: 'messages', label: `Messages (${activeApp.messages.length})`, icon: MessageSquare },
           ].map(tab => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
             return (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
-                className={`py-3 px-4 text-xs font-bold flex items-center gap-2 whitespace-nowrap border-b-2 transition-all ${
+                onClick={(e) => { setActiveTab(tab.id as any); (e.currentTarget as HTMLElement).scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' }); }}
+                className={`py-3 px-3 sm:px-4 text-xs font-bold flex items-center gap-2 whitespace-nowrap border-b-2 transition-all ${
                   isActive
                     ? 'border-[#6D1838] text-[#6D1838] bg-[#FAF2F5]/60 rounded-t-lg'
                     : 'border-transparent text-neutral-500 hover:text-neutral-900 hover:border-neutral-300'
@@ -812,10 +840,10 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
               {/* Assigned Advisor Card */}
               <div className="bg-white rounded-2xl border border-neutral-200 p-5 shadow-xs space-y-4">
                 <div className="flex items-center gap-3">
-                  <img
+                  <AdvisorAvatar
                     src={activeApp.advisor.avatar}
-                    alt={activeApp.advisor.name}
-                    className="w-14 h-14 rounded-2xl object-cover border-2 border-[#FAF2F5] shadow-xs"
+                    name={activeApp.advisor.name}
+                    className="w-14 h-14 rounded-2xl text-base border-2 border-[#FAF2F5] shadow-xs"
                   />
                   <div>
                     <span className="text-[10px] font-bold uppercase tracking-wider text-[#6D1838] bg-[#FAF2F5] px-2 py-0.5 rounded">
@@ -1368,7 +1396,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
 
               {/* Transactions Ledger Table */}
               <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs">
+                <table className="w-full min-w-[640px] text-left text-xs">
                   <thead className="bg-[#FAF7F9] text-[#575260] uppercase text-[10px] tracking-wider border-y border-neutral-200">
                     <tr>
                       <th className="py-3 px-4">Invoice / Receipt</th>
@@ -1735,10 +1763,10 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
             {/* Chat Header */}
             <div className="p-4 border-b border-neutral-200 bg-[#FAF7F9] flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <img
+                <AdvisorAvatar
                   src={activeApp.advisor.avatar}
-                  alt={activeApp.advisor.name}
-                  className="w-10 h-10 rounded-xl object-cover border border-neutral-200"
+                  name={activeApp.advisor.name}
+                  className="w-10 h-10 rounded-xl text-xs border border-neutral-200"
                 />
                 <div>
                   <h3 className="font-bold text-xs sm:text-sm text-[#18151B]">

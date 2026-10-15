@@ -33,6 +33,43 @@
     letter-spacing: -0.025em;
     text-wrap: balance;
   }
+
+  /* Prevent any stray element from creating sideways scrolling on phones */
+  html, body {
+    overflow-x: clip;
+  }
+
+  /* Grid/flex children may shrink below their content width (fixes truncation overflow) */
+  .grid > *, .min-w-safe {
+    min-width: 0;
+  }
+
+  /* Comfortable tap feedback on touch devices */
+  button, a {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* iOS zooms into inputs below 16px: keep form fields at 16px on phones */
+  @media (max-width: 639px) {
+    input, select, textarea {
+      font-size: 16px !important;
+    }
+  }
+}
+
+/* Horizontal scrollers without visible scrollbars (tabs, filters) */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Wide tables scroll inside their card instead of squashing columns */
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Editorial typography utilities */

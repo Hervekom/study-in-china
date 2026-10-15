@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Lock, Mail, ArrowRight, Sparkles, AlertCircle, ArrowLeft, ShieldCheck, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { siteConfig } from '../data/siteConfig';
+import { DEMO_MODE } from '../lib/supabase';
 
 interface LoginPageProps {
   onSuccess: () => void;
@@ -11,8 +12,8 @@ interface LoginPageProps {
 export const LoginPage: React.FC<LoginPageProps> = ({ onSuccess, onBackToHome }) => {
   const { login, loginAsDemo } = useAuth();
 
-  const [email, setEmail] = useState('student@example.com');
-  const [password, setPassword] = useState('student123');
+  const [email, setEmail] = useState(DEMO_MODE ? 'student@example.com' : '');
+  const [password, setPassword] = useState(DEMO_MODE ? 'student123' : '');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -101,8 +102,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onSuccess, onBackToHome })
             </p>
           </div>
 
-          {/* Quick Mock Credentials Callout */}
-          <div className="p-4 bg-[#FAF2F5]/80 border-b border-[#EAD5DE] flex items-start gap-2.5 text-xs text-[#58122c]">
+          {/* Quick Mock Credentials Callout (local demo only) */}
+          {DEMO_MODE && (<div className="p-4 bg-[#FAF2F5]/80 border-b border-[#EAD5DE] flex items-start gap-2.5 text-xs text-[#58122c]">
             <ShieldCheck className="w-4 h-4 text-[#6D1838] shrink-0 mt-0.5" />
             <div className="space-y-0.5">
               <strong className="font-bold text-[#6D1838]">Frontend Mock Authentication</strong>
@@ -110,7 +111,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onSuccess, onBackToHome })
                 Testing Account: <span className="font-mono font-semibold text-[#18151B]">student@example.com</span> / Password: <span className="font-mono font-semibold text-[#18151B]">student123</span>
               </p>
             </div>
-          </div>
+          </div>)}
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="p-6 space-y-4">
@@ -128,13 +129,13 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onSuccess, onBackToHome })
               <div className="relative">
                 <input
                   type="email"
-                  placeholder="student@example.com"
+                  placeholder="you@example.com"
                   value={email}
                   onChange={e => setEmail(e.target.value)}
                   required
-                  className="w-full p-2.5 pl-8 bg-neutral-50 border border-neutral-300 rounded-xl text-xs focus:outline-none focus:border-[#6D1838] focus:bg-white transition-colors"
+                  className="w-full p-3 pl-9 bg-neutral-50 border border-neutral-300 rounded-xl text-sm focus:outline-none focus:border-[#6D1838] focus:bg-white transition-colors"
                 />
-                <Mail className="w-4 h-4 text-neutral-400 absolute left-2.5 top-3" />
+                <Mail className="w-4 h-4 text-neutral-400 absolute left-3 top-1/2 -translate-y-1/2" />
               </div>
             </div>
 
@@ -143,18 +144,18 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onSuccess, onBackToHome })
                 <label className="text-[11px] font-bold text-[#575260] uppercase">
                   Password
                 </label>
-                <span className="text-[10px] text-neutral-400">Mock demo: student123</span>
+                {DEMO_MODE && <span className="text-[10px] text-neutral-400">Mock demo: student123</span>}
               </div>
               <div className="relative">
                 <input
                   type="password"
-                  placeholder="student123"
+                  placeholder="••••••••"
                   value={password}
                   onChange={e => setPassword(e.target.value)}
                   required
-                  className="w-full p-2.5 pl-8 bg-neutral-50 border border-neutral-300 rounded-xl text-xs focus:outline-none focus:border-[#6D1838] focus:bg-white transition-colors"
+                  className="w-full p-3 pl-9 bg-neutral-50 border border-neutral-300 rounded-xl text-sm focus:outline-none focus:border-[#6D1838] focus:bg-white transition-colors"
                 />
-                <Lock className="w-4 h-4 text-neutral-400 absolute left-2.5 top-3" />
+                <Lock className="w-4 h-4 text-neutral-400 absolute left-3 top-1/2 -translate-y-1/2" />
               </div>
             </div>
 
@@ -177,8 +178,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onSuccess, onBackToHome })
               )}
             </button>
 
-            {/* Quick 1-Click Access for Evaluators */}
-            <div className="pt-3 border-t border-neutral-100">
+            {/* Quick 1-Click Access for Evaluators (local demo only) */}
+            {DEMO_MODE && <div className="pt-3 border-t border-neutral-100">
               <button
                 type="button"
                 onClick={handleDemoAccess}
@@ -188,7 +189,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onSuccess, onBackToHome })
                 <Sparkles className="w-3.5 h-3.5" />
                 <span>1-Click Student Demo Sign In</span>
               </button>
-            </div>
+            </div>}
           </form>
         </div>
       </main>
