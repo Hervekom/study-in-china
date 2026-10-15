@@ -1,0 +1,6 @@
+{
+  "name": "Study In China",
+  "description": "Premium international education consultancy helping students discover programs, secure admissions, obtain JW202/visa, and study in China.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
