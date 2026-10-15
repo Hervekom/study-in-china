@@ -37,6 +37,8 @@ import {
 } from '../data/applicationStorage';
 import { useAuth } from '../context/AuthContext';
 import { DEMO_MODE } from '../lib/supabase';
+import { AdminSecurityCenter } from './AdminSecurityCenter';
+import { auditService } from '../services/auditService';
 
 interface AdminPortalProps {
   onBackToHome: () => void;
@@ -61,7 +63,10 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   onGoToDashboard,
   onGoToApply,
 }) => {
-  const { isAdmin, loginAsDemo, logout } = useAuth();
+  const { isAdmin, loginAsDemo, logout, profile, user } = useAuth();
+  const [section, setSection] = useState<'applications' | 'security'>('applications');
+  const audit = (action: string, entityId: string, details: Record<string, unknown> = {}) =>
+    auditService.log({ action, entityType: 'application', entityId, details, actorLabel: profile?.email || user?.email || 'admin' });
   const [applications, setApplications] = useState<StudentApplication[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
@@ -150,7 +155,8 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
     const updated = updateApplicationStatus(selectedApp.id, targetStatus, statusNote.trim() || undefined);
     if (updated) {
       setSelectedApp(updated);
-      showToast(`Status updated to ${targetStatus.replace('_', ' ').toUpperCase()} for ${selectedApp.personal.firstName}!`);
+      audit('status_changed', selectedApp.id, { from: selectedApp.status, to: targetStatus, student: selectedApp.personal.email, note: statusNote.trim() || undefined });
+      showToast(`Status updated to ${formatStatus(targetStatus)} for ${selectedApp.personal.firstName}!`);
     }
   };
 
@@ -159,6 +165,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
     const updated = updateDocumentStatus(selectedApp.id, docId, 'verified');
     if (updated) {
       setSelectedApp(updated);
+      audit('document_approved', selectedApp.id, { document: selectedApp.documents.find(d => d.id === docId)?.title || docId });
       showToast('Document verified and stamped approved!');
     }
   };
@@ -171,6 +178,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
     const updated = updateDocumentStatus(selectedApp.id, feedbackDoc.id, 'needs_resubmission', note);
     if (updated) {
       setSelectedApp(updated);
+      audit('document_fix_requested', selectedApp.id, { document: feedbackDoc.title, note });
       setFeedbackDoc(null);
       setFeedbackText('');
       showToast('Document flagged: Feedback sent to student dashboard!');
@@ -187,6 +195,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
     });
     if (updated) {
       setSelectedApp(updated);
+      audit('payment_updated', selectedApp.id, { stage: 'deposit', paid: !isCurrentlyPaid, amountUSD: pricing.depositUSD });
       showToast(`Stage 1 Deposit marked as ${!isCurrentlyPaid ? 'PAID' : 'PENDING'}`);
     }
   };
@@ -201,6 +210,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
     });
     if (updated) {
       setSelectedApp(updated);
+      audit('payment_updated', selectedApp.id, { stage: 'admission', paid: !isCurrentlyPaid, amountUSD: pricing.admissionPaymentUSD });
       showToast(`Stage 2 Admission Payment marked as ${!isCurrentlyPaid ? 'PAID' : 'PENDING'}`);
     }
   };
@@ -215,6 +225,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
     });
     if (updated) {
       setSelectedApp(updated);
+      audit('payment_updated', selectedApp.id, { stage: 'final', paid: !isCurrentlyPaid, amountUSD: pricing.finalPaymentUSD });
       showToast(`Stage 3 Final Payment marked as ${!isCurrentlyPaid ? 'PAID' : 'PENDING'}`);
     }
   };
@@ -346,7 +357,39 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
         </div>
       </header>
 
+      {/* Section switcher */}
+      <nav className="bg-white border-b border-neutral-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex gap-1 overflow-x-auto no-scrollbar">
+          {[
+            { id: 'applications' as const, label: 'Applications', icon: Users },
+            { id: 'security' as const, label: 'Security & Server', icon: ShieldCheck },
+          ].map(item => {
+            const Icon = item.icon;
+            const active = section === item.id;
+            return (
+              <button
+                key={item.id}
+                onClick={() => setSection(item.id)}
+                className={`shrink-0 whitespace-nowrap px-3 sm:px-4 py-3 text-xs sm:text-sm font-bold flex items-center gap-1.5 border-b-2 transition-colors ${
+                  active ? 'border-[#6D1838] text-[#6D1838]' : 'border-transparent text-neutral-500 hover:text-neutral-900'
+                }`}
+              >
+                <Icon className="w-4 h-4" />
+                {item.label}
+              </button>
+            );
+          })}
+        </div>
+      </nav>
+
+      {section === 'security' && (
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <AdminSecurityCenter onToast={showToast} />
+        </main>
+      )}
+
       {/* Main Container */}
+      {section === 'applications' && (
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
         {/* KPI Metrics Header */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
@@ -573,6 +616,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
         </div>
         )}
       </main>
+      )}
 
       {/* ================= APPLICATION DOSSIER DRAWER / MODAL ================= */}
       {selectedApp && (
