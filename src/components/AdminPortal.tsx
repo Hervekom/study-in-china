@@ -38,6 +38,7 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { DEMO_MODE } from '../lib/supabase';
 import { AdminSecurityCenter } from './AdminSecurityCenter';
+import { AdminContentEditor } from './AdminContentEditor';
 import { auditService } from '../services/auditService';
 
 interface AdminPortalProps {
@@ -64,7 +65,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   onGoToApply,
 }) => {
   const { isAdmin, loginAsDemo, logout, profile, user } = useAuth();
-  const [section, setSection] = useState<'applications' | 'security'>('applications');
+  const [section, setSection] = useState<'applications' | 'content' | 'security'>('applications');
   const audit = (action: string, entityId: string, details: Record<string, unknown> = {}) =>
     auditService.log({ action, entityType: 'application', entityId, details, actorLabel: profile?.email || user?.email || 'admin' });
   const [applications, setApplications] = useState<StudentApplication[]>([]);
@@ -362,6 +363,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex gap-1 overflow-x-auto no-scrollbar">
           {[
             { id: 'applications' as const, label: 'Applications', icon: Users },
+            { id: 'content' as const, label: 'Site Content', icon: FileText },
             { id: 'security' as const, label: 'Security & Server', icon: ShieldCheck },
           ].map(item => {
             const Icon = item.icon;
@@ -381,6 +383,12 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
           })}
         </div>
       </nav>
+
+      {section === 'content' && (
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <AdminContentEditor onToast={showToast} />
+        </main>
+      )}
 
       {section === 'security' && (
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">

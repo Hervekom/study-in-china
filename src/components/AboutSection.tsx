@@ -1,8 +1,10 @@
 import React from 'react';
 import { Target, Compass, Users, Award, ShieldCheck, HeartHandshake } from 'lucide-react';
 import { siteConfig } from '../data/siteConfig';
+import { useSiteContent } from '../context/SiteContentContext';
 
 export const AboutSection: React.FC = () => {
+  const { content: siteContent } = useSiteContent();
   return (
     <section id="about" className="py-20 bg-[#FAF7F9] border-t border-neutral-200/60">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -12,10 +14,10 @@ export const AboutSection: React.FC = () => {
             <span>About {siteConfig.brandName}</span>
           </div>
           <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#18151B]">
-            Empowering International Students in China
+            {siteContent.about.headline}
           </h2>
           <p className="mt-3 text-base text-[#575260] leading-relaxed">
-            We are dedicated education consultants committed to making higher education in China accessible, straightforward, and secure through honest guidance and fixed, transparent fees.
+            {siteContent.about.intro}
           </p>
         </div>
 
@@ -26,12 +28,14 @@ export const AboutSection: React.FC = () => {
               <Compass className="w-6 h-6" />
             </div>
             <h3 className="text-xl font-bold text-[#18151B]">Who We Are</h3>
-            <p className="text-sm text-[#575260] leading-relaxed">
-              {siteConfig.brandName} was established by experienced international alumni and higher education advisors based in China. Having experienced the complexities of foreign admission portals, JW202 government documentation, and embassy interviews ourselves, we created a streamlined pathway for international applicants worldwide.
+            <p className="text-sm text-[#575260] leading-relaxed whitespace-pre-line">
+              {siteContent.about.whoWeAre}
             </p>
-            <p className="text-sm text-[#575260] leading-relaxed">
-              We bridge the communication gap between overseas applicants and institutional admissions boards, ensuring dossiers are accurate, compliant, and submitted ahead of competitive deadlines.
-            </p>
+            {siteContent.about.whoWeAre2 && (
+              <p className="text-sm text-[#575260] leading-relaxed">
+                {siteContent.about.whoWeAre2}
+              </p>
+            )}
           </div>
 
           <div className="p-8 rounded-2xl bg-white border border-neutral-200/80 shadow-xs space-y-4">
@@ -40,11 +44,13 @@ export const AboutSection: React.FC = () => {
             </div>
             <h3 className="text-xl font-bold text-[#18151B]">Our Mission</h3>
             <p className="text-sm text-[#575260] leading-relaxed">
-              Our mission is to eliminate predatory education agency practices by instituting complete pricing transparency and academic integrity. We believe qualified students from any country deserve access to accredited degree curricula without hidden retainers or confusing fee tiers.
+              {siteContent.about.mission}
             </p>
-            <p className="text-sm text-[#575260] leading-relaxed">
-              Every applicant receives equal dedication, comprehensive credential evaluations, and hands-on guidance from initial program discovery until day one on campus.
-            </p>
+            {siteContent.about.mission2 && (
+              <p className="text-sm text-[#575260] leading-relaxed">
+                {siteContent.about.mission2}
+              </p>
+            )}
           </div>
         </div>
 

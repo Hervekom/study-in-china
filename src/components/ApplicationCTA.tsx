@@ -2,6 +2,7 @@ import React from 'react';
 import { ArrowRight, ShieldCheck, Sparkles, CheckCircle2 } from 'lucide-react';
 import { siteConfig, pricing } from '../data/siteConfig';
 import { getUpcomingIntakes } from '../utils/intakeUtils';
+import { useSiteContent } from '../context/SiteContentContext';
 
 interface ApplicationCTAProps {
   onStartApplication: () => void;
@@ -16,6 +17,7 @@ export const ApplicationCTA: React.FC<ApplicationCTAProps> = ({
   headline = 'Ready to Start Your China Journey?',
   subtext = 'Take the first step toward studying in China with program-first admissions guidance and verified JW202 visa support.',
 }) => {
+  const { content: siteContent } = useSiteContent();
   const upcomingIntakes = getUpcomingIntakes();
   const intakesSummary = upcomingIntakes.map(i => i.label).join(' & ');
   if (variant === 'subtle') {

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
+import { SiteContentProvider } from './context/SiteContentContext';
 import { AuthModal } from './components/AuthModal';
 
 import { Navbar } from './components/Navbar';
@@ -363,7 +364,9 @@ export default function App() {
   return (
     <ToastProvider>
       <AuthProvider>
-        <MainApp />
+        <SiteContentProvider>
+          <MainApp />
+        </SiteContentProvider>
       </AuthProvider>
     </ToastProvider>
   );

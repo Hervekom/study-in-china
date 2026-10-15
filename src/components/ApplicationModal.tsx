@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { X, Check, ArrowRight, ArrowLeft, ShieldCheck, FileCheck, CheckCircle2, AlertCircle, Sparkles } from 'lucide-react';
 import { DegreeLevel, ApplicationFormData } from '../types';
 import { siteConfig } from '../data/siteConfig';
+import { useSiteContent } from '../context/SiteContentContext';
 
 interface ApplicationModalProps {
   isOpen: boolean;
@@ -36,6 +37,7 @@ export const ApplicationModal: React.FC<ApplicationModalProps> = ({
   prefillProgram = '',
   prefillDegree,
 }) => {
+  const { content: siteContent } = useSiteContent();
   const [step, setStep] = useState<number>(1);
   const [formData, setFormData] = useState<ApplicationFormData>(() => ({
     ...INITIAL_FORM,

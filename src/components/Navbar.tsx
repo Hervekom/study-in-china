@@ -3,6 +3,7 @@ import { Menu, X, ArrowRight, UserCheck, LayoutDashboard, User, LogOut, ChevronD
 import { siteConfig, pricing } from '../data/siteConfig';
 import { AppView } from '../types';
 import { useAuth } from '../context/AuthContext';
+import { useSiteContent } from '../context/SiteContentContext';
 
 interface NavbarProps {
   onOpenApplication: () => void;
@@ -19,6 +20,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   activeSection,
   currentView = 'home',
 }) => {
+  const { content: siteContent } = useSiteContent();
   const { user, profile, isAdmin, isAuthenticated, logout } = useAuth();
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -56,11 +58,31 @@ export const Navbar: React.FC<NavbarProps> = ({
     <header
       className={`fixed top-0 left-0 right-0 z-40 transition-all duration-200 ${
         scrolled
-          ? 'py-3 bg-white/95 backdrop-blur-md shadow-sm border-b border-neutral-200/80'
-          : 'py-4 bg-white/90 backdrop-blur-sm border-b border-neutral-100'
+          ? 'bg-white/95 backdrop-blur-md shadow-sm border-b border-neutral-200/80'
+          : 'bg-white/90 backdrop-blur-sm border-b border-neutral-100'
       }`}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+      {siteContent.announcement.enabled && siteContent.announcement.text && !scrolled && (
+        <div className="bg-[#6D1838] text-white text-xs">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 flex items-center justify-center gap-2 text-center">
+            <span className="leading-snug">{siteContent.announcement.text}</span>
+            {siteContent.announcement.linkLabel && siteContent.announcement.linkUrl && (
+              <a
+                href={siteContent.announcement.linkUrl}
+                onClick={(e) => {
+                  const url = siteContent.announcement.linkUrl;
+                  if (url === '/apply') { e.preventDefault(); onOpenApplication(); }
+                  else if (url.startsWith('#')) { e.preventDefault(); handleNavClick(url); }
+                }}
+                className="shrink-0 font-bold underline underline-offset-2 hover:text-[#EAD5DE]"
+              >
+                {siteContent.announcement.linkLabel}
+              </a>
+            )}
+          </div>
+        </div>
+      )}
+      <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between transition-all duration-200 ${scrolled ? 'py-3' : 'py-4'}`}>
         {/* Zone 1: Wordmark */}
         <button
           onClick={() => onNavigate('home')}
@@ -69,7 +91,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div className="w-8 h-8 rounded-lg bg-[#6D1838] flex items-center justify-center text-white font-bold text-xs shadow-xs group-hover:bg-[#58122c] transition-colors">
             SIC
           </div>
-          <span className="text-lg sm:text-xl font-extrabold tracking-tight text-[#18151B]">
+          <span className="text-lg sm:text-xl font-extrabold tracking-tight text-[#18151B] whitespace-nowrap truncate max-w-[52vw] sm:max-w-none">
             {siteConfig.brandName}
           </span>
         </button>
@@ -84,7 +106,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 e.preventDefault();
                 handleNavClick(link.href);
               }}
-              className="hover:text-[#6D1838] transition-colors relative py-1 text-[13px] font-medium"
+              className="hover:text-[#6D1838] transition-colors relative py-1 text-[13px] font-medium whitespace-nowrap"
             >
               {link.label}
             </a>

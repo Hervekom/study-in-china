@@ -45,6 +45,7 @@ import {
   recordPayment,
   addAdvisorMessage
 } from '../data/applicationStorage';
+import { useSiteContent } from '../context/SiteContentContext';
 
 interface StudentDashboardProps {
   onBackToHome: () => void;
@@ -74,6 +75,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
   onLogout,
   initialAppId,
 }) => {
+  const { content: siteContent } = useSiteContent();
   const [applications, setApplications] = useState<StudentApplication[]>([]);
   const [activeApp, setActiveApp] = useState<StudentApplication | null>(null);
   const [activeTab, setActiveTab] = useState<'overview' | 'documents' | 'admission_visa' | 'payments' | 'predeparture' | 'messages'>('overview');

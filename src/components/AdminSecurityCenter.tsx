@@ -57,6 +57,7 @@ const BACKUP_TABLES = [
   'blog_posts',
   'faqs',
   'testimonials',
+  'site_content',
   'audit_logs',
 ];
 const NOT_RESTORABLE = new Set(['audit_logs']);

@@ -2,6 +2,7 @@ import React from 'react';
 import { ArrowRight, CheckCircle2, ShieldCheck, MapPin, Calendar } from 'lucide-react';
 import { siteConfig, pricing } from '../data/siteConfig';
 import { getUpcomingIntakes } from '../utils/intakeUtils';
+import { useSiteContent } from '../context/SiteContentContext';
 
 interface HeroProps {
   onStartApplication: () => void;
@@ -14,6 +15,17 @@ export const Hero: React.FC<HeroProps> = ({
   onExplorePrograms,
   onHowItWorks,
 }) => {
+  const { content: siteContent } = useSiteContent();
+  const slides = siteContent.hero.slides;
+  const [activeSlide, setActiveSlide] = React.useState(0);
+  const current = slides[Math.min(activeSlide, slides.length - 1)] || slides[0];
+
+  React.useEffect(() => {
+    if (slides.length < 2) return;
+    const ms = Math.max(3, siteContent.hero.autoplaySeconds || 6) * 1000;
+    const t = setInterval(() => setActiveSlide(i => (i + 1) % slides.length), ms);
+    return () => clearInterval(t);
+  }, [slides.length, siteContent.hero.autoplaySeconds]);
   const upcomingIntakes = getUpcomingIntakes();
   const intakesSummary = upcomingIntakes.map(i => i.label).join(' · ');
 
@@ -40,7 +52,7 @@ export const Hero: React.FC<HeroProps> = ({
             <div className="flex flex-wrap items-center gap-2.5">
               <span className="w-1.5 h-1.5 rounded-full bg-[#6D1838]" />
               <span className="editorial-label text-[#6D1838]">
-                International Education Advisory
+                {siteContent.hero.kicker}
               </span>
               <span className="text-neutral-300">/</span>
               <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-[#FAF2F5] border border-[#EAD5DE] text-xs font-semibold text-[#6D1838]">
@@ -51,14 +63,14 @@ export const Hero: React.FC<HeroProps> = ({
 
             {/* Controlled Line Break Editorial Display Heading */}
             <h1 className="text-4xl sm:text-6xl lg:text-[4.25rem] font-bold tracking-[-0.035em] text-[#18151B] leading-[1.06]">
-              Your Journey<br />
-              to Study in China<br />
-              <span className="text-[#6D1838]">Starts Here.</span>
+              {siteContent.hero.titleLine1}<br />
+              {siteContent.hero.titleLine2}<br />
+              <span className="text-[#6D1838]">{siteContent.hero.titleHighlight}</span>
             </h1>
 
             {/* Editorial Body Text */}
             <p className="text-base sm:text-lg text-[#575260] leading-relaxed max-w-xl font-normal">
-              Direct admission pathways to accredited English-taught degree tracks across China. Complete support from field matching to JW202 visa clearance, with guaranteed pricing transparency.
+              {siteContent.hero.subtitle}
             </p>
 
             {/* Trust Assurance Line */}
@@ -86,7 +98,7 @@ export const Hero: React.FC<HeroProps> = ({
                 onClick={onStartApplication}
                 className="group px-7 py-3.5 text-sm font-semibold text-white bg-[#6D1838] hover:bg-[#58122c] active:bg-[#4A1028] rounded-lg transition-all duration-200 shadow-sm hover:shadow flex items-center justify-center gap-2.5 whitespace-nowrap"
               >
-                <span>Start Your Application</span>
+                <span>{siteContent.hero.primaryCta}</span>
                 <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1" />
               </button>
 
@@ -109,14 +121,18 @@ export const Hero: React.FC<HeroProps> = ({
 
           {/* Right Column: Editorial Visual Composition */}
           <div className="lg:col-span-5 relative">
-            <div className="relative rounded-lg overflow-hidden border border-neutral-200/80 bg-neutral-100 shadow-sm group">
-              <img
-                src="/images/hero_china_students_1790254510954.jpg"
-                alt="International scholars studying in China"
-                referrerPolicy="no-referrer"
-                className="w-full h-[340px] sm:h-[480px] object-cover object-center transition-transform duration-700 group-hover:scale-[1.02]"
-              />
-              
+            <div className="relative rounded-lg overflow-hidden border border-neutral-200/80 bg-neutral-100 shadow-sm group h-[340px] sm:h-[480px]">
+              {slides.map((slide, i) => (
+                <img
+                  key={`${slide.image}-${i}`}
+                  src={slide.image}
+                  alt={slide.caption || 'International students in China'}
+                  referrerPolicy="no-referrer"
+                  loading={i === 0 ? 'eager' : 'lazy'}
+                  className={`absolute inset-0 w-full h-full object-cover object-center transition-opacity duration-700 ${i === activeSlide ? 'opacity-100' : 'opacity-0'}`}
+                />
+              ))}
+
               {/* Measured contrast scrim */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-transparent" />
 
@@ -124,18 +140,31 @@ export const Hero: React.FC<HeroProps> = ({
               <div className="absolute bottom-0 inset-x-0 p-4 sm:p-5 text-white">
                 <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-xs text-white/80 pb-1.5 border-b border-white/15 mb-2">
                   <span className="editorial-label text-white tracking-widest">
-                    Academic Excellence
+                    {current.label}
                   </span>
                   <span className="flex items-center gap-1 text-[11px] text-white/90 whitespace-nowrap">
                     <MapPin className="w-3 h-3 text-[#E5D6F7]" /> Beijing · Shanghai · Hangzhou
                   </span>
                 </div>
-                <p className="text-sm font-medium text-white leading-snug">
-                  English-Taught Bachelor's, Master's, PhD & Language Programs
+                <p className="text-sm font-medium text-white leading-snug min-h-[2.5em]">
+                  {current.caption}
                 </p>
                 <div className="mt-2.5 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-xs text-white/80">
                   <span>Accessible Tuition Structure</span>
-                  <span className="font-semibold text-[#F3EEFA]">CSC Scholarships Available</span>
+                  {slides.length > 1 ? (
+                    <div className="flex items-center gap-1.5" role="tablist" aria-label="Carousel">
+                      {slides.map((_, i) => (
+                        <button
+                          key={i}
+                          onClick={() => setActiveSlide(i)}
+                          aria-label={`Show image ${i + 1}`}
+                          className={`h-1.5 rounded-full transition-all ${i === activeSlide ? 'w-6 bg-white' : 'w-1.5 bg-white/50 hover:bg-white/80'}`}
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    <span className="font-semibold text-[#F3EEFA]">CSC Scholarships Available</span>
+                  )}
                 </div>
               </div>
             </div>

@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { Mail, Phone, MapPin, Send, CheckCircle2, Clock, MessageSquare } from 'lucide-react';
 import { siteConfig } from '../data/siteConfig';
+import { useSiteContent } from '../context/SiteContentContext';
 
 export const ContactSection: React.FC = () => {
+  const { content: siteContent } = useSiteContent();
   const [formData, setFormData] = useState({
     name: '',
     email: '',

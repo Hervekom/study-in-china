@@ -3,6 +3,7 @@ import { X, Lock, Mail, User, ShieldCheck, Sparkles, AlertCircle, ArrowRight, Ch
 import { useAuth } from '../context/AuthContext';
 import { siteConfig } from '../data/siteConfig';
 import { DEMO_MODE } from '../lib/supabase';
+import { useSiteContent } from '../context/SiteContentContext';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -17,6 +18,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   initialMode = 'login',
   onSuccess,
 }) => {
+  const { content: siteContent } = useSiteContent();
   const { login, register, loginAsDemo, forgotPassword } = useAuth();
 
   const [mode, setMode] = useState<'login' | 'register' | 'forgot'>(initialMode);

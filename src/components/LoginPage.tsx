@@ -3,6 +3,7 @@ import { Lock, Mail, ArrowRight, Sparkles, AlertCircle, ArrowLeft, ShieldCheck, 
 import { useAuth } from '../context/AuthContext';
 import { siteConfig } from '../data/siteConfig';
 import { DEMO_MODE } from '../lib/supabase';
+import { useSiteContent } from '../context/SiteContentContext';
 
 interface LoginPageProps {
   onSuccess: () => void;
@@ -10,6 +11,7 @@ interface LoginPageProps {
 }
 
 export const LoginPage: React.FC<LoginPageProps> = ({ onSuccess, onBackToHome }) => {
+  const { content: siteContent } = useSiteContent();
   const { login, loginAsDemo } = useAuth();
 
   const [email, setEmail] = useState(DEMO_MODE ? 'student@example.com' : '');

@@ -1,6 +1,7 @@
 import React from 'react';
 import { siteConfig, pricing } from '../data/siteConfig';
 import { Mail, Phone, MapPin, ShieldCheck, ArrowUp } from 'lucide-react';
+import { useSiteContent } from '../context/SiteContentContext';
 
 interface FooterProps {
   onOpenPolicy: (type: 'terms' | 'privacy' | 'refund') => void;
@@ -9,6 +10,7 @@ interface FooterProps {
 }
 
 export const Footer: React.FC<FooterProps> = ({ onOpenPolicy, onOpenApplication, onNavigate }) => {
+  const { content: siteContent } = useSiteContent();
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -30,7 +32,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenPolicy, onOpenApplication,
             </div>
 
             <p className="text-neutral-400 text-xs leading-relaxed max-w-sm">
-              Premier international education consultancy facilitating admissions, scholarship dossier preparation, JW202 government documentation, and student visa coaching for higher education in China.
+              {siteContent.footer.description}
             </p>
 
             <div className="pt-2 space-y-2 text-neutral-400 text-xs">
@@ -51,6 +53,31 @@ export const Footer: React.FC<FooterProps> = ({ onOpenPolicy, onOpenApplication,
                 <span>{siteConfig.contact.officeAddress}</span>
               </div>
             </div>
+
+            {Object.entries(siteContent.social).some(([, url]) => url) && (
+              <div className="flex flex-wrap gap-2 pt-1">
+                {([
+                  ['facebook', 'Facebook'],
+                  ['instagram', 'Instagram'],
+                  ['tiktok', 'TikTok'],
+                  ['linkedin', 'LinkedIn'],
+                  ['youtube', 'YouTube'],
+                  ['x', 'X'],
+                ] as const)
+                  .filter(([key]) => siteContent.social[key])
+                  .map(([key, label]) => (
+                    <a
+                      key={key}
+                      href={siteContent.social[key]}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-3 py-1.5 rounded-full border border-neutral-700 text-neutral-300 hover:text-white hover:border-neutral-500 text-[11px] font-semibold transition-colors"
+                    >
+                      {label}
+                    </a>
+                  ))}
+              </div>
+            )}
           </div>
 
           {/* Nav Links */}

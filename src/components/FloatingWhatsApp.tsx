@@ -1,8 +1,10 @@
 import React from 'react';
 import { MessageSquare } from 'lucide-react';
 import { siteConfig } from '../data/siteConfig';
+import { useSiteContent } from '../context/SiteContentContext';
 
 export const FloatingWhatsApp: React.FC = () => {
+  const { content: siteContent } = useSiteContent();
   return (
     <aside aria-label="Quick contact" className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-30" style={{ marginBottom: "env(safe-area-inset-bottom)" }}>
       <a

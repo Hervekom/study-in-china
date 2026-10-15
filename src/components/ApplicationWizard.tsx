@@ -31,6 +31,7 @@ import { applicationService } from '../services/applicationService';
 import { paymentService, OFFICIAL_PRICING } from '../services/paymentService';
 import { notificationService } from '../services/notificationService';
 import { getIntakeOptions, getDefaultIntake } from '../utils/intakeUtils';
+import { useSiteContent } from '../context/SiteContentContext';
 
 interface ApplicationWizardProps {
   onBackToHome: () => void;
@@ -49,6 +50,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
   prefillProgram = '',
   prefillDegree,
 }) => {
+  const { content: siteContent } = useSiteContent();
   const [currentStep, setCurrentStep] = useState<number>(1);
   const [saveToast, setSaveToast] = useState<string | null>(null);
   // Example mode: shows applicants how a completed form looks. Example data can never be submitted.
