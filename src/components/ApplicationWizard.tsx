@@ -28,7 +28,6 @@ import { DegreeLevel, StudentApplication, DocumentItem, ProgramPreference } from
 import { siteConfig } from '../data/siteConfig';
 import { createNewApplication } from '../data/applicationStorage';
 import { applicationService } from '../services/applicationService';
-import { DEMO_MODE } from '../lib/supabase';
 import { paymentService, OFFICIAL_PRICING } from '../services/paymentService';
 import { notificationService } from '../services/notificationService';
 import { getIntakeOptions, getDefaultIntake } from '../utils/intakeUtils';
@@ -52,6 +51,9 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
 }) => {
   const [currentStep, setCurrentStep] = useState<number>(1);
   const [saveToast, setSaveToast] = useState<string | null>(null);
+  // Example mode: shows applicants how a completed form looks. Example data can never be submitted.
+  const [exampleActive, setExampleActive] = useState(false);
+  const exampleSnapshot = React.useRef<any>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isProcessingPayment, setIsProcessingPayment] = useState<boolean>(false);
   const [paymentSuccess, setPaymentSuccess] = useState<boolean>(false);
@@ -294,6 +296,11 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
   };
 
   const handleFillDemoValues = () => {
+    if (!exampleActive) {
+      exampleSnapshot.current = { personal, education, firstChoice, secondChoice, thirdChoice, preferences, uploadedDocs };
+    }
+    setExampleActive(true);
+    setErrors({});
     setPersonal({
       firstName: 'David',
       lastName: 'Osei',
@@ -359,11 +366,35 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
       study_plan: { name: 'Academic_Study_Plan_CS.pdf', size: '520 KB' },
       recommendation_1: { name: 'Principal_Recommendation_Letter.pdf', size: '890 KB' },
     });
-    setSaveToast('Loaded pre-filled student test dossier!');
+    setSaveToast('Example loaded: see how a completed application looks.');
+    setTimeout(() => setSaveToast(null), 3000);
+  };
+
+  const handleClearExample = () => {
+    const snap = exampleSnapshot.current;
+    if (snap) {
+      setPersonal(snap.personal);
+      setEducation(snap.education);
+      setFirstChoice(snap.firstChoice);
+      setSecondChoice(snap.secondChoice);
+      setThirdChoice(snap.thirdChoice);
+      setPreferences(snap.preferences);
+      setUploadedDocs(snap.uploadedDocs);
+    }
+    exampleSnapshot.current = null;
+    setExampleActive(false);
+    setErrors({});
+    setSaveToast('Example cleared. You can now enter your own information.');
     setTimeout(() => setSaveToast(null), 3000);
   };
 
   const handleProcessPaymentAndSubmit = () => {
+    if (exampleActive) {
+      setSaveToast('This is example data. Clear the example and enter your own information before submitting.');
+      setTimeout(() => setSaveToast(null), 4500);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
     setIsProcessingPayment(true);
     setErrors({});
 
@@ -552,18 +583,16 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
           <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             {currentStep < 7 && (
               <>
-                {DEMO_MODE && (
-                  <button
-                    type="button"
-                    onClick={handleFillDemoValues}
-                    aria-label="Auto-fill demo data"
-                    className="h-9 px-2.5 bg-[#FAF2F5] hover:bg-[#F3EEFA] text-[#6D1838] border border-[#EAD5DE] rounded-lg text-xs font-semibold transition-colors flex items-center gap-1"
-                    title="Fill form with sample applicant data for testing"
-                  >
-                    <Sparkles className="w-4 h-4 text-[#6D1838]" />
-                    <span className="hidden md:inline">Auto-fill Demo</span>
-                  </button>
-                )}
+                <button
+                  type="button"
+                  onClick={exampleActive ? handleClearExample : handleFillDemoValues}
+                  aria-label={exampleActive ? 'Clear example' : 'See a filled-in example'}
+                  className="h-9 px-2.5 bg-[#FAF2F5] hover:bg-[#F3EEFA] text-[#6D1838] border border-[#EAD5DE] rounded-lg text-xs font-semibold transition-colors flex items-center gap-1"
+                  title={exampleActive ? 'Remove the example data' : 'See how a completed application looks'}
+                >
+                  <Sparkles className="w-4 h-4 text-[#6D1838]" />
+                  <span>{exampleActive ? 'Clear' : 'Example'}</span>
+                </button>
                 <button
                   type="button"
                   onClick={handleSaveAndContinueLater}
@@ -648,14 +677,34 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
 
       {/* Save Notification Toast */}
       {saveToast && (
-        <aside aria-label="Notification" className="fixed top-20 right-4 z-50 bg-[#18151B] text-white px-4 py-3 rounded-xl shadow-xl flex items-center gap-2 text-xs border border-neutral-700 animate-in fade-in slide-in-from-top-2">
+        <aside aria-label="Notification" className="fixed top-20 left-4 right-4 sm:left-auto z-50 bg-[#18151B] text-white px-4 py-3 rounded-xl shadow-xl flex items-center gap-2 text-xs border border-neutral-700 animate-in fade-in slide-in-from-top-2">
           <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
           <span>{saveToast}</span>
         </aside>
       )}
 
       {/* Main Wizard Form Body */}
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        {exampleActive && (
+          <div className="mb-4 p-3.5 sm:p-4 rounded-2xl border border-amber-300 bg-amber-50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-start gap-2.5">
+              <Sparkles className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-bold text-amber-900">You are viewing an example</p>
+                <p className="text-xs text-amber-800 leading-relaxed">
+                  These sample answers show how to fill each step. They cannot be submitted. Clear the example and enter your own information to apply.
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={handleClearExample}
+              className="shrink-0 px-4 py-2.5 bg-amber-900 hover:bg-amber-950 text-white rounded-xl text-xs font-bold transition-colors"
+            >
+              Clear example & start my application
+            </button>
+          </div>
+        )}
         <div className="bg-white rounded-2xl border border-neutral-200 shadow-sm p-6 sm:p-8">
           {/* ================= STEP 1: PERSONAL INFORMATION ================= */}
           {currentStep === 1 && (
@@ -1471,13 +1520,13 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                       Upload clean scanned PDF or JPG copies. Max 10MB per document.
                     </p>
                   </div>
-                  {DEMO_MODE && <button
+                  {!exampleActive && <button
                     type="button"
                     onClick={handleFillDemoValues}
                     className="self-start sm:self-center px-3 py-1.5 bg-[#FAF2F5] hover:bg-[#F3EEFA] text-[#6D1838] border border-[#EAD5DE] rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm"
                   >
                     <Sparkles className="w-3.5 h-3.5" />
-                    Load Sample Scans
+                    See an Example
                   </button>}
                 </div>
               </div>
