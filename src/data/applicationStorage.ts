@@ -1,11 +1,14 @@
 import { StudentApplication, ApplicationStatus, DocumentType, DocumentItem, PaymentDetails } from '../types';
 import { INITIAL_APPLICATIONS, DEFAULT_REQUIRED_DOCUMENTS } from './mockApplications';
+import { isCloudMode, readCloudCache, writeCloudCache, pushNewApplication, pushApplicationUpdate } from '../services/applicationSync';
 
 const STORAGE_KEY = 'chinastudy_applications_v1';
 const ACTIVE_APP_KEY = 'chinastudy_active_app_id';
 
 export const getStoredApplications = (): StudentApplication[] => {
   if (typeof window === 'undefined') return INITIAL_APPLICATIONS;
+  // Production: real applications from the database (no sample data)
+  if (isCloudMode()) return readCloudCache();
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) {
@@ -26,6 +29,10 @@ export const getStoredApplications = (): StudentApplication[] => {
 
 export const saveApplications = (apps: StudentApplication[]): void => {
   if (typeof window === 'undefined') return;
+  if (isCloudMode()) {
+    writeCloudCache(apps);
+    return;
+  }
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(apps));
     window.dispatchEvent(new Event('chinastudy_applications_updated'));
@@ -43,7 +50,7 @@ export const getActiveApplicationId = (): string => {
     // fallback
   }
   const apps = getStoredApplications();
-  return apps[0]?.id || INITIAL_APPLICATIONS[0]?.id || `CSC-${new Date().getFullYear()}-78210`;
+  return apps[0]?.id || (isCloudMode() ? '' : INITIAL_APPLICATIONS[0]?.id || `CSC-${new Date().getFullYear()}-78210`);
 };
 
 export const setActiveApplicationId = (id: string): void => {
@@ -68,6 +75,12 @@ export const createNewApplication = (application: StudentApplication): void => {
   setActiveApplicationId(application.id);
 };
 
+/** Production: create the application in the database and wait for the result. */
+export const createNewApplicationAsync = async (application: StudentApplication): Promise<boolean> => {
+  createNewApplication(application);
+  return pushNewApplication(application);
+};
+
 export const updateApplication = (id: string, updater: (app: StudentApplication) => StudentApplication): StudentApplication | undefined => {
   const apps = getStoredApplications();
   const index = apps.findIndex(a => a.id === id);
@@ -76,6 +89,7 @@ export const updateApplication = (id: string, updater: (app: StudentApplication)
   const updatedApp = updater({ ...apps[index], updatedAt: new Date().toISOString() });
   apps[index] = updatedApp;
   saveApplications(apps);
+  if (isCloudMode()) void pushApplicationUpdate(updatedApp);
   return updatedApp;
 };
 
@@ -216,7 +230,7 @@ export const updateDocumentStatus = (
 export const uploadOrReplaceDocument = (
   appId: string,
   docType: DocumentType,
-  fileMeta: { name: string; size: string; url?: string }
+  fileMeta: { name: string; size: string; url?: string; storagePath?: string }
 ): StudentApplication | undefined => {
   return updateApplication(appId, (app) => {
     const today = new Date().toISOString().split('T')[0];
@@ -233,6 +247,9 @@ export const uploadOrReplaceDocument = (
         status: 'pending',
         feedback: undefined,
         fileUrl: fileMeta.url || updatedDocs[existingIndex].fileUrl,
+        storagePath: fileMeta.storagePath || updatedDocs[existingIndex].storagePath,
+        receivedAt: undefined,
+        receivedBy: undefined,
       };
     } else {
       const template = DEFAULT_REQUIRED_DOCUMENTS.find(d => d.type === docType);
@@ -247,6 +264,7 @@ export const uploadOrReplaceDocument = (
         uploadDate: today,
         status: 'pending',
         fileUrl: fileMeta.url,
+        storagePath: fileMeta.storagePath,
       };
       updatedDocs = [...app.documents, newDoc];
     }
@@ -269,23 +287,28 @@ export const recordPayment = (
     const txnId = details.transactionId || `TXN-${prefix}-${Math.floor(100000 + Math.random() * 900000)}`;
     const recNo = details.receiptNumber || `REC-SIC-${new Date().getFullYear()}-${Math.floor(100 + Math.random() * 900)}`;
 
+    const isPaid = details.paid ?? true;
     const updatedPayment = {
       ...app.payments[stage],
       ...details,
-      paid: true,
-      status: 'paid' as const,
+      paid: isPaid,
+      status: (isPaid ? 'paid' : 'pending') as 'paid' | 'pending',
       date: details.date || today,
       transactionId: txnId,
       receiptNumber: recNo,
     };
 
     let nextStatus = app.status;
-    if (stage === 'deposit' && app.status === 'deposit_paid') {
-      nextStatus = 'document_review';
-    } else if (stage === 'admissionPayment') {
-      nextStatus = 'jw202_issued';
-    } else if (stage === 'finalPayment') {
-      nextStatus = 'visa_preparation';
+    if (isPaid) {
+      if (stage === 'deposit' && (app.status === 'deposit_paid' || app.status === 'deposit_pending')) {
+        nextStatus = 'document_review';
+      } else if (stage === 'admissionPayment') {
+        nextStatus = 'jw202_issued';
+      } else if (stage === 'finalPayment') {
+        nextStatus = 'visa_preparation';
+      }
+    } else if (stage === 'deposit' && app.status === 'document_review') {
+      nextStatus = 'deposit_pending';
     }
 
     return {
@@ -316,6 +339,33 @@ export const addAdvisorMessage = (
     return {
       ...app,
       messages: [...app.messages, newMessage],
+    };
+  });
+};
+
+/** Admissions team confirms receipt of a document: visible in the student's dashboard + message. */
+export const acknowledgeDocument = (
+  appId: string,
+  docId: string,
+  staffName: string
+): StudentApplication | undefined => {
+  return updateApplication(appId, (app) => {
+    const doc = app.documents.find(d => d.id === docId);
+    if (!doc) return app;
+    const now = new Date().toISOString();
+    return {
+      ...app,
+      documents: app.documents.map(d => (d.id === docId ? { ...d, receivedAt: now, receivedBy: staffName } : d)),
+      messages: [
+        ...app.messages,
+        {
+          id: `msg-${Date.now()}`,
+          sender: 'advisor',
+          senderName: staffName,
+          content: `Acknowledgment of receipt: we have received your document "${doc.title}"${doc.name ? ` (${doc.name})` : ''}. Our team will review it and let you know if anything is needed.`,
+          timestamp: now,
+        },
+      ],
     };
   });
 };

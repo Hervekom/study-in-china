@@ -33,6 +33,7 @@ import {
   updateDocumentStatus,
   recordPayment,
   addAdvisorMessage,
+  acknowledgeDocument,
   setActiveApplicationId
 } from '../data/applicationStorage';
 import { useAuth } from '../context/AuthContext';
@@ -40,6 +41,10 @@ import { DEMO_MODE } from '../lib/supabase';
 import { AdminSecurityCenter } from './AdminSecurityCenter';
 import { AdminContentEditor } from './AdminContentEditor';
 import { auditService } from '../services/auditService';
+import { notifyStudent } from '../services/studentNotifier';
+import { getDocumentUrl } from '../services/documentFiles';
+import { isSupabaseConfigured } from '../lib/supabase';
+import { useCloudSync } from '../hooks/useCloudSync';
 
 interface AdminPortalProps {
   onBackToHome: () => void;
@@ -65,6 +70,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   onGoToApply,
 }) => {
   const { isAdmin, loginAsDemo, logout, profile, user } = useAuth();
+  const { loading: cloudLoading } = useCloudSync();
   const [section, setSection] = useState<'applications' | 'content' | 'security'>('applications');
   const audit = (action: string, entityId: string, details: Record<string, unknown> = {}) =>
     auditService.log({ action, entityType: 'application', entityId, details, actorLabel: profile?.email || user?.email || 'admin' });
@@ -109,6 +115,70 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   const showToast = (msg: string) => {
     setAdminToast(msg);
     setTimeout(() => setAdminToast(null), 3500);
+  };
+
+  const staffName = [profile?.firstName, profile?.lastName].filter(Boolean).join(' ') || 'Admissions Team';
+  const [adminMessage, setAdminMessage] = useState('');
+  const [docBusy, setDocBusy] = useState<string | null>(null);
+
+  /** Email the student about a change (production only). */
+  const emailStudent = (app: StudentApplication, subject: string, headline: string, message: string) => {
+    if (!isSupabaseConfigured()) return;
+    void notifyStudent({ applicationId: app.id, subject, headline, message }).then(res => {
+      showToast(res.sent ? `Email sent to ${app.personal.email}` : `Saved, but the email was not sent (${res.error}).`);
+    });
+  };
+
+  const handleOpenDoc = async (doc: DocumentItem, download: boolean) => {
+    if (!doc.storagePath) return;
+    setDocBusy(doc.id);
+    try {
+      const url = await getDocumentUrl(doc.storagePath, download ? doc.name || `${doc.type}.pdf` : undefined);
+      if (download) {
+        const a = document.createElement('a');
+        a.href = url;
+        a.rel = 'noopener';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      } else {
+        window.open(url, '_blank', 'noopener');
+      }
+      if (selectedApp) audit(download ? 'document_downloaded' : 'document_viewed', selectedApp.id, { document: doc.title });
+    } catch (err: any) {
+      showToast(err?.message || 'Could not open the file.');
+    } finally {
+      setDocBusy(null);
+    }
+  };
+
+  const handleAcknowledgeDoc = (doc: DocumentItem) => {
+    if (!selectedApp) return;
+    const updated = acknowledgeDocument(selectedApp.id, doc.id, staffName);
+    if (updated) {
+      setSelectedApp(updated);
+      audit('document_acknowledged', selectedApp.id, { document: doc.title });
+      showToast(`Acknowledgment sent to ${selectedApp.personal.firstName}.`);
+      emailStudent(
+        selectedApp,
+        `We received your ${doc.title}`,
+        'Document received',
+        `We have received your document "${doc.title}". Our admissions team will review it and let you know if anything else is needed.`
+      );
+    }
+  };
+
+  const handleSendAdminMessage = () => {
+    if (!selectedApp || !adminMessage.trim()) return;
+    const text = adminMessage.trim();
+    const updated = addAdvisorMessage(selectedApp.id, 'advisor', staffName, text);
+    if (updated) {
+      setSelectedApp(updated);
+      setAdminMessage('');
+      audit('message_sent', selectedApp.id, { length: text.length });
+      showToast('Message sent to the student dashboard.');
+      emailStudent(selectedApp, 'New message from your advisor', 'You have a new message', text);
+    }
   };
 
   // Metrics calculation
@@ -157,6 +227,12 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
     if (updated) {
       setSelectedApp(updated);
       audit('status_changed', selectedApp.id, { from: selectedApp.status, to: targetStatus, student: selectedApp.personal.email, note: statusNote.trim() || undefined });
+      emailStudent(
+        selectedApp,
+        'Your application status has been updated',
+        `New status: ${formatStatus(targetStatus)}`,
+        statusNote.trim() || 'Your application has moved to a new stage. Sign in to your dashboard to see the details.'
+      );
       showToast(`Status updated to ${formatStatus(targetStatus)} for ${selectedApp.personal.firstName}!`);
     }
   };
@@ -166,7 +242,9 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
     const updated = updateDocumentStatus(selectedApp.id, docId, 'verified');
     if (updated) {
       setSelectedApp(updated);
-      audit('document_approved', selectedApp.id, { document: selectedApp.documents.find(d => d.id === docId)?.title || docId });
+      const approvedTitle = selectedApp.documents.find(d => d.id === docId)?.title || 'document';
+      audit('document_approved', selectedApp.id, { document: approvedTitle });
+      emailStudent(selectedApp, `Your ${approvedTitle} has been verified`, 'Document verified', `Good news: your document "${approvedTitle}" has been checked and verified by our admissions team.`);
       showToast('Document verified and stamped approved!');
     }
   };
@@ -180,6 +258,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
     if (updated) {
       setSelectedApp(updated);
       audit('document_fix_requested', selectedApp.id, { document: feedbackDoc.title, note });
+      emailStudent(selectedApp, `Action needed: ${feedbackDoc.title}`, 'Please update a document', `Our team needs a new version of "${feedbackDoc.title}": ${note} Sign in to your dashboard to upload it.`);
       setFeedbackDoc(null);
       setFeedbackText('');
       showToast('Document flagged: Feedback sent to student dashboard!');
@@ -197,6 +276,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
     if (updated) {
       setSelectedApp(updated);
       audit('payment_updated', selectedApp.id, { stage: 'deposit', paid: !isCurrentlyPaid, amountUSD: pricing.depositUSD });
+      if (!isCurrentlyPaid) emailStudent(selectedApp, 'Payment confirmed', 'Payment received', `We confirm receipt of your Stage 1 initial deposit ($${pricing.depositUSD.toLocaleString()} USD). Thank you!`);
       showToast(`Stage 1 Deposit marked as ${!isCurrentlyPaid ? 'PAID' : 'PENDING'}`);
     }
   };
@@ -212,6 +292,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
     if (updated) {
       setSelectedApp(updated);
       audit('payment_updated', selectedApp.id, { stage: 'admission', paid: !isCurrentlyPaid, amountUSD: pricing.admissionPaymentUSD });
+      if (!isCurrentlyPaid) emailStudent(selectedApp, 'Payment confirmed', 'Payment received', `We confirm receipt of your Stage 2 admission payment ($${pricing.admissionPaymentUSD.toLocaleString()} USD). Thank you!`);
       showToast(`Stage 2 Admission Payment marked as ${!isCurrentlyPaid ? 'PAID' : 'PENDING'}`);
     }
   };
@@ -227,6 +308,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
     if (updated) {
       setSelectedApp(updated);
       audit('payment_updated', selectedApp.id, { stage: 'final', paid: !isCurrentlyPaid, amountUSD: pricing.finalPaymentUSD });
+      if (!isCurrentlyPaid) emailStudent(selectedApp, 'Payment confirmed', 'Payment received', `We confirm receipt of your Stage 3 final payment ($${pricing.finalPaymentUSD.toLocaleString()} USD). Thank you!`);
       showToast(`Stage 3 Final Payment marked as ${!isCurrentlyPaid ? 'PAID' : 'PENDING'}`);
     }
   };
@@ -481,8 +563,8 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
         {/* Applications: cards on phones, table on larger screens */}
         {filteredApps.length === 0 && (
           <div className="bg-white rounded-2xl border border-dashed border-neutral-300 p-10 text-center">
-            <p className="text-sm font-bold text-[#18151B]">No applications found</p>
-            <p className="text-xs text-[#575260] mt-1">Try another filter or search term.</p>
+            <p className="text-sm font-bold text-[#18151B]">{cloudLoading ? 'Loading applications…' : applications.length === 0 ? 'No applications yet' : 'No applications found'}</p>
+            <p className="text-xs text-[#575260] mt-1">{cloudLoading ? '' : applications.length === 0 ? 'New student applications will appear here automatically.' : 'Try another filter or search term.'}</p>
           </div>
         )}
 
@@ -767,8 +849,13 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                           </span>
                         </div>
                         <p className="text-[11px] text-[#575260] mt-0.5 break-all">
-                          {doc.name || 'Not uploaded yet'} {doc.fileSize && `· ${doc.fileSize}`}
+                          {doc.name || 'Not uploaded yet'} {doc.fileSize && `· ${doc.fileSize}`} {doc.uploadDate && `· ${doc.uploadDate}`}
                         </p>
+                        {doc.receivedAt && (
+                          <p className="text-[10px] text-emerald-700 font-semibold mt-1">
+                            ✓ Receipt acknowledged {new Date(doc.receivedAt).toLocaleDateString()}{doc.receivedBy ? ` by ${doc.receivedBy}` : ''}
+                          </p>
+                        )}
                         {doc.feedback && (
                           <p className="text-[10px] text-amber-800 font-medium mt-1">
                             Note: {doc.feedback}
@@ -776,8 +863,34 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                         )}
                       </div>
 
-                      <div className="flex items-center gap-1.5 shrink-0 w-full sm:w-auto">
-                        {doc.status !== 'verified' && (
+                      <div className="flex flex-wrap items-center gap-1.5 shrink-0 w-full sm:w-auto">
+                        {doc.storagePath && (
+                          <>
+                            <button
+                              onClick={() => handleOpenDoc(doc, false)}
+                              disabled={docBusy === doc.id}
+                              className="flex-1 sm:flex-none px-3 py-2 border border-neutral-300 bg-white hover:bg-neutral-100 text-neutral-800 rounded-lg text-[11px] font-semibold transition-colors"
+                            >
+                              View
+                            </button>
+                            <button
+                              onClick={() => handleOpenDoc(doc, true)}
+                              disabled={docBusy === doc.id}
+                              className="flex-1 sm:flex-none px-3 py-2 border border-neutral-300 bg-white hover:bg-neutral-100 text-neutral-800 rounded-lg text-[11px] font-semibold transition-colors"
+                            >
+                              Download
+                            </button>
+                          </>
+                        )}
+                        {doc.name && !doc.receivedAt && (
+                          <button
+                            onClick={() => handleAcknowledgeDoc(doc)}
+                            className="flex-1 sm:flex-none px-3 py-2 bg-[#6D1838] hover:bg-[#58122c] text-white rounded-lg text-[11px] font-bold transition-colors"
+                          >
+                            Acknowledge receipt
+                          </button>
+                        )}
+                        {doc.status !== 'verified' && doc.name && (
                           <button
                             onClick={() => handleApproveDoc(doc.id)}
                             className="flex-1 sm:flex-none px-3 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-[11px] font-bold transition-colors"
@@ -797,6 +910,39 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                       </div>
                     </div>
                   ))}
+                </div>
+              </div>
+
+              {/* Message the student */}
+              <div className="p-4 bg-white rounded-2xl border border-neutral-200 space-y-2.5">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#6D1838]">Message the student</span>
+                <p className="text-[11px] text-[#575260]">Appears in the student's dashboard (Messages){isSupabaseConfigured() ? ' and is sent by email' : ''}. Use it for payment instructions, requests or updates.</p>
+                {selectedApp.messages.length > 0 && (
+                  <div className="max-h-48 overflow-y-auto space-y-1.5 p-2 bg-neutral-50 rounded-xl border border-neutral-200">
+                    {selectedApp.messages.slice(-6).map(m => (
+                      <div key={m.id} className={`text-[11px] p-2 rounded-lg ${m.sender === 'student' ? 'bg-white border border-neutral-200' : 'bg-[#FAF2F5]'}`}>
+                        <span className="font-bold text-[#18151B]">{m.sender === 'student' ? 'Student' : m.senderName}</span>
+                        <span className="text-neutral-400"> · {new Date(m.timestamp).toLocaleString()}</span>
+                        <p className="text-[#575260] whitespace-pre-line mt-0.5">{m.content}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <textarea
+                  value={adminMessage}
+                  onChange={e => setAdminMessage(e.target.value)}
+                  rows={3}
+                  placeholder="e.g. Here are the instructions to pay your $515 deposit…"
+                  className="w-full p-3 text-sm bg-neutral-50 border border-neutral-300 rounded-xl focus:outline-none focus:border-[#6D1838]"
+                />
+                <div className="flex justify-end">
+                  <button
+                    onClick={handleSendAdminMessage}
+                    disabled={!adminMessage.trim()}
+                    className="px-4 py-2.5 bg-[#6D1838] hover:bg-[#58122c] disabled:opacity-40 text-white rounded-xl text-sm font-bold"
+                  >
+                    Send message
+                  </button>
                 </div>
               </div>
 

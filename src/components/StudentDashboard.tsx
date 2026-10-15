@@ -46,6 +46,11 @@ import {
   addAdvisorMessage
 } from '../data/applicationStorage';
 import { useSiteContent } from '../context/SiteContentContext';
+import { useCloudSync } from '../hooks/useCloudSync';
+import { isSupabaseConfigured } from '../lib/supabase';
+import { uploadDocumentFile, getDocumentUrl, validateDocumentFile, formatBytes, ACCEPTED_DOCUMENT_TYPES } from '../services/documentFiles';
+
+const CLOUD = isSupabaseConfigured();
 
 interface StudentDashboardProps {
   onBackToHome: () => void;
@@ -82,11 +87,15 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
   
   // Auth context
   const { logout, isAdmin } = useAuth();
+  const { loading: cloudLoading } = useCloudSync();
   const [switcherOpen, setSwitcherOpen] = useState(false);
 
   // Document upload modal state
   const [uploadModalDoc, setUploadModalDoc] = useState<DocumentItem | null>(null);
   const [uploadFileName, setUploadFileName] = useState('');
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   
   // Payment modal state: supports admissionPayment or finalPayment
   const [payingStage, setPayingStage] = useState<'admissionPayment' | 'finalPayment' | null>(null);
@@ -140,9 +149,47 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
     if (found) setActiveApp(found);
   };
 
-  const handleUploadSubmit = (e: React.FormEvent) => {
+  const closeUploadModal = () => {
+    setUploadModalDoc(null);
+    setUploadFile(null);
+    setUploadError(null);
+    setUploadFileName('');
+  };
+
+  const handleOpenOwnDocument = async (doc: DocumentItem) => {
+    if (!doc.storagePath) return;
+    try {
+      const url = await getDocumentUrl(doc.storagePath);
+      window.open(url, '_blank', 'noopener');
+    } catch (err: any) {
+      showToast(err?.message || 'Could not open the file.');
+    }
+  };
+
+  const handleUploadSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!activeApp || !uploadModalDoc) return;
+
+    if (CLOUD) {
+      if (!uploadFile) {
+        setUploadError('Please choose a file first.');
+        return;
+      }
+      setUploading(true);
+      setUploadError(null);
+      try {
+        const up = await uploadDocumentFile(activeApp.id, uploadModalDoc.type, uploadFile);
+        const updated = uploadOrReplaceDocument(activeApp.id, uploadModalDoc.type, { name: up.name, size: up.size, storagePath: up.storagePath });
+        if (updated) setActiveApp(updated);
+        showToast(`"${uploadModalDoc.title}" uploaded. The admissions team has been notified.`);
+        closeUploadModal();
+      } catch (err: any) {
+        setUploadError(err?.message || 'Upload failed. Please try again.');
+      } finally {
+        setUploading(false);
+      }
+      return;
+    }
 
     const fileName = uploadFileName.trim() || `${uploadModalDoc.type}_verified_scan.pdf`;
     const updated = uploadOrReplaceDocument(activeApp.id, uploadModalDoc.type, {
@@ -160,6 +207,14 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
 
   const handleProcessStagePayment = () => {
     if (!activeApp || !payingStage) return;
+    if (CLOUD) {
+      const stageLabel = payingStage === 'admissionPayment' ? `Stage 2 Admission Payment ($${pricing.admissionPaymentUSD})` : `Stage 3 Final Payment ($${pricing.finalPaymentUSD.toLocaleString()})`;
+      const text = `Hello, I would like to pay the ${stageLabel} for my application ${activeApp.id}. Could you send me the payment instructions?`;
+      window.open(`https://wa.me/${siteConfig.contact.whatsappNumber.replace(/[^\d]/g, '')}?text=${encodeURIComponent(text)}`, '_blank', 'noopener');
+      setPayingStage(null);
+      showToast('Your advisor will send you payment instructions and confirm the payment in your dashboard.');
+      return;
+    }
     setPaymentProcessing(true);
 
     const isAdmission = payingStage === 'admissionPayment';
@@ -230,20 +285,41 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
   };
 
   if (!activeApp) {
+    if (cloudLoading) {
+      return (
+        <div className="min-h-screen bg-[#FAF7F9] flex items-center justify-center">
+          <div className="w-8 h-8 border-[3px] border-[#6D1838] border-t-transparent rounded-full animate-spin" aria-label="Loading" />
+        </div>
+      );
+    }
     return (
       <div className="min-h-screen bg-[#FAF7F9] flex items-center justify-center p-4">
-        <div className="text-center p-8 bg-white rounded-2xl border border-neutral-200 shadow-sm max-w-md">
+        <div className="text-center p-8 bg-white rounded-2xl border border-neutral-200 shadow-sm max-w-md w-full">
           <GraduationCap className="w-12 h-12 text-[#6D1838] mx-auto mb-3" />
-          <h2 className="text-lg font-bold text-[#18151B]">No Active Application Found</h2>
-          <p className="text-xs text-[#575260] mt-1 mb-4">
-            Start a new application or load our sample international student profiles.
+          <h2 className="text-lg font-bold text-[#18151B]">No application yet</h2>
+          <p className="text-sm text-[#575260] mt-1 mb-5">
+            Start your application to track your documents, admission and visa progress here.
           </p>
-          <button
-            onClick={onGoToApply}
-            className="px-5 py-2.5 bg-[#6D1838] text-white text-xs font-bold rounded-xl"
-          >
-            Start Your Application ($515 Deposit)
-          </button>
+          <div className="space-y-2">
+            <button
+              onClick={onGoToApply}
+              className="w-full px-5 py-3 bg-[#6D1838] hover:bg-[#58122c] text-white text-sm font-bold rounded-xl"
+            >
+              Start Your Application
+            </button>
+            <button
+              onClick={onBackToHome}
+              className="w-full px-5 py-3 border border-neutral-300 text-neutral-700 text-sm font-semibold rounded-xl hover:bg-neutral-50"
+            >
+              Back to Website
+            </button>
+            <button
+              onClick={async () => { await logout(); (onLogout || onBackToHome)(); }}
+              className="w-full px-5 py-2 text-xs font-semibold text-rose-600 hover:underline"
+            >
+              Sign out
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -1104,14 +1180,14 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
                           : 'bg-neutral-50/50 border-neutral-200'
                       }`}
                     >
-                      <div className="flex items-start gap-3">
+                      <div className="flex items-start gap-3 min-w-0">
                         <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${
                           isVerified ? 'bg-emerald-100 text-emerald-700' : needsFix ? 'bg-amber-100 text-amber-800' : 'bg-neutral-200 text-neutral-600'
                         }`}>
                           <FileText className="w-5 h-5" />
                         </div>
-                        <div>
-                          <div className="flex items-center gap-2">
+                        <div className="min-w-0">
+                          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
                             <h4 className="font-bold text-xs sm:text-sm text-[#18151B]">
                               {doc.title}
                             </h4>
@@ -1127,11 +1203,17 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
                                 ? 'bg-amber-100 text-amber-800'
                                 : 'bg-neutral-200 text-neutral-700'
                             }`}>
-                              {isVerified ? '✓ Verified by Admissions' : needsFix ? 'Needs Attention' : 'Audit Pending'}
+                              {isVerified ? '✓ Verified by Admissions' : needsFix ? 'Needs Attention' : doc.status === 'missing' || !doc.name ? 'Not uploaded' : 'Audit Pending'}
                             </span>
                           </div>
 
-                          <p className="text-xs text-[#575260] mt-0.5">
+                          {doc.receivedAt && (
+                            <p className="mt-1 inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700">
+                              <CheckCircle2 className="w-3.5 h-3.5" /> Receipt acknowledged on {new Date(doc.receivedAt).toLocaleDateString()}
+                            </p>
+                          )}
+
+                          <p className="text-xs text-[#575260] mt-0.5 break-all">
                             {doc.name || 'File not yet uploaded'} {doc.fileSize && `· ${doc.fileSize}`} {doc.uploadDate && `· Uploaded ${doc.uploadDate}`}
                           </p>
 
@@ -1145,6 +1227,15 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
 
                       {/* Actions */}
                       <div className="flex items-center gap-2 self-end sm:self-center shrink-0">
+                        {doc.storagePath && (
+                          <button
+                            type="button"
+                            onClick={() => handleOpenOwnDocument(doc)}
+                            className="px-3 py-1.5 bg-white hover:bg-neutral-100 border border-neutral-300 text-neutral-700 text-xs font-semibold rounded-lg transition-colors"
+                          >
+                            View
+                          </button>
+                        )}
                         <button
                           type="button"
                           onClick={() => setUploadModalDoc(doc)}
@@ -1849,8 +1940,9 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
                 Upload {uploadModalDoc.title}
               </h3>
               <button
-                onClick={() => setUploadModalDoc(null)}
-                className="text-neutral-400 hover:text-neutral-700 text-xs font-bold p-1"
+                onClick={closeUploadModal}
+                aria-label="Close"
+                className="w-9 h-9 flex items-center justify-center text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 rounded-lg text-sm font-bold"
               >
                 ✕
               </button>
@@ -1861,6 +1953,35 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
             </p>
 
             <form onSubmit={handleUploadSubmit} className="space-y-4">
+              {CLOUD ? (
+                <>
+                  <label className="block p-6 border-2 border-dashed border-neutral-300 hover:border-[#6D1838] bg-neutral-50 hover:bg-[#FAF2F5]/30 rounded-xl text-center cursor-pointer transition-colors">
+                    <Upload className="w-8 h-8 text-neutral-400 mx-auto mb-2" />
+                    <p className="font-bold text-sm text-[#18151B] break-all">{uploadFile ? uploadFile.name : 'Tap to choose a file'}</p>
+                    <p className="text-[11px] text-neutral-500 mt-0.5">{uploadFile ? formatBytes(uploadFile.size) : 'PDF, JPG, PNG or Word · max 10 MB'}</p>
+                    <input
+                      type="file"
+                      accept={ACCEPTED_DOCUMENT_TYPES}
+                      className="hidden"
+                      onChange={e => {
+                        const f = e.target.files?.[0] || null;
+                        const invalid = f ? validateDocumentFile(f) : null;
+                        setUploadError(invalid);
+                        setUploadFile(invalid ? null : f);
+                      }}
+                    />
+                  </label>
+                  {uploadError && <p role="alert" className="text-xs text-rose-700">{uploadError}</p>}
+                  <div className="flex items-center justify-end gap-2 pt-2">
+                    <button type="button" onClick={closeUploadModal} className="px-4 py-2.5 border border-neutral-300 text-neutral-700 rounded-xl text-sm font-semibold hover:bg-neutral-100">
+                      Cancel
+                    </button>
+                    <button type="submit" disabled={uploading || !uploadFile} className="px-5 py-2.5 bg-[#6D1838] text-white rounded-xl text-sm font-bold hover:bg-[#58122c] disabled:opacity-50 shadow-xs">
+                      {uploading ? 'Uploading…' : 'Upload document'}
+                    </button>
+                  </div>
+                </>
+              ) : (<>
               <div>
                 <label className="block text-[11px] font-bold text-[#575260] uppercase mb-1">
                   File Document Title / Custom Name
@@ -1887,7 +2008,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
               <div className="flex items-center justify-end gap-2 pt-2">
                 <button
                   type="button"
-                  onClick={() => setUploadModalDoc(null)}
+                  onClick={closeUploadModal}
                   className="px-4 py-2 border border-neutral-300 text-neutral-700 rounded-xl text-xs font-semibold hover:bg-neutral-100"
                 >
                   Cancel
@@ -1899,6 +2020,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
                   Save & Submit File
                 </button>
               </div>
+              </>)}
             </form>
           </div>
         </div>
@@ -1954,10 +2076,16 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
                     : `$${pricing.finalPaymentUSD.toLocaleString()}.00 USD`}
                 </span>
               </div>
-              <div className="space-y-1 text-xs text-[#575260]">
-                <p><strong>Card:</strong> 4242 •••• •••• 4242 (Stripe Verified)</p>
-                <p><strong>Beneficiary:</strong> Study In China International Education Ltd.</p>
-              </div>
+              {CLOUD ? (
+                <p className="text-xs text-[#575260] leading-relaxed">
+                  Payments are arranged directly with your advisor (bank transfer, Alipay / WeChat Pay or mobile money). Tap the button below to request payment instructions on WhatsApp. Your dashboard is updated as soon as your payment is confirmed.
+                </p>
+              ) : (
+                <div className="space-y-1 text-xs text-[#575260]">
+                  <p><strong>Card:</strong> 4242 •••• •••• 4242 (Stripe Verified)</p>
+                  <p><strong>Beneficiary:</strong> Study In China International Education Ltd.</p>
+                </div>
+              )}
             </div>
 
             <div className="flex items-center justify-end gap-2 pt-2">
@@ -1985,7 +2113,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
                 ) : (
                   <>
                     <span>
-                      Confirm & Pay{' '}
+                      {CLOUD ? 'Get payment instructions for' : 'Confirm & Pay'}{' '}
                       {payingStage === 'admissionPayment'
                         ? `$${pricing.admissionPaymentUSD} USD`
                         : `$${pricing.finalPaymentUSD.toLocaleString()} USD`}

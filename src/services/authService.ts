@@ -1,5 +1,6 @@
 import { Student } from '../types';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import { clearCloudCache } from './applicationSync';
 
 export interface UserProfile extends Student {}
 
@@ -84,6 +85,14 @@ export const authService = {
 
         if (authError) {
           return { user: null, profile: null, error: authError.message };
+        }
+
+        if (authData.user && !authData.session) {
+          return {
+            user: null,
+            profile: null,
+            error: 'Account created! Please open the confirmation email we just sent you, click the link, then sign in.',
+          };
         }
 
         if (authData.user) {
@@ -296,6 +305,12 @@ export const authService = {
       }
     }
     localStorage.removeItem(LOCAL_SESSION_KEY);
+    clearCloudCache();
+    try {
+      localStorage.removeItem('chinastudy_active_app_id');
+    } catch {
+      /* ignore */
+    }
     window.dispatchEvent(new Event('chinastudy_auth_state_changed'));
   },
 
@@ -337,10 +352,26 @@ export const authService = {
               profile,
             };
           }
+          // Signed in but profile row not readable yet: fall back to account metadata
+          return {
+            user: { id: user.id, email: user.email || '' },
+            profile: {
+              id: user.id,
+              userId: user.id,
+              firstName: user.user_metadata?.first_name || '',
+              lastName: user.user_metadata?.last_name || '',
+              email: user.email || '',
+              role: 'student',
+              createdAt: user.created_at || new Date().toISOString(),
+            } as UserProfile,
+          };
         }
       } catch (e) {
         console.warn('Error reading Supabase session:', e);
       }
+      // Production: only a real Supabase session counts (ignore any old demo session)
+      localStorage.removeItem(LOCAL_SESSION_KEY);
+      return { user: null, profile: null };
     }
 
     try {

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
 import { SiteContentProvider } from './context/SiteContentContext';
+import { SyncErrorToast } from './components/SyncErrorToast';
 import { AuthModal } from './components/AuthModal';
 
 import { Navbar } from './components/Navbar';
@@ -366,6 +367,7 @@ export default function App() {
       <AuthProvider>
         <SiteContentProvider>
           <MainApp />
+          <SyncErrorToast />
         </SiteContentProvider>
       </AuthProvider>
     </ToastProvider>

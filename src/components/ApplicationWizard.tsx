@@ -26,7 +26,14 @@ import {
 } from 'lucide-react';
 import { DegreeLevel, StudentApplication, DocumentItem, ProgramPreference } from '../types';
 import { siteConfig } from '../data/siteConfig';
-import { createNewApplication } from '../data/applicationStorage';
+import { createNewApplication, createNewApplicationAsync } from '../data/applicationStorage';
+import { DEFAULT_REQUIRED_DOCUMENTS } from '../data/mockApplications';
+import { isSupabaseConfigured } from '../lib/supabase';
+import { useAuth } from '../context/AuthContext';
+import { AuthModal } from './AuthModal';
+import { uploadDocumentFile, validateDocumentFile, formatBytes, ACCEPTED_DOCUMENT_TYPES } from '../services/documentFiles';
+
+const CLOUD = isSupabaseConfigured();
 import { applicationService } from '../services/applicationService';
 import { paymentService, OFFICIAL_PRICING } from '../services/paymentService';
 import { notificationService } from '../services/notificationService';
@@ -131,12 +138,24 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
   });
 
   // Step 4: Documents Upload State
-  const [uploadedDocs, setUploadedDocs] = useState<Record<string, { name: string; size: string; url?: string }>>({
-    passport: { name: 'Passport_Scan_Official.pdf', size: '1.8 MB' },
-    transcript: { name: 'HighSchool_Official_Transcripts.pdf', size: '2.4 MB' },
-    certificate: { name: 'Graduation_Diploma_Certified.pdf', size: '1.2 MB' },
-    photo: { name: 'Applicant_Photo_WhiteBG.jpg', size: '540 KB' },
-  });
+  const [uploadedDocs, setUploadedDocs] = useState<Record<string, { name: string; size: string; url?: string }>>(
+    CLOUD
+      ? {}
+      : {
+          passport: { name: 'Passport_Scan_Official.pdf', size: '1.8 MB' },
+          transcript: { name: 'HighSchool_Official_Transcripts.pdf', size: '2.4 MB' },
+          certificate: { name: 'Graduation_Diploma_Certified.pdf', size: '1.2 MB' },
+          photo: { name: 'Applicant_Photo_WhiteBG.jpg', size: '540 KB' },
+        }
+  );
+  // Real files chosen by the applicant (uploaded to secure storage on submit)
+  const [docFiles, setDocFiles] = useState<Record<string, File>>({});
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const pendingDocKey = React.useRef<string | null>(null);
+  const { isAuthenticated, user: authUser } = useAuth();
+  const [authOpen, setAuthOpen] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitProgress, setSubmitProgress] = useState<string | null>(null);
 
   // Step 5: Review Checkbox
   const [agreedToTerms, setAgreedToTerms] = useState<boolean>(true);
@@ -166,7 +185,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
             targetDegree: prefillDegree || d.preferences.targetDegree,
           });
         }
-        if (d.uploadedDocs) setUploadedDocs(d.uploadedDocs);
+        if (d.uploadedDocs && !CLOUD) setUploadedDocs(d.uploadedDocs);
         if (d.currentStep && d.currentStep < 7) setCurrentStep(d.currentStep);
       } else {
         if (prefillProgram) {
@@ -264,7 +283,31 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
     setCurrentStep(prev => Math.max(1, prev - 1));
   };
 
+  const handleFileChosen = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    const key = pendingDocKey.current;
+    e.target.value = '';
+    if (!file || !key) return;
+    const invalid = validateDocumentFile(file);
+    if (invalid) {
+      setErrors(prev => ({ ...prev, [key]: invalid }));
+      return;
+    }
+    setDocFiles(prev => ({ ...prev, [key]: file }));
+    setUploadedDocs(prev => ({ ...prev, [key]: { name: file.name, size: formatBytes(file.size) } }));
+    setErrors(prev => {
+      const copy = { ...prev };
+      delete copy[key];
+      return copy;
+    });
+  };
+
   const handleSimulateUpload = (key: string, customName?: string) => {
+    if (CLOUD && !customName) {
+      pendingDocKey.current = key;
+      fileInputRef.current?.click();
+      return;
+    }
     const fileNames: Record<string, string> = {
       passport: 'International_Passport_Scan.pdf',
       transcript: 'Certified_Official_Transcripts.pdf',
@@ -290,6 +333,11 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
   };
 
   const handleRemoveDoc = (key: string) => {
+    setDocFiles(prev => {
+      const copy = { ...prev };
+      delete copy[key];
+      return copy;
+    });
     setUploadedDocs(prev => {
       const copy = { ...prev };
       delete copy[key];
@@ -395,6 +443,10 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
       setSaveToast('This is example data. Clear the example and enter your own information before submitting.');
       setTimeout(() => setSaveToast(null), 4500);
       window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+    if (CLOUD) {
+      void handleCloudSubmit();
       return;
     }
     setIsProcessingPayment(true);
@@ -545,18 +597,139 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
     }, 1500);
   };
 
+  /** Production submit: account required, real file uploads, deposit confirmed later by an admin */
+  const handleCloudSubmit = async () => {
+    setSubmitError(null);
+    if (!isAuthenticated || !authUser) {
+      setAuthOpen(true);
+      return;
+    }
+    const missing = ['passport', 'transcript', 'certificate', 'photo'].filter(k => !docFiles[k]);
+    if (missing.length) {
+      setSubmitError('Please attach your required documents (passport, transcripts, diploma and photo) in step 4 before submitting.');
+      return;
+    }
+
+    setIsProcessingPayment(true);
+    const today = new Date().toISOString().split('T')[0];
+    const appId = applicationService.generateApplicationNumber();
+    try {
+      const documents: DocumentItem[] = [];
+      const entries = Object.entries(docFiles);
+      for (let i = 0; i < entries.length; i++) {
+        const [key, file] = entries[i];
+        setSubmitProgress(`Uploading documents (${i + 1}/${entries.length})…`);
+        const up = await uploadDocumentFile(appId, key, file);
+        const template = DEFAULT_REQUIRED_DOCUMENTS.find(d => d.type === key);
+        documents.push({
+          id: `doc-${Date.now()}-${key}`,
+          type: key as any,
+          title: template?.title || key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
+          description: template?.description || 'Uploaded applicant document',
+          required: template?.required ?? ['passport', 'transcript', 'certificate', 'photo'].includes(key),
+          name: up.name,
+          fileSize: up.size,
+          uploadDate: today,
+          status: 'pending',
+          storagePath: up.storagePath,
+        });
+      }
+      // Required documents not provided yet stay listed as "missing" in the dashboard
+      DEFAULT_REQUIRED_DOCUMENTS.filter(t => t.required && !documents.some(d => d.type === t.type)).forEach(t =>
+        documents.push({ ...t, id: `doc-${Date.now()}-${t.type}`, status: 'missing' } as DocumentItem)
+      );
+
+      setSubmitProgress('Saving your application…');
+      const newApp: StudentApplication = {
+        id: appId,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        status: 'deposit_pending',
+        personal: { ...personal },
+        education: { ...education },
+        preferences: {
+          ...preferences,
+          targetDegree: (firstChoice.degreeLevel as DegreeLevel) || preferences.targetDegree,
+          preferredField: firstChoice.fieldOfStudy || preferences.preferredField,
+          specificProgram: firstChoice.program || preferences.specificProgram,
+          intakeSeason: firstChoice.intake || preferences.intakeSeason,
+          firstChoice: { ...firstChoice },
+          secondChoice: { ...secondChoice },
+          thirdChoice: { ...thirdChoice },
+          matchingStatus: 'preferences_submitted',
+        },
+        documents,
+        payments: {
+          deposit: { paid: false, amount: siteConfig.pricing.depositUSD, status: 'pending' },
+          admissionPayment: { paid: false, amount: siteConfig.pricing.admissionPaymentUSD, status: 'locked' },
+          finalPayment: { paid: false, amount: siteConfig.pricing.finalPaymentUSD, status: 'locked' },
+        },
+        timeline: [
+          { id: 'tl-1', title: 'Application Submitted', description: 'Your application and documents were received online.', date: today, completed: true },
+          { id: 'tl-2', title: `Stage 1: Initial Deposit ($${siteConfig.pricing.depositUSD} USD)`, description: 'Your advisor sends you payment instructions. Processing starts once the deposit is confirmed.', date: 'Pending', completed: false, current: true },
+          { id: 'tl-3', title: 'Credentials & Document Verification', description: 'The admissions team reviews your documents.', date: 'Upcoming', completed: false },
+          { id: 'tl-4', title: 'Official Application Lodging', description: 'Formal submission to the institution admissions office.', date: 'Upcoming', completed: false },
+          { id: 'tl-5', title: 'Official Admission Notice', description: `Unlocks Stage 2 payment ($${siteConfig.pricing.admissionPaymentUSD} USD).`, date: 'Upcoming', completed: false },
+          { id: 'tl-6', title: 'JW202 / JW201 Visa Form', description: `Unlocks Stage 3 payment ($${siteConfig.pricing.finalPaymentUSD.toLocaleString()} USD).`, date: 'Upcoming', completed: false },
+          { id: 'tl-7', title: 'Student Visa (X1/X2) & Arrival', description: 'Visa appointment, pre-departure briefing and arrival support.', date: 'Upcoming', completed: false },
+        ],
+        messages: [
+          {
+            id: `msg-${Date.now()}`,
+            sender: 'advisor',
+            senderName: `${siteConfig.brandName} Admissions`,
+            content: `Welcome ${personal.firstName}! Your application ${appId} has been received. An advisor will contact you shortly with instructions for the $${siteConfig.pricing.depositUSD} initial deposit.`,
+            timestamp: new Date().toISOString(),
+          },
+        ],
+        advisor: {
+          name: `${siteConfig.brandName} Admissions`,
+          title: 'Admissions Team',
+          email: siteConfig.contact.email,
+          whatsapp: siteConfig.contact.whatsappNumber,
+          avatar: '',
+        },
+      };
+
+      const ok = await createNewApplicationAsync(newApp);
+      if (!ok) throw new Error('Your application could not be saved. Please try again.');
+      setGeneratedAppId(appId);
+      setPaymentSuccess(true);
+      localStorage.removeItem(DRAFT_STORAGE_KEY);
+      setCurrentStep(7);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (err: any) {
+      setSubmitError(err?.message || 'Something went wrong. Please try again.');
+    } finally {
+      setIsProcessingPayment(false);
+      setSubmitProgress(null);
+    }
+  };
+
   const stepsList = [
     { num: 1, label: 'Personal Information', short: 'Personal' },
     { num: 2, label: 'Education History', short: 'Education' },
     { num: 3, label: 'Study Preferences', short: 'Preferences' },
     { num: 4, label: 'Document Uploads', short: 'Documents' },
     { num: 5, label: 'Review Application', short: 'Review' },
-    { num: 6, label: 'Payment / Initial Deposit ($515)', short: 'Deposit' },
+    { num: 6, label: CLOUD ? 'Deposit & Submit' : 'Payment / Initial Deposit ($515)', short: CLOUD ? 'Submit' : 'Deposit' },
     { num: 7, label: 'Confirmation', short: 'Confirmed' },
   ];
 
   return (
     <div className="min-h-screen bg-[#FDFCFD] text-[#18151B]">
+      <input ref={fileInputRef} type="file" accept={ACCEPTED_DOCUMENT_TYPES} className="hidden" onChange={handleFileChosen} />
+      <AuthModal
+        isOpen={authOpen}
+        initialMode="register"
+        onClose={() => setAuthOpen(false)}
+        onSuccess={() => {
+          setAuthOpen(false);
+          setSubmitError(null);
+          setSaveToast('Signed in. Click "Submit Application" to finish.');
+          setTimeout(() => setSaveToast(null), 4000);
+        }}
+      />
       {/* Top Banner & Header */}
       <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-neutral-200">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 py-2.5 sm:py-3 flex items-center justify-between gap-3">
@@ -2180,8 +2353,29 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                 </div>
               </div>
 
+              {CLOUD && (
+                <div className="space-y-3">
+                  <div className="p-4 rounded-2xl border border-[#EAD5DE] bg-white space-y-2">
+                    <p className="text-sm font-bold text-[#18151B]">How to pay the ${siteConfig.pricing.depositUSD} initial deposit</p>
+                    <ol className="list-decimal pl-5 text-xs sm:text-sm text-[#575260] space-y-1">
+                      <li>Submit your application below (no payment is taken online).</li>
+                      <li>Your advisor contacts you by email or WhatsApp with payment instructions.</li>
+                      <li>Once your deposit is confirmed, document review starts and you are notified by email.</li>
+                    </ol>
+                  </div>
+                  {!isAuthenticated && (
+                    <div className="p-3.5 rounded-xl border border-amber-300 bg-amber-50 text-xs sm:text-sm text-amber-900">
+                      You will be asked to <strong>sign in or create your account</strong> when you submit, so you can follow your application and documents.
+                    </div>
+                  )}
+                  {submitError && (
+                    <div role="alert" className="p-3.5 rounded-xl border border-rose-200 bg-rose-50 text-xs sm:text-sm text-rose-800">{submitError}</div>
+                  )}
+                </div>
+              )}
+
               {/* Payment Method Selector */}
-              <div className="space-y-4">
+              {!CLOUD && <div className="space-y-4">
                 <label className="block text-xs font-bold uppercase tracking-wider text-[#575260]">
                   Select Payment Method for ${siteConfig.pricing.depositUSD} USD Initial Deposit
                 </label>
@@ -2330,7 +2524,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                     </p>
                   </div>
                 </div>
-              </div>
+              </div>}
             </div>
           )}
 
@@ -2343,13 +2537,15 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
 
               <div>
                 <span className="inline-block px-3 py-1 bg-[#FAF2F5] text-[#6D1838] rounded-full text-xs font-bold border border-[#EAD5DE] mb-2 uppercase tracking-wider">
-                  Dossier Initiated & $515 Deposit Confirmed
+                  {CLOUD ? 'Application Submitted · Deposit instructions coming' : 'Dossier Initiated & $515 Deposit Confirmed'}
                 </span>
                 <h2 className="text-2xl sm:text-3xl font-extrabold text-[#18151B]">
                   Welcome to Study In China, {personal.firstName}!
                 </h2>
                 <p className="text-xs sm:text-sm text-[#575260] max-w-lg mx-auto mt-2">
-                  Your formal international application file has been registered. Our admissions board is now auditing your credentials.
+                  {CLOUD
+                    ? 'Your application and documents are safely stored. You will receive an email when your advisor sends deposit instructions or updates your file.'
+                    : 'Your formal international application file has been registered. Our admissions board is now auditing your credentials.'}
                 </p>
 
                 {/* Application Ref Badge */}
@@ -2482,11 +2678,11 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                   {isProcessingPayment ? (
                     <>
                       <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      <span>Processing $515 Secure Deposit...</span>
+                      <span>{CLOUD ? submitProgress || 'Submitting…' : 'Processing $515 Secure Deposit...'}</span>
                     </>
                   ) : (
                     <>
-                      <span>Pay $515 Deposit & Submit Application</span>
+                      <span>{CLOUD ? 'Submit Application' : 'Pay $515 Deposit & Submit Application'}</span>
                       <Sparkles className="w-4 h-4" />
                     </>
                   )}

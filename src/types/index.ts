@@ -119,6 +119,11 @@ export interface DocumentItem {
   status: 'missing' | 'pending' | 'verified' | 'needs_resubmission' | 'uploaded' | 'under_review' | 'approved' | 'correction_required';
   feedback?: string;
   fileUrl?: string;
+  /** Path of the real file in Supabase Storage (bucket student-documents) */
+  storagePath?: string;
+  /** Acknowledgment of receipt sent by the admissions team */
+  receivedAt?: string;
+  receivedBy?: string;
 }
 
 // Direct alias for future backend contract

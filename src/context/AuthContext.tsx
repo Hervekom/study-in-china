@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { authService, UserProfile, AuthSession } from '../services/authService';
+import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import { pullApplications } from '../services/applicationSync';
 
 interface AuthContextType {
   user: { id: string; email: string } | null;
@@ -49,8 +51,24 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     };
     window.addEventListener('chinastudy_auth_state_changed', handleLocalState);
 
+    // Production: follow Supabase sign-in / sign-out (incl. email confirmation links) and load data
+    let unsubscribe: (() => void) | undefined;
+    if (isSupabaseConfigured()) {
+      const { data } = supabase.auth.onAuthStateChange((event) => {
+        if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'USER_UPDATED' || event === 'INITIAL_SESSION') {
+          // Defer: Supabase recommends not calling its API inside this callback directly
+          setTimeout(() => {
+            syncSession();
+            void pullApplications();
+          }, 0);
+        }
+      });
+      unsubscribe = () => data.subscription.unsubscribe();
+    }
+
     return () => {
       window.removeEventListener('chinastudy_auth_state_changed', handleLocalState);
+      unsubscribe?.();
     };
   }, []);
 
