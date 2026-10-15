@@ -1,6 +1,7 @@
 -- Profiles security hardening
 -- 1) Only the owner (or an admin) can read a profile (emails/phones are no longer public)
 DROP POLICY IF EXISTS "Public read user profiles basic" ON public.profiles;
+DROP POLICY IF EXISTS "Users read own profile or admin" ON public.profiles;
 CREATE POLICY "Users read own profile or admin" ON public.profiles
   FOR SELECT USING (user_id = auth.uid() OR public.is_admin());
 
