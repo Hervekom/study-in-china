@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { tr, useTr } from '../i18n/tr';
 import { createClient } from '@supabase/supabase-js';
 import {
   Database,
@@ -75,6 +76,7 @@ const fmtDate = (iso: string) => {
 const humanAction = (a: string) => a.replace(/_/g, ' ');
 
 export const AdminSecurityCenter: React.FC<{ onToast: (msg: string) => void }> = ({ onToast }) => {
+  useTr();
   const { user, profile } = useAuth();
   const [tab, setTab] = useState<Tab>('security');
   const actorLabel = profile?.email || user?.email || 'admin';
@@ -229,7 +231,7 @@ export const AdminSecurityCenter: React.FC<{ onToast: (msg: string) => void }> =
         exportedAt: new Date().toISOString(),
         exportedBy: actorLabel,
         source: isSupabaseConfigured() ? 'supabase' : 'local-demo',
-        note: 'Uploaded files (passports, diplomas) live in Supabase Storage and are not included.',
+        note: tr("Uploaded files (passports, diplomas) live in Supabase Storage and are not included."),
       },
       database: dbData,
       local: { applications: localApps },
@@ -247,8 +249,8 @@ export const AdminSecurityCenter: React.FC<{ onToast: (msg: string) => void }> =
 
     const totalRows = Object.values(dbData).reduce((n, rows) => n + rows.length, 0);
     await auditService.log({ action: 'backup_exported', entityType: 'database', details: { tables: Object.keys(dbData).length, rows: totalRows }, actorLabel });
-    setBackupReport({ title: 'Backup downloaded', lines });
-    onToast('Backup file downloaded.');
+    setBackupReport({ title: tr("Backup downloaded"), lines });
+    onToast(tr("Backup file downloaded."));
     setBackupBusy(false);
   };
 
@@ -261,11 +263,11 @@ export const AdminSecurityCenter: React.FC<{ onToast: (msg: string) => void }> =
     try {
       parsed = JSON.parse(await file.text());
     } catch {
-      onToast('This file is not valid JSON.');
+      onToast(tr("This file is not valid JSON."));
       return;
     }
     if (parsed?.meta?.app !== 'Study In China') {
-      onToast('This file is not a Study In China backup.');
+      onToast(tr("This file is not a Study In China backup."));
       return;
     }
     if (
@@ -310,8 +312,8 @@ export const AdminSecurityCenter: React.FC<{ onToast: (msg: string) => void }> =
       details: { file: file.name, exportedAt: parsed.meta.exportedAt, failures: lines.filter(l => !l.ok).length },
       actorLabel,
     });
-    setBackupReport({ title: 'Restore finished', lines });
-    onToast('Restore finished. Check the report below.');
+    setBackupReport({ title: tr("Restore finished"), lines });
+    onToast(tr("Restore finished. Check the report below."));
     setBackupBusy(false);
   };
 
@@ -351,41 +353,32 @@ export const AdminSecurityCenter: React.FC<{ onToast: (msg: string) => void }> =
   const leaking = probe.filter(p => (p.visible ?? 0) > 0);
 
   const tabs: { id: Tab; label: string; icon: React.ElementType }[] = [
-    { id: 'security', label: 'RLS Security', icon: ShieldCheck },
-    { id: 'team', label: 'Admin Team', icon: Users },
-    { id: 'backup', label: 'Backups', icon: Database },
-    { id: 'logs', label: 'Audit Logs', icon: Clock },
+    { id: 'security', label: tr("RLS Security"), icon: ShieldCheck },
+    { id: 'team', label: tr("Admin Team"), icon: Users },
+    { id: 'backup', label: tr("Backups"), icon: Database },
+    { id: 'logs', label: tr("Audit Logs"), icon: Clock },
   ];
 
   const MigrationHint = ({ error }: { error?: string | null }) => (
     <div className="p-4 rounded-2xl border border-amber-300 bg-amber-50 text-xs text-amber-900 space-y-1.5">
       <p className="font-bold flex items-center gap-1.5">
-        <AlertTriangle className="w-4 h-4" /> One-time database setup needed
-      </p>
-      <p>
-        In Supabase, open <strong>SQL Editor → New query</strong>, paste the content of{' '}
-        <code className="font-mono bg-white/70 px-1 rounded">{MIGRATION_FILE}</code> and click <strong>Run</strong>. Then refresh this page.
-      </p>
-      {error && <p className="font-mono text-[11px] text-amber-800 break-words">Details: {error}</p>}
+        <AlertTriangle className="w-4 h-4" />{' '}{tr("One-time database setup needed")}</p>
+      <p>{tr("In Supabase, open")}{' '}<strong>{tr("SQL Editor → New query")}</strong>{tr(", paste the content of")}{' '}
+        <code className="font-mono bg-white/70 px-1 rounded">{MIGRATION_FILE}</code>{' '}{tr("and click")}{' '}<strong>{tr("Run")}</strong>{tr(". Then refresh this page.")}</p>
+      {error && <p className="font-mono text-[11px] text-amber-800 break-words">{tr("Details:")}{' '}{error}</p>}
     </div>
   );
 
   return (
     <div className="space-y-5">
       <div>
-        <h2 className="text-lg sm:text-xl font-extrabold text-[#18151B] flex items-center gap-2">
-          <Database className="w-5 h-5 text-[#6D1838]" />
-          Security & Server Management
-        </h2>
-        <p className="text-xs sm:text-sm text-[#575260] mt-1">
-          Check database protection (RLS), manage the admin team, download full backups in one click and review the security audit trail.
-        </p>
+        <h2 className="font-display text-lg sm:text-xl font-semibold text-ink flex items-center gap-2">
+          <Database className="w-5 h-5 text-[#6D1838]" />{tr("Security & Server Management")}</h2>
+        <p className="text-xs sm:text-sm text-ink/65 mt-1">{tr("Check database protection (RLS), manage the admin team, download full backups in one click and review the security audit trail.")}</p>
       </div>
 
       {DEMO_MODE && (
-        <div className="p-3.5 rounded-2xl border border-neutral-200 bg-neutral-50 text-xs text-neutral-700">
-          Demo mode: Supabase is not connected, so only local data is shown here.
-        </div>
+        <div className="p-3.5 rounded-2xl border border-neutral-200 bg-neutral-50 text-xs text-neutral-700">{tr("Demo mode: Supabase is not connected, so only local data is shown here.")}</div>
       )}
 
       {/* Tabs */}
@@ -417,68 +410,68 @@ export const AdminSecurityCenter: React.FC<{ onToast: (msg: string) => void }> =
           ) : (
             <>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div className="p-4 bg-white rounded-2xl border border-neutral-200">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-[#575260]">Protected tables</p>
+                <div className="p-4 bg-white rounded-3xl ring-1 ring-ink/[0.07]">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-ink/65">{tr("Protected tables")}</p>
                   <p className={`text-2xl font-black mt-1 ${unprotected.length ? 'text-rose-700' : 'text-emerald-700'}`}>
                     {secLoading ? '…' : `${protectedCount}/${tables.length}`}
                   </p>
-                  <p className="text-[11px] text-[#575260]">RLS on, with access rules</p>
+                  <p className="text-[11px] text-ink/65">{tr("RLS on, with access rules")}</p>
                 </div>
-                <div className="p-4 bg-white rounded-2xl border border-neutral-200">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-[#575260]">Visitor test</p>
+                <div className="p-4 bg-white rounded-3xl ring-1 ring-ink/[0.07]">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-ink/65">{tr("Visitor test")}</p>
                   <p className={`text-2xl font-black mt-1 ${leaking.length ? 'text-rose-700' : 'text-emerald-700'}`}>
-                    {secLoading ? '…' : leaking.length ? `${leaking.length} leak${leaking.length > 1 ? 's' : ''}` : 'Passed'}
+                    {secLoading ? '…' : leaking.length ? `${leaking.length} leak${leaking.length > 1 ? 's' : ''}` : tr("Passed")}
                   </p>
-                  <p className="text-[11px] text-[#575260]">Private data hidden from the public</p>
+                  <p className="text-[11px] text-ink/65">{tr("Private data hidden from the public")}</p>
                 </div>
-                <div className="p-4 bg-white rounded-2xl border border-neutral-200">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-[#575260]">Demo shortcuts</p>
-                  <p className={`text-2xl font-black mt-1 ${DEMO_MODE ? 'text-amber-700' : 'text-emerald-700'}`}>{DEMO_MODE ? 'On' : 'Off'}</p>
-                  <p className="text-[11px] text-[#575260]">1-click demo logins disabled online</p>
+                <div className="p-4 bg-white rounded-3xl ring-1 ring-ink/[0.07]">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-ink/65">{tr("Demo shortcuts")}</p>
+                  <p className={`text-2xl font-black mt-1 ${DEMO_MODE ? 'text-amber-700' : 'text-emerald-700'}`}>{DEMO_MODE ? tr("On") : tr("Off")}</p>
+                  <p className="text-[11px] text-ink/65">{tr("1-click demo logins disabled online")}</p>
                 </div>
               </div>
 
-              <div className="bg-white rounded-2xl border border-neutral-200 overflow-hidden">
+              <div className="bg-white rounded-3xl ring-1 ring-ink/[0.07] overflow-hidden">
                 <div className="p-4 border-b border-neutral-200 flex items-center justify-between gap-3">
                   <div>
-                    <p className="text-sm font-bold text-[#18151B]">Visitor access test</p>
-                    <p className="text-[11px] text-[#575260]">What someone who is not logged in can read with the public key.</p>
+                    <p className="text-sm font-bold text-ink">{tr("Visitor access test")}</p>
+                    <p className="text-[11px] text-ink/65">{tr("What someone who is not logged in can read with the public key.")}</p>
                   </div>
-                  <button onClick={loadSecurity} className="shrink-0 h-9 px-3 rounded-lg border border-neutral-300 text-xs font-semibold flex items-center gap-1.5 hover:bg-neutral-50">
+                  <button onClick={loadSecurity} className="shrink-0 h-9 px-3 rounded-full border border-neutral-300 text-xs font-semibold flex items-center gap-1.5 hover:bg-neutral-50">
                     <RefreshCw className={`w-4 h-4 ${secLoading ? 'animate-spin' : ''}`} />
-                    <span className="hidden sm:inline">Re-run</span>
+                    <span className="hidden sm:inline">{tr("Re-run")}</span>
                   </button>
                 </div>
                 <div className="divide-y divide-neutral-100">
                   {probe.map(p => (
                     <div key={p.table} className="px-4 py-2.5 flex items-center justify-between gap-3 text-xs">
-                      <span className="font-mono text-[#18151B]">{p.table}</span>
+                      <span className="font-mono text-ink">{p.table}</span>
                       {p.visible === null ? (
-                        <span className="flex items-center gap-1 text-emerald-700 font-semibold"><Lock className="w-3.5 h-3.5" /> Blocked</span>
+                        <span className="flex items-center gap-1 text-emerald-700 font-semibold"><Lock className="w-3.5 h-3.5" />{' '}{tr("Blocked")}</span>
                       ) : p.visible === 0 ? (
-                        <span className="flex items-center gap-1 text-emerald-700 font-semibold"><CheckCircle2 className="w-3.5 h-3.5" /> Nothing visible</span>
+                        <span className="flex items-center gap-1 text-emerald-700 font-semibold"><CheckCircle2 className="w-3.5 h-3.5" />{' '}{tr("Nothing visible")}</span>
                       ) : (
-                        <span className="flex items-center gap-1 text-rose-700 font-bold"><XCircle className="w-3.5 h-3.5" /> {p.visible}+ rows visible</span>
+                        <span className="flex items-center gap-1 text-rose-700 font-bold"><XCircle className="w-3.5 h-3.5" /> {p.visible}{tr("+ rows visible")}</span>
                       )}
                     </div>
                   ))}
-                  {probe.length === 0 && !secLoading && <p className="px-4 py-3 text-xs text-neutral-500">No result yet.</p>}
+                  {probe.length === 0 && !secLoading && <p className="px-4 py-3 text-xs text-neutral-500">{tr("No result yet.")}</p>}
                 </div>
               </div>
 
-              <div className="bg-white rounded-2xl border border-neutral-200 overflow-hidden">
+              <div className="bg-white rounded-3xl ring-1 ring-ink/[0.07] overflow-hidden">
                 <div className="p-4 border-b border-neutral-200">
-                  <p className="text-sm font-bold text-[#18151B]">Tables & Row Level Security</p>
-                  <p className="text-[11px] text-[#575260]">Every table should have RLS on and at least one rule.</p>
+                  <p className="text-sm font-bold text-ink">{tr("Tables & Row Level Security")}</p>
+                  <p className="text-[11px] text-ink/65">{tr("Every table should have RLS on and at least one rule.")}</p>
                 </div>
                 <div className="table-scroll">
                   <table className="w-full min-w-[480px] text-xs">
-                    <thead className="bg-[#FAF7F9] text-[#575260] uppercase text-[10px] tracking-wider">
+                    <thead className="bg-porcelain text-ink/65 uppercase text-[10px] tracking-wider">
                       <tr>
-                        <th className="py-2.5 px-4 text-left">Table</th>
-                        <th className="py-2.5 px-4 text-left">RLS</th>
-                        <th className="py-2.5 px-4 text-right">Rules</th>
-                        <th className="py-2.5 px-4 text-right">Rows</th>
+                        <th className="py-2.5 px-4 text-left">{tr("Table")}</th>
+                        <th className="py-2.5 px-4 text-left">{tr("RLS")}</th>
+                        <th className="py-2.5 px-4 text-right">{tr("Rules")}</th>
+                        <th className="py-2.5 px-4 text-right">{tr("Rows")}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-neutral-100">
@@ -488,12 +481,12 @@ export const AdminSecurityCenter: React.FC<{ onToast: (msg: string) => void }> =
                           <td className="py-2.5 px-4">
                             {t.rls_enabled ? (
                               t.policy_count > 0 ? (
-                                <span className="inline-flex items-center gap-1 text-emerald-700 font-semibold"><ShieldCheck className="w-3.5 h-3.5" /> On</span>
+                                <span className="inline-flex items-center gap-1 text-emerald-700 font-semibold"><ShieldCheck className="w-3.5 h-3.5" />{' '}{tr("On")}</span>
                               ) : (
-                                <span className="inline-flex items-center gap-1 text-amber-700 font-semibold"><Lock className="w-3.5 h-3.5" /> On · locked</span>
+                                <span className="inline-flex items-center gap-1 text-amber-700 font-semibold"><Lock className="w-3.5 h-3.5" />{' '}{tr("On · locked")}</span>
                               )
                             ) : (
-                              <span className="inline-flex items-center gap-1 text-rose-700 font-bold"><ShieldAlert className="w-3.5 h-3.5" /> Off</span>
+                              <span className="inline-flex items-center gap-1 text-rose-700 font-bold"><ShieldAlert className="w-3.5 h-3.5" />{' '}{tr("Off")}</span>
                             )}
                           </td>
                           <td className="py-2.5 px-4 text-right tabular-nums">{t.policy_count}</td>
@@ -513,13 +506,13 @@ export const AdminSecurityCenter: React.FC<{ onToast: (msg: string) => void }> =
       {tab === 'team' && (
         <div className="space-y-4">
           {DEMO_MODE ? (
-            <p className="text-xs text-neutral-600">Connect Supabase to manage real admin accounts.</p>
+            <p className="text-xs text-neutral-600">{tr("Connect Supabase to manage real admin accounts.")}</p>
           ) : (
             <>
-              <form onSubmit={handlePromote} className="bg-white rounded-2xl border border-neutral-200 p-4 space-y-3">
+              <form onSubmit={handlePromote} className="bg-white rounded-3xl ring-1 ring-ink/[0.07] p-4 space-y-3">
                 <div>
-                  <p className="text-sm font-bold text-[#18151B]">Add an admin</p>
-                  <p className="text-[11px] text-[#575260]">The person must already have an account. Enter the email they signed up with.</p>
+                  <p className="text-sm font-bold text-ink">{tr("Add an admin")}</p>
+                  <p className="text-[11px] text-ink/65">{tr("The person must already have an account. Enter the email they signed up with.")}</p>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-2">
                   <input
@@ -530,9 +523,8 @@ export const AdminSecurityCenter: React.FC<{ onToast: (msg: string) => void }> =
                     placeholder="colleague@example.com"
                     className="flex-1 p-3 text-sm bg-neutral-50 border border-neutral-300 rounded-xl focus:outline-none focus:border-[#6D1838]"
                   />
-                  <button type="submit" className="px-4 py-3 bg-[#6D1838] hover:bg-[#58122c] text-white rounded-xl text-sm font-bold flex items-center justify-center gap-1.5">
-                    <UserPlus className="w-4 h-4" /> Give admin access
-                  </button>
+                  <button type="submit" className="px-4 py-3 bg-[#6D1838] hover:bg-[#58122c] text-white rounded-full text-sm font-bold flex items-center justify-center gap-1.5">
+                    <UserPlus className="w-4 h-4" />{' '}{tr("Give admin access")}</button>
                 </div>
               </form>
 
@@ -541,26 +533,25 @@ export const AdminSecurityCenter: React.FC<{ onToast: (msg: string) => void }> =
               )}
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {teamLoading && <p className="text-xs text-neutral-500">Loading…</p>}
+                {teamLoading && <p className="text-xs text-neutral-500">{tr("Loading…")}</p>}
                 {admins.map(a => {
                   const isMe = a.user_id === user?.id;
                   return (
-                    <div key={a.id} className="bg-white rounded-2xl border border-neutral-200 p-4 space-y-3">
+                    <div key={a.id} className="bg-white rounded-3xl ring-1 ring-ink/[0.07] p-4 space-y-3">
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0">
-                          <p className="font-bold text-sm text-[#18151B] truncate">{[a.first_name, a.last_name].filter(Boolean).join(' ') || 'Admin'}</p>
-                          <p className="text-xs text-[#575260] truncate">{a.email}</p>
+                          <p className="font-bold text-sm text-ink truncate">{[a.first_name, a.last_name].filter(Boolean).join(' ') || tr("Admin")}</p>
+                          <p className="text-xs text-ink/65 truncate">{a.email}</p>
                         </div>
-                        <span className="shrink-0 text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-[#FAF2F5] text-[#6D1838] border border-[#EAD5DE]">
-                          {isMe ? 'You' : 'Admin'}
+                        <span className="shrink-0 text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-blush text-[#6D1838] border border-[#EAD5DE]">
+                          {isMe ? tr("You") : tr("Admin")}
                         </span>
                       </div>
                       <div className="flex items-center justify-between text-[11px] text-neutral-500">
-                        <span>Since {new Date(a.created_at).toLocaleDateString()}</span>
+                        <span>{tr("Since")}{' '}{new Date(a.created_at).toLocaleDateString()}</span>
                         {!isMe && (
                           <button onClick={() => handleRevoke(a)} className="px-3 py-1.5 rounded-lg border border-rose-200 text-rose-700 hover:bg-rose-50 font-bold flex items-center gap-1">
-                            <UserMinus className="w-3.5 h-3.5" /> Remove
-                          </button>
+                            <UserMinus className="w-3.5 h-3.5" />{' '}{tr("Remove")}</button>
                         )}
                       </div>
                     </div>
@@ -575,56 +566,50 @@ export const AdminSecurityCenter: React.FC<{ onToast: (msg: string) => void }> =
       {/* ============ BACKUPS ============ */}
       {tab === 'backup' && (
         <div className="space-y-4">
-          <div className="bg-white rounded-2xl border border-neutral-200 p-4 sm:p-5 space-y-4">
+          <div className="bg-white rounded-3xl ring-1 ring-ink/[0.07] p-4 sm:p-5 space-y-4">
             <div className="flex items-start gap-3">
-              <div className="p-2.5 rounded-xl bg-[#FAF2F5] text-[#6D1838] border border-[#EAD5DE] shrink-0">
+              <div className="p-2.5 rounded-xl bg-blush text-[#6D1838] border border-[#EAD5DE] shrink-0">
                 <Database className="w-5 h-5" />
               </div>
               <div>
-                <p className="text-sm font-bold text-[#18151B]">Full backup of Study In China</p>
-                <p className="text-xs text-[#575260] mt-0.5">
-                  Includes accounts, applications, documents list, payments, messages, programs, blog, FAQs and the audit trail. Uploaded files (passports, diplomas) stay in Supabase Storage and are not in the file.
-                </p>
+                <p className="text-sm font-bold text-ink">{tr("Full backup of Study In China")}</p>
+                <p className="text-xs text-ink/65 mt-0.5">{tr("Includes accounts, applications, documents list, payments, messages, programs, blog, FAQs and the audit trail. Uploaded files (passports, diplomas) stay in Supabase Storage and are not in the file.")}</p>
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div className="p-4 rounded-xl border border-neutral-200 bg-neutral-50 flex flex-col gap-3">
                 <div>
-                  <p className="text-xs font-bold text-[#18151B]">Download a backup</p>
-                  <p className="text-[11px] text-[#575260]">Saves a .json file on this device. Keep it somewhere safe: it contains personal data.</p>
+                  <p className="text-xs font-bold text-ink">{tr("Download a backup")}</p>
+                  <p className="text-[11px] text-ink/65">{tr("Saves a .json file on this device. Keep it somewhere safe: it contains personal data.")}</p>
                 </div>
                 <button
                   onClick={handleExport}
                   disabled={backupBusy}
                   className="w-full py-3 bg-[#18151B] hover:bg-black disabled:opacity-50 text-white rounded-xl text-sm font-bold flex items-center justify-center gap-2"
                 >
-                  {backupBusy ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
-                  Download backup
-                </button>
+                  {backupBusy ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}{tr("Download backup")}</button>
               </div>
 
               <div className="p-4 rounded-xl border border-neutral-200 bg-neutral-50 flex flex-col gap-3">
                 <div>
-                  <p className="text-xs font-bold text-[#18151B]">Restore a backup</p>
-                  <p className="text-[11px] text-[#575260]">Writes the records from a backup file back. Newer records are kept; audit logs are never changed.</p>
+                  <p className="text-xs font-bold text-ink">{tr("Restore a backup")}</p>
+                  <p className="text-[11px] text-ink/65">{tr("Writes the records from a backup file back. Newer records are kept; audit logs are never changed.")}</p>
                 </div>
                 <label className={`w-full py-3 bg-[#6D1838] hover:bg-[#58122c] text-white rounded-xl text-sm font-bold flex items-center justify-center gap-2 cursor-pointer ${backupBusy ? 'opacity-50 pointer-events-none' : ''}`}>
-                  <Upload className="w-4 h-4" />
-                  Choose backup file
-                  <input type="file" accept=".json,application/json" onChange={handleRestore} className="hidden" />
+                  <Upload className="w-4 h-4" />{tr("Choose backup file")}<input type="file" accept=".json,application/json" onChange={handleRestore} className="hidden" />
                 </label>
               </div>
             </div>
           </div>
 
           {backupReport && (
-            <div className="bg-white rounded-2xl border border-neutral-200 overflow-hidden">
-              <p className="p-4 border-b border-neutral-200 text-sm font-bold text-[#18151B]">{backupReport.title}</p>
+            <div className="bg-white rounded-3xl ring-1 ring-ink/[0.07] overflow-hidden">
+              <p className="p-4 border-b border-neutral-200 text-sm font-bold text-ink">{backupReport.title}</p>
               <div className="divide-y divide-neutral-100">
                 {backupReport.lines.map(l => (
                   <div key={l.name} className="px-4 py-2.5 flex items-start justify-between gap-3 text-xs">
-                    <span className="font-mono text-[#18151B]">{l.name}</span>
+                    <span className="font-mono text-ink">{l.name}</span>
                     <span className={`text-right ${l.ok ? 'text-emerald-700' : 'text-rose-700'} break-words max-w-[60%]`}>{l.info}</span>
                   </div>
                 ))}
@@ -646,35 +631,32 @@ export const AdminSecurityCenter: React.FC<{ onToast: (msg: string) => void }> =
               <input
                 value={logQuery}
                 onChange={e => setLogQuery(e.target.value)}
-                placeholder="Search action, admin, reference…"
+                placeholder={tr("Search action, admin, reference…")}
                 className="w-full p-3 pl-9 text-sm bg-white border border-neutral-300 rounded-xl focus:outline-none focus:border-[#6D1838]"
               />
               <Search className="w-4 h-4 text-neutral-400 absolute left-3 top-1/2 -translate-y-1/2" />
             </div>
             <div className="flex items-center gap-3 text-[11px] text-neutral-500">
-              <span>{logsSource === 'database' ? 'Stored in database · cannot be edited' : 'Stored in this browser'}</span>
-              <button onClick={loadLogs} className="h-9 px-3 rounded-lg border border-neutral-300 text-xs font-semibold flex items-center gap-1.5 hover:bg-neutral-50 text-neutral-700">
-                <RefreshCw className={`w-4 h-4 ${logsLoading ? 'animate-spin' : ''}`} /> Refresh
-              </button>
+              <span>{logsSource === 'database' ? tr("Stored in database · cannot be edited") : tr("Stored in this browser")}</span>
+              <button onClick={loadLogs} className="h-9 px-3 rounded-full border border-neutral-300 text-xs font-semibold flex items-center gap-1.5 hover:bg-neutral-50 text-neutral-700">
+                <RefreshCw className={`w-4 h-4 ${logsLoading ? 'animate-spin' : ''}`} />{' '}{tr("Refresh")}</button>
             </div>
           </div>
 
           {filteredLogs.length === 0 ? (
-            <div className="bg-white rounded-2xl border border-dashed border-neutral-300 p-8 text-center text-xs text-neutral-500">
-              No entries yet. Admin actions (status changes, document reviews, payments, backups, admin access) are recorded here.
-            </div>
+            <div className="bg-white rounded-2xl border border-dashed border-neutral-300 p-8 text-center text-xs text-neutral-500">{tr("No entries yet. Admin actions (status changes, document reviews, payments, backups, admin access) are recorded here.")}</div>
           ) : (
-            <div className="bg-white rounded-2xl border border-neutral-200 divide-y divide-neutral-100 max-h-[560px] overflow-y-auto">
+            <div className="bg-white rounded-3xl ring-1 ring-ink/[0.07] divide-y divide-neutral-100 max-h-[560px] overflow-y-auto">
               {filteredLogs.map(l => (
                 <div key={l.id} className="px-4 py-3 text-xs flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-4">
                   <span className="text-neutral-400 font-mono text-[11px] sm:w-40 shrink-0">{fmtDate(l.createdAt)}</span>
                   <div className="min-w-0 flex-1">
-                    <p className="text-[#18151B]">
+                    <p className="text-ink">
                       <span className="font-bold uppercase tracking-wide text-[#6D1838] text-[11px]">{humanAction(l.action)}</span>
                       {l.entityId && <span className="font-mono text-neutral-500"> · {l.entityId}</span>}
                     </p>
                     {l.details && Object.keys(l.details).length > 0 && (
-                      <p className="text-[11px] text-[#575260] break-words">
+                      <p className="text-[11px] text-ink/65 break-words">
                         {Object.entries(l.details).map(([k, v]) => `${k}: ${typeof v === 'object' ? JSON.stringify(v) : v}`).join(' · ')}
                       </p>
                     )}

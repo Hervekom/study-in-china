@@ -581,7 +581,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
                   {matchingInfo.label}
                 </span>
                 <span className="flex items-center gap-1">
-                  <Calendar className="w-3.5 h-3.5 text-neutral-400" />{tr("Intake:")}{' '}{firstChoice.intake || activeApp.preferences.intakeSeason}
+                  <Calendar className="w-3.5 h-3.5 text-neutral-400" />{tr("Intake:")}{' '}{tr(firstChoice.intake || activeApp.preferences.intakeSeason)}
                 </span>
               </div>
 
@@ -757,7 +757,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
                     </div>
                     <div className="text-left sm:text-right shrink-0">
                       <span className="inline-block px-2.5 py-1 bg-white text-[#6D1838] border border-[#6D1838]/30 rounded-lg text-xs font-bold shadow-2xs">{tr("Highest Priority")}</span>
-                      <span className="block text-[10px] text-neutral-400 mt-0.5">{firstChoice.intake}</span>
+                      <span className="block text-[10px] text-neutral-400 mt-0.5">{tr(firstChoice.intake)}</span>
                     </div>
                   </div>
 
@@ -776,7 +776,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
                     </div>
                     <div className="text-left sm:text-right shrink-0">
                       <span className="inline-block px-2.5 py-1 bg-white text-neutral-700 border border-neutral-200 rounded-lg text-xs font-semibold">{tr("Alternative Option")}</span>
-                      <span className="block text-[10px] text-neutral-400 mt-0.5">{secondChoice.intake}</span>
+                      <span className="block text-[10px] text-neutral-400 mt-0.5">{tr(secondChoice.intake)}</span>
                     </div>
                   </div>
 
@@ -795,7 +795,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
                     </div>
                     <div className="text-left sm:text-right shrink-0">
                       <span className="inline-block px-2.5 py-1 bg-white text-neutral-600 border border-neutral-200 rounded-lg text-xs font-semibold">{tr("Backup Safeguard")}</span>
-                      <span className="block text-[10px] text-neutral-400 mt-0.5">{thirdChoice.intake}</span>
+                      <span className="block text-[10px] text-neutral-400 mt-0.5">{tr(thirdChoice.intake)}</span>
                     </div>
                   </div>
                 </div>
@@ -870,7 +870,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
                     <h3 className="font-extrabold text-sm sm:text-base text-ink mt-0.5">
                       {activeApp.advisor.name}
                     </h3>
-                    <p className="text-xs text-ink/65">{activeApp.advisor.title}</p>
+                    <p className="text-xs text-ink/65">{tr(activeApp.advisor.title)}</p>
                   </div>
                 </div>
 
@@ -1135,7 +1135,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
 
                           {doc.feedback && (
                             <div className="mt-2 p-2 bg-amber-100/70 border border-amber-300 rounded text-xs text-amber-900 font-medium">
-                              <strong>{tr("Counselor Feedback:")}</strong> {doc.feedback}
+                              <strong>{tr("Counselor Feedback:")}</strong> {tr(doc.feedback)}
                             </div>
                           )}
                         </div>
@@ -1216,7 +1216,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
                   <div className="space-y-3 text-xs leading-relaxed text-neutral-800">
                     <p>{tr("Dear")}{' '}<strong>{activeApp.personal.firstName} {activeApp.personal.lastName}</strong>{' '}{tr("(Passport:")}{' '}{activeApp.personal.nationality}),
                     </p>
-                    <p>{tr("We are pleased to inform you that upon evaluation by the International Student Academic Admissions Committee, you have been formally admitted for the")}{' '}<strong>{activeApp.admissionNotice.program}</strong>{' '}{tr("starting")}{' '}<strong>{activeApp.admissionNotice.intake}</strong>.
+                    <p>{tr("We are pleased to inform you that upon evaluation by the International Student Academic Admissions Committee, you have been formally admitted for the")}{' '}<strong>{activeApp.admissionNotice.program}</strong>{' '}{tr("starting")}{' '}<strong>{tr(activeApp.admissionNotice.intake)}</strong>.
                     </p>
                     <p>{tr("Please bring this original Admission Notice along with your Visa Application for Study in China (Form JW202/JW201) to the Embassy/Consulate General of the People's Republic of China in your home country to apply for your X1 Student Visa.")}</p>
                   </div>

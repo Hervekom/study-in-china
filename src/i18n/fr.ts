@@ -139,7 +139,7 @@ export const fr: Dictionary = {
     subtitle: 'Des réponses pratiques sur le visa, les bourses et la vie en Chine.',
     read: 'Lire le guide',
     minutes: 'min de lecture',
-    englishOnly: 'Article en anglais',
+    englishOnly: '',
     titles: {
       'guide-jw202-jw201-explained': 'Comprendre les formulaires JW202 et JW201',
       'guide-china-student-visa-x1-x2': 'Demander le visa étudiant chinois (X1 et X2), étape par étape',

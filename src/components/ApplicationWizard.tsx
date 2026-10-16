@@ -1307,7 +1307,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                         >
                           {availableIntakeOptions.map(opt => (
                             <option key={opt.value} value={opt.value}>
-                              {opt.season} ({opt.shortLabel})
+                              {tr(`${opt.season} (${opt.shortLabel})`)}
                             </option>
                           ))}
                         </select>
@@ -1408,7 +1408,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                         >
                           {availableIntakeOptions.map(opt => (
                             <option key={opt.value} value={opt.value}>
-                              {opt.season} ({opt.shortLabel})
+                              {tr(`${opt.season} (${opt.shortLabel})`)}
                             </option>
                           ))}
                         </select>
@@ -1508,7 +1508,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                         >
                           {availableIntakeOptions.map(opt => (
                             <option key={opt.value} value={opt.value}>
-                              {opt.season} ({opt.shortLabel})
+                              {tr(`${opt.season} (${opt.shortLabel})`)}
                             </option>
                           ))}
                         </select>
@@ -1966,7 +1966,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                       </div>
                       <div>
                         <span className="text-ink/65 block text-[10px]">{tr("Intake:")}</span>
-                        <strong className="text-ink">{firstChoice.intake}</strong>
+                        <strong className="text-ink">{tr(firstChoice.intake)}</strong>
                       </div>
                     </div>
                   </div>
@@ -2003,7 +2003,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                       </div>
                       <div>
                         <span className="text-ink/65 block text-[10px]">{tr("Intake:")}</span>
-                        <strong className="text-ink">{secondChoice.intake}</strong>
+                        <strong className="text-ink">{tr(secondChoice.intake)}</strong>
                       </div>
                     </div>
                   </div>
@@ -2040,7 +2040,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                       </div>
                       <div>
                         <span className="text-ink/65 block text-[10px]">{tr("Intake:")}</span>
-                        <strong className="text-ink">{thirdChoice.intake}</strong>
+                        <strong className="text-ink">{tr(thirdChoice.intake)}</strong>
                       </div>
                     </div>
                   </div>

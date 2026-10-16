@@ -39,7 +39,7 @@ export const ArticleDetailModal: React.FC<ArticleDetailModalProps> = ({
           <div className="relative h-44 sm:h-52 w-full overflow-hidden bg-neutral-900 shrink-0">
             <img
               src={article.coverImage}
-              alt={article.title}
+              alt={tr(article.title)}
               referrerPolicy="no-referrer"
               className="w-full h-full object-cover opacity-75"
             />
@@ -55,10 +55,10 @@ export const ArticleDetailModal: React.FC<ArticleDetailModalProps> = ({
 
             <div className="absolute bottom-4 left-6 right-6 text-white">
               <span className="inline-block px-2.5 py-0.5 rounded text-xs font-semibold bg-[#6D1838] text-white mb-2">
-                {article.category}
+                {tr(article.category)}
               </span>
               <h2 className="font-display text-xl sm:text-2xl font-semibold leading-snug">
-                {article.title}
+                {tr(article.title)}
               </h2>
             </div>
           </div>
@@ -68,11 +68,11 @@ export const ArticleDetailModal: React.FC<ArticleDetailModalProps> = ({
         <div className="px-6 py-3 border-b border-neutral-100 bg-porcelain flex flex-wrap items-center justify-between text-xs text-ink/65 gap-2">
           <div className="flex items-center gap-3">
             <span className="flex items-center gap-1">
-              <User className="w-3.5 h-3.5 text-[#6D1838]" /> {article.author}
+              <User className="w-3.5 h-3.5 text-[#6D1838]" /> {tr(article.author)}
             </span>
             <span>·</span>
             <span className="flex items-center gap-1">
-              <Calendar className="w-3.5 h-3.5" /> {article.publishedDate}
+              <Calendar className="w-3.5 h-3.5" /> {tr(article.publishedDate)}
             </span>
             <span>·</span>
             <span className="flex items-center gap-1">
@@ -91,12 +91,12 @@ export const ArticleDetailModal: React.FC<ArticleDetailModalProps> = ({
         {/* Article Body */}
         <div className="p-6 sm:p-8 overflow-y-auto space-y-4 text-sm sm:text-base text-ink leading-relaxed">
           <p className="font-semibold text-base sm:text-lg text-ink leading-relaxed border-l-4 border-[#6D1838] pl-4 py-1 italic bg-blush/50 rounded-r-lg">
-            {article.excerpt}
+            {tr(article.excerpt)}
           </p>
 
           {article.content.map((paragraph, idx) => (
             <p key={idx} className="text-ink/65 leading-relaxed">
-              {paragraph}
+              {tr(paragraph)}
             </p>
           ))}
 
