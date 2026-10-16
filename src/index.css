@@ -18,6 +18,14 @@
   --color-brand-muted: #575260;
   --color-brand-gray: #F7F7F9;
   --color-brand-card: #FFFFFF;
+
+  /* v2 public site palette */
+  --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
+  --color-ink: #1F1219;
+  --color-porcelain: #FCF9FA;
+  --color-blush: #F6ECF0;
+  --color-jade: #1F7A5C;
+  --color-iris: #6C3B9E;
 }
 
 @layer base {

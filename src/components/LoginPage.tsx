@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { tr, useTr } from '../i18n/tr';
+import { LanguageSwitch } from './site/SiteHeader';
 import { Lock, Mail, ArrowRight, Sparkles, AlertCircle, ArrowLeft, ShieldCheck, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { siteConfig } from '../data/siteConfig';
@@ -11,6 +13,7 @@ interface LoginPageProps {
 }
 
 export const LoginPage: React.FC<LoginPageProps> = ({ onSuccess, onBackToHome }) => {
+  useTr();
   const { content: siteContent } = useSiteContent();
   const { login, loginAsDemo } = useAuth();
 
@@ -26,7 +29,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onSuccess, onBackToHome })
 
     try {
       if (!email.trim() || !password.trim()) {
-        setError('Please enter both your email address and password.');
+        setError(tr("Please enter both your email address and password."));
         setLoading(false);
         return;
       }
@@ -59,58 +62,50 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onSuccess, onBackToHome })
   };
 
   return (
-    <div className="min-h-screen bg-[#FDFCFD] text-[#18151B] flex flex-col justify-between">
+    <div className="min-h-screen bg-porcelain text-ink flex flex-col justify-between">
       {/* Top Bar */}
       <header className="py-4 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full flex items-center justify-between">
         <button
           onClick={onBackToHome}
-          className="flex items-center gap-2 group text-[#18151B] transition-colors text-left"
+          className="flex items-center gap-2 group text-ink transition-colors text-left"
         >
-          <div className="w-8 h-8 rounded-lg bg-[#6D1838] flex items-center justify-center text-white font-bold text-xs shadow-xs group-hover:bg-[#58122c] transition-colors">
-            SIC
-          </div>
-          <span className="text-lg font-extrabold tracking-tight text-[#18151B]">
+          <div className="w-8 h-8 rounded-lg bg-[#6D1838] flex items-center justify-center text-white font-bold text-xs shadow-xs group-hover:bg-[#58122c] transition-colors">{tr("SIC")}</div>
+          <span className="text-lg font-extrabold tracking-tight text-ink">
             {siteConfig.brandName}
           </span>
         </button>
 
+        <div className="flex items-center gap-3">
+        <LanguageSwitch />
         <button
           onClick={onBackToHome}
           className="text-xs font-semibold text-neutral-600 hover:text-[#6D1838] flex items-center gap-1.5 transition-colors"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
-          <span>Back to Home</span>
+          <span>{tr("Back to Home")}</span>
         </button>
+        </div>
       </header>
 
       {/* Main Login Card */}
       <main className="flex-1 flex items-center justify-center p-4 sm:p-6">
-        <div className="w-full max-w-md bg-white rounded-2xl shadow-xl border border-neutral-200 overflow-hidden animate-in fade-in">
+        <div className="w-full max-w-md bg-white rounded-3xl shadow-xl ring-1 ring-ink/[0.07] overflow-hidden animate-in fade-in">
           {/* Card Header */}
-          <div className="p-6 pb-5 border-b border-neutral-100 bg-[#FAF7F9]">
+          <div className="p-6 pb-5 border-b border-neutral-100 bg-porcelain">
             <div className="flex items-center gap-2 mb-1.5">
-              <span className="w-5 h-5 rounded bg-[#6D1838] text-white font-bold text-[10px] flex items-center justify-center">
-                SIC
-              </span>
-              <span className="text-[11px] font-bold uppercase tracking-wider text-[#6D1838]">
-                Student Admissions Portal
-              </span>
+              <span className="w-5 h-5 rounded bg-[#6D1838] text-white font-bold text-[10px] flex items-center justify-center">{tr("SIC")}</span>
+              <span className="text-[11px] font-bold uppercase tracking-wider text-[#6D1838]">{tr("Student Admissions Portal")}</span>
             </div>
-            <h1 className="text-xl font-extrabold text-[#18151B]">
-              Sign In to Student Portal
-            </h1>
-            <p className="text-xs text-[#575260] mt-1 leading-relaxed">
-              Access your application progress, document audit vault, milestone payments, and JW202 visa status.
-            </p>
+            <h1 className="font-display text-xl font-semibold text-ink">{tr("Sign In to Student Portal")}</h1>
+            <p className="text-xs text-ink/65 mt-1 leading-relaxed">{tr("Access your application progress, document audit vault, milestone payments, and JW202 visa status.")}</p>
           </div>
 
           {/* Quick Mock Credentials Callout (local demo only) */}
-          {DEMO_MODE && (<div className="p-4 bg-[#FAF2F5]/80 border-b border-[#EAD5DE] flex items-start gap-2.5 text-xs text-[#58122c]">
+          {DEMO_MODE && (<div className="p-4 bg-blush/80 border-b border-[#EAD5DE] flex items-start gap-2.5 text-xs text-[#58122c]">
             <ShieldCheck className="w-4 h-4 text-[#6D1838] shrink-0 mt-0.5" />
             <div className="space-y-0.5">
-              <strong className="font-bold text-[#6D1838]">Frontend Mock Authentication</strong>
-              <p className="text-[11px] text-[#575260]">
-                Testing Account: <span className="font-mono font-semibold text-[#18151B]">student@example.com</span> / Password: <span className="font-mono font-semibold text-[#18151B]">student123</span>
+              <strong className="font-bold text-[#6D1838]">{tr("Frontend Mock Authentication")}</strong>
+              <p className="text-[11px] text-ink/65">{tr("Testing Account:")}{' '}<span className="font-mono font-semibold text-ink">student@example.com</span>{' '}{tr("/ Password:")}{' '}<span className="font-mono font-semibold text-ink">student123</span>
               </p>
             </div>
           </div>)}
@@ -125,9 +120,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onSuccess, onBackToHome })
             )}
 
             <div>
-              <label className="block text-[11px] font-bold text-[#575260] uppercase mb-1">
-                Student Email Address
-              </label>
+              <label className="block text-[11px] font-bold text-ink/65 uppercase mb-1">{tr("Student Email Address")}</label>
               <div className="relative">
                 <input
                   type="email"
@@ -143,10 +136,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onSuccess, onBackToHome })
 
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label className="text-[11px] font-bold text-[#575260] uppercase">
-                  Password
-                </label>
-                {DEMO_MODE && <span className="text-[10px] text-neutral-400">Mock demo: student123</span>}
+                <label className="text-[11px] font-bold text-ink/65 uppercase">{tr("Password")}</label>
+                {DEMO_MODE && <span className="text-[10px] text-neutral-400">{tr("Mock demo: student123")}</span>}
               </div>
               <div className="relative">
                 <input
@@ -170,11 +161,11 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onSuccess, onBackToHome })
               {loading ? (
                 <>
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  <span>Verifying Session...</span>
+                  <span>{tr("Verifying Session...")}</span>
                 </>
               ) : (
                 <>
-                  <span>Access Student Portal</span>
+                  <span>{tr("Access Student Portal")}</span>
                   <ArrowRight className="w-4 h-4" />
                 </>
               )}
@@ -186,10 +177,10 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onSuccess, onBackToHome })
                 type="button"
                 onClick={handleDemoAccess}
                 disabled={loading}
-                className="w-full py-2.5 px-3 bg-[#FAF2F5] hover:bg-[#F3EEFA] border border-[#EAD5DE] text-[#6D1838] rounded-xl font-bold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                className="w-full py-2.5 px-3 bg-blush hover:bg-[#F3EEFA] border border-[#EAD5DE] text-[#6D1838] rounded-full font-bold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 <Sparkles className="w-3.5 h-3.5" />
-                <span>1-Click Student Demo Sign In</span>
+                <span>{tr("1-Click Student Demo Sign In")}</span>
               </button>
             </div>}
           </form>
@@ -197,8 +188,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onSuccess, onBackToHome })
       </main>
 
       {/* Footer info */}
-      <footer className="py-4 text-center text-xs text-[#575260] border-t border-neutral-100">
-        <p>© {new Date().getFullYear()} {siteConfig.brandName}. All rights reserved.</p>
+      <footer className="py-4 text-center text-xs text-ink/65 border-t border-neutral-100">
+        <p>© {new Date().getFullYear()} {siteConfig.brandName}{tr(". All rights reserved.")}</p>
       </footer>
     </div>
   );

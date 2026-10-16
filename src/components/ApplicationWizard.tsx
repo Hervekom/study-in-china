@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { tr, useTr } from '../i18n/tr';
+import { LanguageSwitch } from './site/SiteHeader';
 import {
   Check,
   ArrowRight,
@@ -57,6 +59,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
   prefillProgram = '',
   prefillDegree,
 }) => {
+  useTr();
   const { content: siteContent } = useSiteContent();
   const [currentStep, setCurrentStep] = useState<number>(1);
   const [saveToast, setSaveToast] = useState<string | null>(null);
@@ -218,7 +221,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
         savedAt: new Date().toISOString(),
       };
       localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(draft));
-      setSaveToast('Progress saved! You can close this window and resume anytime.');
+      setSaveToast(tr("Progress saved! You can close this window and resume anytime."));
       setTimeout(() => setSaveToast(null), 4000);
     } catch (e) {
       console.error(e);
@@ -416,7 +419,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
       study_plan: { name: 'Academic_Study_Plan_CS.pdf', size: '520 KB' },
       recommendation_1: { name: 'Principal_Recommendation_Letter.pdf', size: '890 KB' },
     });
-    setSaveToast('Example loaded: see how a completed application looks.');
+    setSaveToast(tr("Example loaded: see how a completed application looks."));
     setTimeout(() => setSaveToast(null), 3000);
   };
 
@@ -434,13 +437,13 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
     exampleSnapshot.current = null;
     setExampleActive(false);
     setErrors({});
-    setSaveToast('Example cleared. You can now enter your own information.');
+    setSaveToast(tr("Example cleared. You can now enter your own information."));
     setTimeout(() => setSaveToast(null), 3000);
   };
 
   const handleProcessPaymentAndSubmit = () => {
     if (exampleActive) {
-      setSaveToast('This is example data. Clear the example and enter your own information before submitting.');
+      setSaveToast(tr("This is example data. Clear the example and enter your own information before submitting."));
       setTimeout(() => setSaveToast(null), 4500);
       window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
@@ -606,7 +609,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
     }
     const missing = ['passport', 'transcript', 'certificate', 'photo'].filter(k => !docFiles[k]);
     if (missing.length) {
-      setSubmitError('Please attach your required documents (passport, transcripts, diploma and photo) in step 4 before submitting.');
+      setSubmitError(tr("Please attach your required documents (passport, transcripts, diploma and photo) in step 4 before submitting."));
       return;
     }
 
@@ -707,17 +710,17 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
   };
 
   const stepsList = [
-    { num: 1, label: 'Personal Information', short: 'Personal' },
-    { num: 2, label: 'Education History', short: 'Education' },
-    { num: 3, label: 'Study Preferences', short: 'Preferences' },
-    { num: 4, label: 'Document Uploads', short: 'Documents' },
-    { num: 5, label: 'Review Application', short: 'Review' },
-    { num: 6, label: CLOUD ? 'Deposit & Submit' : 'Payment / Initial Deposit ($515)', short: CLOUD ? 'Submit' : 'Deposit' },
-    { num: 7, label: 'Confirmation', short: 'Confirmed' },
+    { num: 1, label: tr("Personal Information"), short: tr("Personal") },
+    { num: 2, label: tr("Education History"), short: tr("Education") },
+    { num: 3, label: tr("Study Preferences"), short: tr("Preferences") },
+    { num: 4, label: tr("Document Uploads"), short: tr("Documents") },
+    { num: 5, label: tr("Review Application"), short: tr("Review") },
+    { num: 6, label: tr(CLOUD ? 'Deposit & Submit' : 'Payment / Initial Deposit ($515)'), short: tr(CLOUD ? 'Submit' : 'Deposit') },
+    { num: 7, label: tr("Confirmation"), short: tr("Confirmed") },
   ];
 
   return (
-    <div className="min-h-screen bg-[#FDFCFD] text-[#18151B]">
+    <div className="min-h-screen bg-porcelain text-ink">
       <input ref={fileInputRef} type="file" accept={ACCEPTED_DOCUMENT_TYPES} className="hidden" onChange={handleFileChosen} />
       <AuthModal
         isOpen={authOpen}
@@ -726,7 +729,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
         onSuccess={() => {
           setAuthOpen(false);
           setSubmitError(null);
-          setSaveToast('Signed in. Click "Submit Application" to finish.');
+          setSaveToast(tr("Signed in. Click \"Submit Application\" to finish."));
           setTimeout(() => setSaveToast(null), 4000);
         }}
       />
@@ -736,67 +739,65 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             <button
               onClick={onBackToHome}
-              aria-label="Back to website"
-              className="w-9 h-9 sm:w-auto sm:h-auto sm:px-2 sm:py-1.5 -ml-1 shrink-0 text-neutral-500 hover:text-neutral-900 hover:bg-neutral-100 rounded-lg transition-colors flex items-center justify-center gap-1.5 text-xs font-semibold"
-              title="Return to website homepage"
+              aria-label={tr("Back to website")}
+              className="w-9 h-9 sm:w-auto sm:h-auto sm:px-2 sm:py-1.5 -ml-1 shrink-0 text-neutral-500 hover:text-neutral-900 hover:bg-neutral-100 rounded-full transition-colors flex items-center justify-center gap-1.5 text-xs font-semibold"
+              title={tr("Return to website homepage")}
             >
               <ArrowLeft className="w-4 h-4" />
-              <span className="hidden md:inline">Back to Website</span>
+              <span className="hidden md:inline">{tr("Back to Website")}</span>
             </button>
             <div className="hidden sm:block h-4 w-px bg-neutral-200" />
             <div className="flex items-center gap-2 min-w-0">
-              <span className="w-7 h-7 shrink-0 rounded-md bg-[#6D1838] text-white font-bold text-[10px] flex items-center justify-center">
-                SIC
-              </span>
-              <span className="font-extrabold text-sm sm:text-base text-[#18151B] truncate">
-                <span className="sm:hidden">Application</span>
-                <span className="hidden sm:inline">{siteConfig.brandName} Application</span>
+              <span className="w-7 h-7 shrink-0 rounded-md bg-[#6D1838] text-white font-bold text-[10px] flex items-center justify-center">{tr("SIC")}</span>
+              <span className="font-extrabold text-sm sm:text-base text-ink truncate">
+                <span className="sm:hidden">{tr("Application")}</span>
+                <span className="hidden sm:inline">{siteConfig.brandName}{' '}{tr("Application")}</span>
               </span>
             </div>
           </div>
 
           <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+            <LanguageSwitch />
             {currentStep < 7 && (
               <>
                 <button
                   type="button"
                   onClick={exampleActive ? handleClearExample : handleFillDemoValues}
-                  aria-label={exampleActive ? 'Clear example' : 'See a filled-in example'}
-                  className="h-9 px-2.5 bg-[#FAF2F5] hover:bg-[#F3EEFA] text-[#6D1838] border border-[#EAD5DE] rounded-lg text-xs font-semibold transition-colors flex items-center gap-1"
-                  title={exampleActive ? 'Remove the example data' : 'See how a completed application looks'}
+                  aria-label={exampleActive ? tr("Clear example") : tr("See a filled-in example")}
+                  className="h-9 px-2.5 bg-blush hover:bg-[#F3EEFA] text-[#6D1838] border border-[#EAD5DE] rounded-full text-xs font-semibold transition-colors flex items-center gap-1"
+                  title={exampleActive ? tr("Remove the example data") : tr("See how a completed application looks")}
                 >
                   <Sparkles className="w-4 h-4 text-[#6D1838]" />
-                  <span>{exampleActive ? 'Clear' : 'Example'}</span>
+                  <span>{exampleActive ? tr("Clear") : tr("Example")}</span>
                 </button>
                 <button
                   type="button"
                   onClick={handleSaveAndContinueLater}
-                  aria-label="Save and continue later"
-                  className="h-9 px-2.5 sm:px-3 border border-neutral-300 hover:bg-neutral-100 text-neutral-700 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5"
+                  aria-label={tr("Save and continue later")}
+                  className="h-9 px-2.5 sm:px-3 border border-neutral-300 hover:bg-neutral-100 text-neutral-700 rounded-full text-xs font-semibold transition-colors flex items-center gap-1.5"
                 >
                   <Save className="w-4 h-4" />
-                  <span className="hidden sm:inline">Save & Continue Later</span>
+                  <span className="hidden sm:inline">{tr("Save & Continue Later")}</span>
                 </button>
               </>
             )}
             <button
               onClick={() => onGoToDashboard()}
-              className="h-9 px-3 bg-[#6D1838] hover:bg-[#58122c] text-white rounded-lg text-xs font-semibold transition-colors whitespace-nowrap"
+              className="hidden sm:block h-9 px-3 bg-[#6D1838] hover:bg-[#58122c] text-white rounded-full text-xs font-semibold transition-colors whitespace-nowrap"
             >
-              <span className="sm:hidden">Portal</span>
-              <span className="hidden sm:inline">Student Portal</span>
+              <span className="sm:hidden">{tr("Portal")}</span>
+              <span className="hidden sm:inline">{tr("Student Portal")}</span>
             </button>
           </div>
         </div>
 
         {/* Stepper Progress Bar */}
         <div className="max-w-5xl mx-auto px-4 sm:px-6 pb-3 pt-1">
-          <div className="flex items-center justify-between text-xs font-medium text-[#575260] mb-2">
-            <span className="font-bold text-[#6D1838] truncate pr-2">
-              Step {currentStep} of 7: {stepsList[currentStep - 1].label}
+          <div className="flex items-center justify-between text-xs font-medium text-ink/65 mb-2">
+            <span className="font-bold text-[#6D1838] truncate pr-2">{tr("Step")}{' '}{currentStep}{' '}{tr("of 7:")}{' '}{stepsList[currentStep - 1].label}
             </span>
             <span className="text-neutral-500 font-medium whitespace-nowrap">
-              {Math.round((currentStep / 7) * 100)}%<span className="hidden sm:inline"> Complete</span>
+              {Math.round((currentStep / 7) * 100)}%<span className="hidden sm:inline">{' '}{tr("Complete")}</span>
             </span>
           </div>
 
@@ -852,7 +853,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
 
       {/* Save Notification Toast */}
       {saveToast && (
-        <aside aria-label="Notification" className="fixed top-20 left-4 right-4 sm:left-auto z-50 bg-[#18151B] text-white px-4 py-3 rounded-xl shadow-xl flex items-center gap-2 text-xs border border-neutral-700 animate-in fade-in slide-in-from-top-2">
+        <aside aria-label={tr("Notification")} className="fixed top-20 left-4 right-4 sm:left-auto z-50 bg-[#18151B] text-white px-4 py-3 rounded-xl shadow-xl flex items-center gap-2 text-xs border border-neutral-700 animate-in fade-in slide-in-from-top-2">
           <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
           <span>{saveToast}</span>
         </aside>
@@ -865,46 +866,34 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
             <div className="flex items-start gap-2.5">
               <Sparkles className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm font-bold text-amber-900">You are viewing an example</p>
-                <p className="text-xs text-amber-800 leading-relaxed">
-                  These sample answers show how to fill each step. They cannot be submitted. Clear the example and enter your own information to apply.
-                </p>
+                <p className="text-sm font-bold text-amber-900">{tr("You are viewing an example")}</p>
+                <p className="text-xs text-amber-800 leading-relaxed">{tr("These sample answers show how to fill each step. They cannot be submitted. Clear the example and enter your own information to apply.")}</p>
               </div>
             </div>
             <button
               type="button"
               onClick={handleClearExample}
-              className="shrink-0 px-4 py-2.5 bg-amber-900 hover:bg-amber-950 text-white rounded-xl text-xs font-bold transition-colors"
-            >
-              Clear example & start my application
-            </button>
+              className="shrink-0 px-4 py-2.5 bg-amber-900 hover:bg-amber-950 text-white rounded-full text-xs font-bold transition-colors"
+            >{tr("Clear example & start my application")}</button>
           </div>
         )}
-        <div className="bg-white rounded-2xl border border-neutral-200 shadow-sm p-6 sm:p-8">
+        <div className="bg-white rounded-3xl ring-1 ring-ink/[0.07] shadow-sm p-6 sm:p-8">
           {/* ================= STEP 1: PERSONAL INFORMATION ================= */}
           {currentStep === 1 && (
             <div className="space-y-6 animate-in fade-in duration-200">
               <div className="border-b border-neutral-100 pb-4">
-                <span className="text-xs font-bold uppercase tracking-wider text-[#6D1838]">
-                  Applicant Identity & Legal Profile
-                </span>
-                <h2 className="text-xl sm:text-2xl font-bold text-[#18151B] mt-1">
-                  Personal Information
-                </h2>
-                <p className="text-xs sm:text-sm text-[#575260] mt-1">
-                  Ensure all details match your valid international passport exactly as they appear on the information page.
-                </p>
+                <span className="text-xs font-bold uppercase tracking-wider text-[#6D1838]">{tr("Applicant Identity & Legal Profile")}</span>
+                <h2 className="font-display text-xl sm:text-2xl font-semibold text-ink mt-1">{tr("Personal Information")}</h2>
+                <p className="text-xs sm:text-sm text-ink/65 mt-1">{tr("Ensure all details match your valid international passport exactly as they appear on the information page.")}</p>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* First Name */}
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-[#575260] mb-1.5">
-                    First / Given Name (as in passport) *
-                  </label>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-ink/65 mb-1.5">{tr("First / Given Name (as in passport) *")}</label>
                   <input
                     type="text"
-                    placeholder="e.g. David Alexander"
+                    placeholder={tr("e.g. David Alexander")}
                     value={personal.firstName}
                     onChange={e => setPersonal({ ...personal, firstName: e.target.value })}
                     className={`w-full p-3 text-sm rounded-xl border bg-neutral-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#6D1838]/20 transition-all ${
@@ -916,12 +905,10 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
 
                 {/* Last Name */}
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-[#575260] mb-1.5">
-                    Last / Family Name (as in passport) *
-                  </label>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-ink/65 mb-1.5">{tr("Last / Family Name (as in passport) *")}</label>
                   <input
                     type="text"
-                    placeholder="e.g. Osei"
+                    placeholder={tr("e.g. Osei")}
                     value={personal.lastName}
                     onChange={e => setPersonal({ ...personal, lastName: e.target.value })}
                     className={`w-full p-3 text-sm rounded-xl border bg-neutral-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#6D1838]/20 transition-all ${
@@ -933,9 +920,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
 
                 {/* Email Address */}
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-[#575260] mb-1.5">
-                    Official Email Address *
-                  </label>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-ink/65 mb-1.5">{tr("Official Email Address *")}</label>
                   <input
                     type="email"
                     placeholder="student@example.com"
@@ -946,16 +931,12 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                     }`}
                   />
                   {errors.email && <p className="text-xs text-rose-500 mt-1">{errors.email}</p>}
-                  <p className="text-[11px] text-neutral-400 mt-1">
-                    Your official admission offer and embassy notifications will be sent here.
-                  </p>
+                  <p className="text-[11px] text-neutral-400 mt-1">{tr("Your official admission offer and embassy notifications will be sent here.")}</p>
                 </div>
 
                 {/* WhatsApp Number */}
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-[#575260] mb-1.5">
-                    WhatsApp Number (with Country Code) *
-                  </label>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-ink/65 mb-1.5">{tr("WhatsApp Number (with Country Code) *")}</label>
                   <input
                     type="text"
                     placeholder="+233 50 123 4567"
@@ -966,19 +947,15 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                     }`}
                   />
                   {errors.whatsapp && <p className="text-xs text-rose-500 mt-1">{errors.whatsapp}</p>}
-                  <p className="text-[11px] text-neutral-400 mt-1">
-                    Your senior advisor communicates real-time updates via WhatsApp.
-                  </p>
+                  <p className="text-[11px] text-neutral-400 mt-1">{tr("Your senior advisor communicates real-time updates via WhatsApp.")}</p>
                 </div>
 
                 {/* Nationality */}
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-[#575260] mb-1.5">
-                    Passport Nationality / Citizenship *
-                  </label>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-ink/65 mb-1.5">{tr("Passport Nationality / Citizenship *")}</label>
                   <input
                     type="text"
-                    placeholder="e.g. Ghanaian, Brazilian, German, Nigerian"
+                    placeholder={tr("e.g. Ghanaian, Brazilian, German, Nigerian")}
                     value={personal.nationality}
                     onChange={e => setPersonal({ ...personal, nationality: e.target.value })}
                     className={`w-full p-3 text-sm rounded-xl border bg-neutral-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#6D1838]/20 transition-all ${
@@ -990,9 +967,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
 
                 {/* Date of Birth */}
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-[#575260] mb-1.5">
-                    Date of Birth *
-                  </label>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-ink/65 mb-1.5">{tr("Date of Birth *")}</label>
                   <input
                     type="date"
                     value={personal.dateOfBirth}
@@ -1006,9 +981,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
 
                 {/* Gender */}
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-[#575260] mb-1.5">
-                    Gender *
-                  </label>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-ink/65 mb-1.5">{tr("Gender *")}</label>
                   <div className="grid grid-cols-3 gap-2">
                     {['Male', 'Female', 'Other'].map(g => (
                       <button
@@ -1021,7 +994,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                             : 'bg-neutral-50 text-neutral-700 border-neutral-200 hover:border-neutral-300'
                         }`}
                       >
-                        {g}
+                        {tr(g)}
                       </button>
                     ))}
                   </div>
@@ -1029,12 +1002,10 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
 
                 {/* Country of Residence */}
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-[#575260] mb-1.5">
-                    Current Country of Residence *
-                  </label>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-ink/65 mb-1.5">{tr("Current Country of Residence *")}</label>
                   <input
                     type="text"
-                    placeholder="e.g. Ghana, UAE, UK, South Africa"
+                    placeholder={tr("e.g. Ghana, UAE, UK, South Africa")}
                     value={personal.country}
                     onChange={e => setPersonal({ ...personal, country: e.target.value, currentCountry: e.target.value })}
                     className={`w-full p-3 text-sm rounded-xl border bg-neutral-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#6D1838]/20 transition-all ${
@@ -1046,12 +1017,10 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
 
                 {/* Current City */}
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-[#575260] mb-1.5">
-                    Current City *
-                  </label>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-ink/65 mb-1.5">{tr("Current City *")}</label>
                   <input
                     type="text"
-                    placeholder="e.g. Accra, São Paulo, Munich"
+                    placeholder={tr("e.g. Accra, São Paulo, Munich")}
                     value={personal.currentCity}
                     onChange={e => setPersonal({ ...personal, currentCity: e.target.value })}
                     className={`w-full p-3 text-sm rounded-xl border bg-neutral-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#6D1838]/20 transition-all ${
@@ -1063,12 +1032,10 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
 
                 {/* Address (Optional) */}
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-[#575260] mb-1.5">
-                    Mailing Address (Optional)
-                  </label>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-ink/65 mb-1.5">{tr("Mailing Address (Optional)")}</label>
                   <input
                     type="text"
-                    placeholder="Street, Building, Apt number"
+                    placeholder={tr("Street, Building, Apt number")}
                     value={personal.address}
                     onChange={e => setPersonal({ ...personal, address: e.target.value })}
                     className="w-full p-3 text-sm rounded-xl border border-neutral-200 bg-neutral-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#6D1838]/20 focus:border-[#6D1838]"
@@ -1082,45 +1049,35 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
           {currentStep === 2 && (
             <div className="space-y-6 animate-in fade-in duration-200">
               <div className="border-b border-neutral-100 pb-4">
-                <span className="text-xs font-bold uppercase tracking-wider text-[#6D1838]">
-                  Academic Record & Language
-                </span>
-                <h2 className="text-xl sm:text-2xl font-bold text-[#18151B] mt-1">
-                  Education Background
-                </h2>
-                <p className="text-xs sm:text-sm text-[#575260] mt-1">
-                  Tell us about your highest educational attainment and academic performance to evaluate admission eligibility.
-                </p>
+                <span className="text-xs font-bold uppercase tracking-wider text-[#6D1838]">{tr("Academic Record & Language")}</span>
+                <h2 className="font-display text-xl sm:text-2xl font-semibold text-ink mt-1">{tr("Education Background")}</h2>
+                <p className="text-xs sm:text-sm text-ink/65 mt-1">{tr("Tell us about your highest educational attainment and academic performance to evaluate admission eligibility.")}</p>
               </div>
 
               <div className="space-y-4">
                 {/* Highest Education */}
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-[#575260] mb-1.5">
-                    Highest Education Completed or Currently Pursuing *
-                  </label>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-ink/65 mb-1.5">{tr("Highest Education Completed or Currently Pursuing *")}</label>
                   <select
                     value={education.highestEducation}
                     onChange={e => setEducation({ ...education, highestEducation: e.target.value })}
                     className="w-full p-3 text-sm rounded-xl border border-neutral-200 bg-neutral-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#6D1838]/20 focus:border-[#6D1838]"
                   >
-                    <option value="High School Diploma / Secondary School">High School Diploma / Upper Secondary (A-Levels, IB, WASSCE, Abitur)</option>
-                    <option value="Associate Degree / Diploma">2-Year Associate Degree / Polytechnic Diploma</option>
-                    <option value="Bachelor's Degree">Bachelor's Degree / Undergraduate (Completed or Final Year)</option>
-                    <option value="Master's Degree">Master's Degree / Postgraduate</option>
-                    <option value="Other">Other Certificate / Foundation Program</option>
+                    <option value="High School Diploma / Secondary School">{tr("High School Diploma / Upper Secondary (A-Levels, IB, WASSCE, Abitur)")}</option>
+                    <option value="Associate Degree / Diploma">{tr("2-Year Associate Degree / Polytechnic Diploma")}</option>
+                    <option value="Bachelor's Degree">{tr("Bachelor's Degree / Undergraduate (Completed or Final Year)")}</option>
+                    <option value="Master's Degree">{tr("Master's Degree / Postgraduate")}</option>
+                    <option value="Other">{tr("Other Certificate / Foundation Program")}</option>
                   </select>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {/* Institution Name */}
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-[#575260] mb-1.5">
-                      School / Institution Name *
-                    </label>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-ink/65 mb-1.5">{tr("School / Institution Name *")}</label>
                     <input
                       type="text"
-                      placeholder="e.g. Prempeh College or St. Andrews Secondary"
+                      placeholder={tr("e.g. Prempeh College or St. Andrews Secondary")}
                       value={education.schoolName}
                       onChange={e => setEducation({ ...education, schoolName: e.target.value })}
                       className={`w-full p-3 text-sm rounded-xl border bg-neutral-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#6D1838]/20 transition-all ${
@@ -1132,12 +1089,10 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
 
                   {/* Field of Study */}
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-[#575260] mb-1.5">
-                      Field of Study / Secondary Track
-                    </label>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-ink/65 mb-1.5">{tr("Field of Study / Secondary Track")}</label>
                     <input
                       type="text"
-                      placeholder="e.g. General Science, Commerce, Computer Science"
+                      placeholder={tr("e.g. General Science, Commerce, Computer Science")}
                       value={education.fieldOfStudy}
                       onChange={e => setEducation({ ...education, fieldOfStudy: e.target.value })}
                       className="w-full p-3 text-sm rounded-xl border border-neutral-200 bg-neutral-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#6D1838]/20 focus:border-[#6D1838]"
@@ -1146,12 +1101,10 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
 
                   {/* Graduation Year */}
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-[#575260] mb-1.5">
-                      Year of Graduation / Expected Completion
-                    </label>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-ink/65 mb-1.5">{tr("Year of Graduation / Expected Completion")}</label>
                     <input
                       type="text"
-                      placeholder="e.g. 2023 or 2025"
+                      placeholder={tr("e.g. 2023 or 2025")}
                       value={education.graduationYear}
                       onChange={e => setEducation({ ...education, graduationYear: e.target.value })}
                       className="w-full p-3 text-sm rounded-xl border border-neutral-200 bg-neutral-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#6D1838]/20 focus:border-[#6D1838]"
@@ -1160,12 +1113,10 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
 
                   {/* GPA or Grade Average */}
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-[#575260] mb-1.5">
-                      Cumulative GPA or Percentage Average *
-                    </label>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-ink/65 mb-1.5">{tr("Cumulative GPA or Percentage Average *")}</label>
                     <input
                       type="text"
-                      placeholder="e.g. 3.6 / 4.0 GPA or 85% or 8 As"
+                      placeholder={tr("e.g. 3.6 / 4.0 GPA or 85% or 8 As")}
                       value={education.gpaOrGrade}
                       onChange={e => setEducation({ ...education, gpaOrGrade: e.target.value })}
                       className={`w-full p-3 text-sm rounded-xl border bg-neutral-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#6D1838]/20 transition-all ${
@@ -1178,53 +1129,46 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
 
                 {/* Language Proficiency */}
                 <div className="pt-2 border-t border-neutral-100">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-[#18151B] mb-3">
-                    Language Readiness
-                  </h3>
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-ink mb-3">{tr("Language Readiness")}</h3>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-bold uppercase tracking-wider text-[#575260] mb-1.5">
-                        English Proficiency
-                      </label>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-ink/65 mb-1.5">{tr("English Proficiency")}</label>
                       <select
                         value={education.englishProficiency}
                         onChange={e => setEducation({ ...education, englishProficiency: e.target.value })}
                         className="w-full p-3 text-sm rounded-xl border border-neutral-200 bg-neutral-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#6D1838]/20 focus:border-[#6D1838]"
                       >
-                        <option value="Native / English-medium School">Native Speaker / Prior Medium of Instruction was English</option>
-                        <option value="IELTS Academic">IELTS Academic</option>
-                        <option value="TOEFL iBT">TOEFL iBT</option>
-                        <option value="Duolingo English Test">Duolingo English Test</option>
-                        <option value="Medium of Instruction (MOI) Certificate">Medium of Instruction (MOI) Certificate from School</option>
-                        <option value="None / Basic">Basic / Non-native without standardized test</option>
+                        <option value="Native / English-medium School">{tr("Native Speaker / Prior Medium of Instruction was English")}</option>
+                        <option value="IELTS Academic">{tr("IELTS Academic")}</option>
+                        <option value="TOEFL iBT">{tr("TOEFL iBT")}</option>
+                        <option value="Duolingo English Test">{tr("Duolingo English Test")}</option>
+                        <option value="Medium of Instruction (MOI) Certificate">{tr("Medium of Instruction (MOI) Certificate from School")}</option>
+                        <option value="None / Basic">{tr("Basic / Non-native without standardized test")}</option>
                       </select>
                     </div>
 
                     <div>
-                      <label className="block text-xs font-bold uppercase tracking-wider text-[#575260] mb-1.5">
-                        Chinese (Mandarin) Proficiency
-                      </label>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-ink/65 mb-1.5">{tr("Chinese (Mandarin) Proficiency")}</label>
                       <select
                         value={education.chineseProficiency}
                         onChange={e => setEducation({ ...education, chineseProficiency: e.target.value })}
                         className="w-full p-3 text-sm rounded-xl border border-neutral-200 bg-neutral-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#6D1838]/20 focus:border-[#6D1838]"
                       >
-                        <option value="None (Complete Beginner)">None (Complete Beginner - English-taught programs only)</option>
-                        <option value="HSK 1 - Basic greetings">HSK 1 - Basic greetings & everyday vocabulary</option>
-                        <option value="HSK 2 - Elementary">HSK 2 - Elementary conversation</option>
-                        <option value="HSK 3 - Intermediate">HSK 3 - Intermediate conversational</option>
-                        <option value="HSK 4 - Certified (Degree Entry)">HSK 4 - Certified (Minimum for Chinese-taught Bachelor)</option>
-                        <option value="HSK 5 / HSK 6 - Advanced">HSK 5 / HSK 6 - Fluent / Professional</option>
+                        <option value="None (Complete Beginner)">{tr("None (Complete Beginner - English-taught programs only)")}</option>
+                        <option value="HSK 1 - Basic greetings">{tr("HSK 1 - Basic greetings & everyday vocabulary")}</option>
+                        <option value="HSK 2 - Elementary">{tr("HSK 2 - Elementary conversation")}</option>
+                        <option value="HSK 3 - Intermediate">{tr("HSK 3 - Intermediate conversational")}</option>
+                        <option value="HSK 4 - Certified (Degree Entry)">{tr("HSK 4 - Certified (Minimum for Chinese-taught Bachelor)")}</option>
+                        <option value="HSK 5 / HSK 6 - Advanced">{tr("HSK 5 / HSK 6 - Fluent / Professional")}</option>
                       </select>
                     </div>
                   </div>
 
-                  <div className="mt-3 p-3 bg-[#FAF7F9] border border-neutral-200 rounded-xl text-xs text-[#575260] flex items-start gap-2">
+                  <div className="mt-3 p-3 bg-porcelain border border-neutral-200 rounded-xl text-xs text-ink/65 flex items-start gap-2">
                     <CheckCircle2 className="w-4 h-4 text-[#6D1838] shrink-0 mt-0.5" />
                     <span>
-                      <strong>Good news:</strong> Numerous Bachelor and Master degree tracks in China are taught entirely in English. No prior Chinese is required for English-medium tracks!
-                    </span>
+                      <strong>{tr("Good news:")}</strong>{' '}{tr("Numerous Bachelor and Master degree tracks in China are taught entirely in English. No prior Chinese is required for English-medium tracks!")}</span>
                   </div>
                 </div>
               </div>
@@ -1236,37 +1180,29 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
             <div className="space-y-8 animate-in fade-in duration-200">
               {/* Header */}
               <div className="border-b border-neutral-100 pb-4">
-                <span className="text-xs font-bold uppercase tracking-wider text-[#6D1838]">
-                  Three-Tier Study Opportunity System
-                </span>
-                <h2 className="text-xl sm:text-2xl font-bold text-[#18151B] mt-1">
-                  Your Program Preferences
-                </h2>
-                <p className="text-xs sm:text-sm text-[#575260] mt-1 max-w-3xl leading-relaxed">
-                  Tell us what you would like to study. You can select up to three program preferences. We will evaluate your choices against available opportunities and identify the most suitable option for your profile and scholarship objectives.
-                </p>
+                <span className="text-xs font-bold uppercase tracking-wider text-[#6D1838]">{tr("Three-Tier Study Opportunity System")}</span>
+                <h2 className="font-display text-xl sm:text-2xl font-semibold text-ink mt-1">{tr("Your Program Preferences")}</h2>
+                <p className="text-xs sm:text-sm text-ink/65 mt-1 max-w-3xl leading-relaxed">{tr("Tell us what you would like to study. You can select up to three program preferences. We will evaluate your choices against available opportunities and identify the most suitable option for your profile and scholarship objectives.")}</p>
               </div>
 
               {/* Priority Flow Indicator */}
               <div className="p-4 bg-neutral-50 rounded-2xl border border-neutral-200">
-                <div className="text-[11px] font-bold uppercase tracking-wider text-[#575260] mb-2">
-                  Evaluation Priority Hierarchy
-                </div>
+                <div className="text-[11px] font-bold uppercase tracking-wider text-ink/65 mb-2">{tr("Evaluation Priority Hierarchy")}</div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div className="p-3 bg-white rounded-xl border-2 border-[#6D1838] shadow-xs">
-                    <span className="font-mono text-xs font-black text-[#6D1838]">01 — First Choice</span>
-                    <strong className="block text-xs text-[#18151B] font-bold mt-0.5">Highest Priority</strong>
-                    <span className="text-[11px] text-[#575260]">Evaluated first for target quotas & scholarships</span>
+                    <span className="font-mono text-xs font-black text-[#6D1838]">{tr("01 — First Choice")}</span>
+                    <strong className="block text-xs text-ink font-bold mt-0.5">{tr("Highest Priority")}</strong>
+                    <span className="text-[11px] text-ink/65">{tr("Evaluated first for target quotas & scholarships")}</span>
                   </div>
                   <div className="p-3 bg-white rounded-xl border border-neutral-300">
-                    <span className="font-mono text-xs font-black text-[#6C3B9E]">02 — Second Choice</span>
-                    <strong className="block text-xs text-[#18151B] font-bold mt-0.5">Alternative Option</strong>
-                    <span className="text-[11px] text-[#575260]">Evaluated if primary option is unavailable or unsuitable</span>
+                    <span className="font-mono text-xs font-black text-[#6C3B9E]">{tr("02 — Second Choice")}</span>
+                    <strong className="block text-xs text-ink font-bold mt-0.5">{tr("Alternative Option")}</strong>
+                    <span className="text-[11px] text-ink/65">{tr("Evaluated if primary option is unavailable or unsuitable")}</span>
                   </div>
                   <div className="p-3 bg-white rounded-xl border border-neutral-200">
-                    <span className="font-mono text-xs font-black text-neutral-600">03 — Third Choice</span>
-                    <strong className="block text-xs text-[#18151B] font-bold mt-0.5">Backup Option</strong>
-                    <span className="text-[11px] text-[#575260]">Contingency safeguard to ensure enrollment</span>
+                    <span className="font-mono text-xs font-black text-neutral-600">{tr("03 — Third Choice")}</span>
+                    <strong className="block text-xs text-ink font-bold mt-0.5">{tr("Backup Option")}</strong>
+                    <span className="text-[11px] text-ink/65">{tr("Contingency safeguard to ensure enrollment")}</span>
                   </div>
                 </div>
               </div>
@@ -1277,40 +1213,34 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                 <div className="bg-white rounded-2xl border-2 border-[#6D1838]/60 p-5 sm:p-6 shadow-xs space-y-4">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 pb-3 border-b border-neutral-100">
                     <div className="flex items-center gap-2">
-                      <span className="px-2.5 py-1 bg-[#6D1838] text-white text-xs font-bold rounded-lg uppercase tracking-wider">
-                        1st Choice
-                      </span>
-                      <h3 className="font-bold text-sm sm:text-base text-[#18151B]">Primary Preference</h3>
+                      <span className="px-2.5 py-1 bg-[#6D1838] text-white text-xs font-bold rounded-lg uppercase tracking-wider">{tr("1st Choice")}</span>
+                      <h3 className="font-bold text-sm sm:text-base text-ink">{tr("Primary Preference")}</h3>
                     </div>
-                    <span className="text-xs text-[#575260] italic">
-                      Your preferred study option.
-                    </span>
+                    <span className="text-xs text-ink/65 italic">{tr("Your preferred study option.")}</span>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {/* Field of Study */}
                     <div>
-                      <label className="block text-xs font-bold uppercase tracking-wider text-[#575260] mb-1.5">
-                        Field of Study *
-                      </label>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-ink/65 mb-1.5">{tr("Field of Study *")}</label>
                       <select
                         value={firstChoice.fieldOfStudy}
                         onChange={e => setFirstChoice({ ...firstChoice, fieldOfStudy: e.target.value })}
                         className="w-full p-3 text-sm rounded-xl border border-neutral-200 bg-neutral-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#6D1838]/20 focus:border-[#6D1838]"
                       >
-                        <option value="Computer Science & AI">Computer Science, Software Engineering & AI</option>
-                        <option value="Software Engineering & IT">Software Engineering, Cloud & Big Data</option>
-                        <option value="International Business, Finance & Economics">International Business, Finance & Economics (IBBA)</option>
-                        <option value="Clinical Medicine (MBBS) & Dentistry">Clinical Medicine (MBBS) & Dentistry</option>
-                        <option value="Mechanical & Automotive Engineering">Mechanical, Mechatronics & Automotive Engineering</option>
-                        <option value="Civil & Environmental Engineering">Civil & Environmental Engineering</option>
-                        <option value="Electrical Engineering & Telecommunications">Electrical Engineering & Telecommunications</option>
-                        <option value="Chinese Language & Cultural Studies">Chinese Language & Cultural Studies (Language Immersion)</option>
-                        <option value="Architecture & Urban Planning">Architecture & Urban Planning</option>
-                        <option value="International Relations & Diplomacy">International Relations, Public Policy & Diplomacy</option>
-                        <option value="Biotechnology & Pharmaceutical Sciences">Biotechnology & Pharmaceutical Sciences</option>
-                        <option value="Digital Media, Arts & Communication">Digital Media, Arts & Communication</option>
-                        <option value="Other / Customized Field">Other / Interdisciplinary Study</option>
+                        <option value="Computer Science & AI">{tr("Computer Science, Software Engineering & AI")}</option>
+                        <option value="Software Engineering & IT">{tr("Software Engineering, Cloud & Big Data")}</option>
+                        <option value="International Business, Finance & Economics">{tr("International Business, Finance & Economics (IBBA)")}</option>
+                        <option value="Clinical Medicine (MBBS) & Dentistry">{tr("Clinical Medicine (MBBS) & Dentistry")}</option>
+                        <option value="Mechanical & Automotive Engineering">{tr("Mechanical, Mechatronics & Automotive Engineering")}</option>
+                        <option value="Civil & Environmental Engineering">{tr("Civil & Environmental Engineering")}</option>
+                        <option value="Electrical Engineering & Telecommunications">{tr("Electrical Engineering & Telecommunications")}</option>
+                        <option value="Chinese Language & Cultural Studies">{tr("Chinese Language & Cultural Studies (Language Immersion)")}</option>
+                        <option value="Architecture & Urban Planning">{tr("Architecture & Urban Planning")}</option>
+                        <option value="International Relations & Diplomacy">{tr("International Relations, Public Policy & Diplomacy")}</option>
+                        <option value="Biotechnology & Pharmaceutical Sciences">{tr("Biotechnology & Pharmaceutical Sciences")}</option>
+                        <option value="Digital Media, Arts & Communication">{tr("Digital Media, Arts & Communication")}</option>
+                        <option value="Other / Customized Field">{tr("Other / Interdisciplinary Study")}</option>
                       </select>
                       {errors.firstChoiceField && (
                         <p className="text-xs text-red-600 mt-1 font-semibold">{errors.firstChoiceField}</p>
@@ -1319,12 +1249,10 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
 
                     {/* Desired Program */}
                     <div>
-                      <label className="block text-xs font-bold uppercase tracking-wider text-[#575260] mb-1.5">
-                        Desired Program *
-                      </label>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-ink/65 mb-1.5">{tr("Desired Program *")}</label>
                       <input
                         type="text"
-                        placeholder="e.g. B.Sc. Computer Science and Technology"
+                        placeholder={tr("e.g. B.Sc. Computer Science and Technology")}
                         value={firstChoice.program}
                         onChange={e => setFirstChoice({ ...firstChoice, program: e.target.value })}
                         className="w-full p-3 text-sm rounded-xl border border-neutral-200 bg-neutral-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#6D1838]/20 focus:border-[#6D1838]"
@@ -1336,9 +1264,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
 
                     {/* Degree Level */}
                     <div>
-                      <label className="block text-xs font-bold uppercase tracking-wider text-[#575260] mb-1.5">
-                        Degree Level *
-                      </label>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-ink/65 mb-1.5">{tr("Degree Level *")}</label>
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                         {(['Bachelor', 'Master', 'PhD', 'Non-Degree Language'] as DegreeLevel[]).map(deg => (
                           <button
@@ -1351,7 +1277,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                                 : 'bg-neutral-50 text-neutral-800 border-neutral-200 hover:border-neutral-300'
                             }`}
                           >
-                            {deg === 'Non-Degree Language' ? 'Language' : deg}
+                            {deg === 'Non-Degree Language' ? tr("Language") : deg}
                           </button>
                         ))}
                       </div>
@@ -1360,24 +1286,20 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                     {/* Preferred Study Language & Intake */}
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-xs font-bold uppercase tracking-wider text-[#575260] mb-1.5">
-                          Study Language
-                        </label>
+                        <label className="block text-xs font-bold uppercase tracking-wider text-ink/65 mb-1.5">{tr("Study Language")}</label>
                         <select
                           value={firstChoice.studyLanguage}
                           onChange={e => setFirstChoice({ ...firstChoice, studyLanguage: e.target.value })}
                           className="w-full p-2.5 text-xs sm:text-sm rounded-xl border border-neutral-200 bg-neutral-50 focus:bg-white focus:outline-none focus:border-[#6D1838]"
                         >
-                          <option value="English">English</option>
-                          <option value="Chinese">Chinese</option>
-                          <option value="Bilingual">Bilingual</option>
+                          <option value="English">{tr("English")}</option>
+                          <option value="Chinese">{tr("Chinese")}</option>
+                          <option value="Bilingual">{tr("Bilingual")}</option>
                         </select>
                       </div>
 
                       <div>
-                        <label className="block text-xs font-bold uppercase tracking-wider text-[#575260] mb-1.5">
-                          Preferred Intake
-                        </label>
+                        <label className="block text-xs font-bold uppercase tracking-wider text-ink/65 mb-1.5">{tr("Preferred Intake")}</label>
                         <select
                           value={firstChoice.intake}
                           onChange={e => setFirstChoice({ ...firstChoice, intake: e.target.value })}
@@ -1395,54 +1317,46 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                 </div>
 
                 {/* 2nd Choice Card */}
-                <div className="bg-white rounded-2xl border border-neutral-200 p-5 sm:p-6 shadow-xs space-y-4">
+                <div className="bg-white rounded-3xl ring-1 ring-ink/[0.07] p-5 sm:p-6 shadow-xs space-y-4">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 pb-3 border-b border-neutral-100">
                     <div className="flex items-center gap-2">
-                      <span className="px-2.5 py-1 bg-[#6C3B9E] text-white text-xs font-bold rounded-lg uppercase tracking-wider">
-                        2nd Choice
-                      </span>
-                      <h3 className="font-bold text-sm sm:text-base text-[#18151B]">Alternative Option</h3>
+                      <span className="px-2.5 py-1 bg-[#6C3B9E] text-white text-xs font-bold rounded-lg uppercase tracking-wider">{tr("2nd Choice")}</span>
+                      <h3 className="font-bold text-sm sm:text-base text-ink">{tr("Alternative Option")}</h3>
                     </div>
-                    <span className="text-xs text-[#575260] italic">
-                      Your alternative option if your first choice is not available or suitable.
-                    </span>
+                    <span className="text-xs text-ink/65 italic">{tr("Your alternative option if your first choice is not available or suitable.")}</span>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {/* Field of Study */}
                     <div>
-                      <label className="block text-xs font-bold uppercase tracking-wider text-[#575260] mb-1.5">
-                        Field of Study
-                      </label>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-ink/65 mb-1.5">{tr("Field of Study")}</label>
                       <select
                         value={secondChoice.fieldOfStudy}
                         onChange={e => setSecondChoice({ ...secondChoice, fieldOfStudy: e.target.value })}
                         className="w-full p-3 text-sm rounded-xl border border-neutral-200 bg-neutral-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#6C3B9E]/20 focus:border-[#6C3B9E]"
                       >
-                        <option value="Software Engineering & IT">Software Engineering, Cloud & Big Data</option>
-                        <option value="Computer Science & AI">Computer Science, Software Engineering & AI</option>
-                        <option value="International Business, Finance & Economics">International Business, Finance & Economics (IBBA)</option>
-                        <option value="Clinical Medicine (MBBS) & Dentistry">Clinical Medicine (MBBS) & Dentistry</option>
-                        <option value="Mechanical & Automotive Engineering">Mechanical, Mechatronics & Automotive Engineering</option>
-                        <option value="Civil & Environmental Engineering">Civil & Environmental Engineering</option>
-                        <option value="Electrical Engineering & Telecommunications">Electrical Engineering & Telecommunications</option>
-                        <option value="Chinese Language & Cultural Studies">Chinese Language & Cultural Studies (Language Immersion)</option>
-                        <option value="Architecture & Urban Planning">Architecture & Urban Planning</option>
-                        <option value="International Relations & Diplomacy">International Relations, Public Policy & Diplomacy</option>
-                        <option value="Biotechnology & Pharmaceutical Sciences">Biotechnology & Pharmaceutical Sciences</option>
-                        <option value="Digital Media, Arts & Communication">Digital Media, Arts & Communication</option>
-                        <option value="Other / Customized Field">Other / Interdisciplinary Study</option>
+                        <option value="Software Engineering & IT">{tr("Software Engineering, Cloud & Big Data")}</option>
+                        <option value="Computer Science & AI">{tr("Computer Science, Software Engineering & AI")}</option>
+                        <option value="International Business, Finance & Economics">{tr("International Business, Finance & Economics (IBBA)")}</option>
+                        <option value="Clinical Medicine (MBBS) & Dentistry">{tr("Clinical Medicine (MBBS) & Dentistry")}</option>
+                        <option value="Mechanical & Automotive Engineering">{tr("Mechanical, Mechatronics & Automotive Engineering")}</option>
+                        <option value="Civil & Environmental Engineering">{tr("Civil & Environmental Engineering")}</option>
+                        <option value="Electrical Engineering & Telecommunications">{tr("Electrical Engineering & Telecommunications")}</option>
+                        <option value="Chinese Language & Cultural Studies">{tr("Chinese Language & Cultural Studies (Language Immersion)")}</option>
+                        <option value="Architecture & Urban Planning">{tr("Architecture & Urban Planning")}</option>
+                        <option value="International Relations & Diplomacy">{tr("International Relations, Public Policy & Diplomacy")}</option>
+                        <option value="Biotechnology & Pharmaceutical Sciences">{tr("Biotechnology & Pharmaceutical Sciences")}</option>
+                        <option value="Digital Media, Arts & Communication">{tr("Digital Media, Arts & Communication")}</option>
+                        <option value="Other / Customized Field">{tr("Other / Interdisciplinary Study")}</option>
                       </select>
                     </div>
 
                     {/* Desired Program */}
                     <div>
-                      <label className="block text-xs font-bold uppercase tracking-wider text-[#575260] mb-1.5">
-                        Desired Program
-                      </label>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-ink/65 mb-1.5">{tr("Desired Program")}</label>
                       <input
                         type="text"
-                        placeholder="e.g. B.Eng. Software Engineering & Information Systems"
+                        placeholder={tr("e.g. B.Eng. Software Engineering & Information Systems")}
                         value={secondChoice.program}
                         onChange={e => setSecondChoice({ ...secondChoice, program: e.target.value })}
                         className="w-full p-3 text-sm rounded-xl border border-neutral-200 bg-neutral-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#6C3B9E]/20 focus:border-[#6C3B9E]"
@@ -1451,9 +1365,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
 
                     {/* Degree Level */}
                     <div>
-                      <label className="block text-xs font-bold uppercase tracking-wider text-[#575260] mb-1.5">
-                        Degree Level
-                      </label>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-ink/65 mb-1.5">{tr("Degree Level")}</label>
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                         {(['Bachelor', 'Master', 'PhD', 'Non-Degree Language'] as DegreeLevel[]).map(deg => (
                           <button
@@ -1466,7 +1378,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                                 : 'bg-neutral-50 text-neutral-800 border-neutral-200 hover:border-neutral-300'
                             }`}
                           >
-                            {deg === 'Non-Degree Language' ? 'Language' : deg}
+                            {deg === 'Non-Degree Language' ? tr("Language") : deg}
                           </button>
                         ))}
                       </div>
@@ -1475,24 +1387,20 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                     {/* Preferred Study Language & Intake */}
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-xs font-bold uppercase tracking-wider text-[#575260] mb-1.5">
-                          Study Language
-                        </label>
+                        <label className="block text-xs font-bold uppercase tracking-wider text-ink/65 mb-1.5">{tr("Study Language")}</label>
                         <select
                           value={secondChoice.studyLanguage}
                           onChange={e => setSecondChoice({ ...secondChoice, studyLanguage: e.target.value })}
                           className="w-full p-2.5 text-xs sm:text-sm rounded-xl border border-neutral-200 bg-neutral-50 focus:bg-white focus:outline-none focus:border-[#6C3B9E]"
                         >
-                          <option value="English">English</option>
-                          <option value="Chinese">Chinese</option>
-                          <option value="Bilingual">Bilingual</option>
+                          <option value="English">{tr("English")}</option>
+                          <option value="Chinese">{tr("Chinese")}</option>
+                          <option value="Bilingual">{tr("Bilingual")}</option>
                         </select>
                       </div>
 
                       <div>
-                        <label className="block text-xs font-bold uppercase tracking-wider text-[#575260] mb-1.5">
-                          Preferred Intake
-                        </label>
+                        <label className="block text-xs font-bold uppercase tracking-wider text-ink/65 mb-1.5">{tr("Preferred Intake")}</label>
                         <select
                           value={secondChoice.intake}
                           onChange={e => setSecondChoice({ ...secondChoice, intake: e.target.value })}
@@ -1510,53 +1418,45 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                 </div>
 
                 {/* 3rd Choice Card */}
-                <div className="bg-white rounded-2xl border border-neutral-200 p-5 sm:p-6 shadow-xs space-y-4">
+                <div className="bg-white rounded-3xl ring-1 ring-ink/[0.07] p-5 sm:p-6 shadow-xs space-y-4">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 pb-3 border-b border-neutral-100">
                     <div className="flex items-center gap-2">
-                      <span className="px-2.5 py-1 bg-neutral-800 text-white text-xs font-bold rounded-lg uppercase tracking-wider">
-                        3rd Choice
-                      </span>
-                      <h3 className="font-bold text-sm sm:text-base text-[#18151B]">Backup Option</h3>
+                      <span className="px-2.5 py-1 bg-neutral-800 text-white text-xs font-bold rounded-lg uppercase tracking-wider">{tr("3rd Choice")}</span>
+                      <h3 className="font-bold text-sm sm:text-base text-ink">{tr("Backup Option")}</h3>
                     </div>
-                    <span className="text-xs text-[#575260] italic">
-                      Your backup option if your first two choices cannot be secured.
-                    </span>
+                    <span className="text-xs text-ink/65 italic">{tr("Your backup option if your first two choices cannot be secured.")}</span>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {/* Field of Study */}
                     <div>
-                      <label className="block text-xs font-bold uppercase tracking-wider text-[#575260] mb-1.5">
-                        Field of Study
-                      </label>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-ink/65 mb-1.5">{tr("Field of Study")}</label>
                       <select
                         value={thirdChoice.fieldOfStudy}
                         onChange={e => setThirdChoice({ ...thirdChoice, fieldOfStudy: e.target.value })}
                         className="w-full p-3 text-sm rounded-xl border border-neutral-200 bg-neutral-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-neutral-400/20 focus:border-neutral-500"
                       >
-                        <option value="Engineering & Technology">Engineering, Robotics & Advanced Materials</option>
-                        <option value="Computer Science & AI">Computer Science, Software Engineering & AI</option>
-                        <option value="Software Engineering & IT">Software Engineering, Cloud & Big Data</option>
-                        <option value="International Business, Finance & Economics">International Business, Finance & Economics (IBBA)</option>
-                        <option value="Clinical Medicine (MBBS) & Dentistry">Clinical Medicine (MBBS) & Dentistry</option>
-                        <option value="Electrical Engineering & Telecommunications">Electrical Engineering & Telecommunications</option>
-                        <option value="Chinese Language & Cultural Studies">Chinese Language & Cultural Studies (Language Immersion)</option>
-                        <option value="Architecture & Urban Planning">Architecture & Urban Planning</option>
-                        <option value="International Relations & Diplomacy">International Relations, Public Policy & Diplomacy</option>
-                        <option value="Biotechnology & Pharmaceutical Sciences">Biotechnology & Pharmaceutical Sciences</option>
-                        <option value="Digital Media, Arts & Communication">Digital Media, Arts & Communication</option>
-                        <option value="Other / Customized Field">Other / Interdisciplinary Study</option>
+                        <option value="Engineering & Technology">{tr("Engineering, Robotics & Advanced Materials")}</option>
+                        <option value="Computer Science & AI">{tr("Computer Science, Software Engineering & AI")}</option>
+                        <option value="Software Engineering & IT">{tr("Software Engineering, Cloud & Big Data")}</option>
+                        <option value="International Business, Finance & Economics">{tr("International Business, Finance & Economics (IBBA)")}</option>
+                        <option value="Clinical Medicine (MBBS) & Dentistry">{tr("Clinical Medicine (MBBS) & Dentistry")}</option>
+                        <option value="Electrical Engineering & Telecommunications">{tr("Electrical Engineering & Telecommunications")}</option>
+                        <option value="Chinese Language & Cultural Studies">{tr("Chinese Language & Cultural Studies (Language Immersion)")}</option>
+                        <option value="Architecture & Urban Planning">{tr("Architecture & Urban Planning")}</option>
+                        <option value="International Relations & Diplomacy">{tr("International Relations, Public Policy & Diplomacy")}</option>
+                        <option value="Biotechnology & Pharmaceutical Sciences">{tr("Biotechnology & Pharmaceutical Sciences")}</option>
+                        <option value="Digital Media, Arts & Communication">{tr("Digital Media, Arts & Communication")}</option>
+                        <option value="Other / Customized Field">{tr("Other / Interdisciplinary Study")}</option>
                       </select>
                     </div>
 
                     {/* Desired Program */}
                     <div>
-                      <label className="block text-xs font-bold uppercase tracking-wider text-[#575260] mb-1.5">
-                        Desired Program
-                      </label>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-ink/65 mb-1.5">{tr("Desired Program")}</label>
                       <input
                         type="text"
-                        placeholder="e.g. B.Eng. Electrical Engineering or Chinese Language"
+                        placeholder={tr("e.g. B.Eng. Electrical Engineering or Chinese Language")}
                         value={thirdChoice.program}
                         onChange={e => setThirdChoice({ ...thirdChoice, program: e.target.value })}
                         className="w-full p-3 text-sm rounded-xl border border-neutral-200 bg-neutral-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-neutral-400/20 focus:border-neutral-500"
@@ -1565,9 +1465,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
 
                     {/* Degree Level */}
                     <div>
-                      <label className="block text-xs font-bold uppercase tracking-wider text-[#575260] mb-1.5">
-                        Degree Level
-                      </label>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-ink/65 mb-1.5">{tr("Degree Level")}</label>
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                         {(['Bachelor', 'Master', 'PhD', 'Non-Degree Language'] as DegreeLevel[]).map(deg => (
                           <button
@@ -1580,7 +1478,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                                 : 'bg-neutral-50 text-neutral-800 border-neutral-200 hover:border-neutral-300'
                             }`}
                           >
-                            {deg === 'Non-Degree Language' ? 'Language' : deg}
+                            {deg === 'Non-Degree Language' ? tr("Language") : deg}
                           </button>
                         ))}
                       </div>
@@ -1589,24 +1487,20 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                     {/* Preferred Study Language & Intake */}
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-xs font-bold uppercase tracking-wider text-[#575260] mb-1.5">
-                          Study Language
-                        </label>
+                        <label className="block text-xs font-bold uppercase tracking-wider text-ink/65 mb-1.5">{tr("Study Language")}</label>
                         <select
                           value={thirdChoice.studyLanguage}
                           onChange={e => setThirdChoice({ ...thirdChoice, studyLanguage: e.target.value })}
                           className="w-full p-2.5 text-xs sm:text-sm rounded-xl border border-neutral-200 bg-neutral-50 focus:bg-white focus:outline-none focus:border-neutral-500"
                         >
-                          <option value="English">English</option>
-                          <option value="Chinese">Chinese</option>
-                          <option value="Bilingual">Bilingual</option>
+                          <option value="English">{tr("English")}</option>
+                          <option value="Chinese">{tr("Chinese")}</option>
+                          <option value="Bilingual">{tr("Bilingual")}</option>
                         </select>
                       </div>
 
                       <div>
-                        <label className="block text-xs font-bold uppercase tracking-wider text-[#575260] mb-1.5">
-                          Preferred Intake
-                        </label>
+                        <label className="block text-xs font-bold uppercase tracking-wider text-ink/65 mb-1.5">{tr("Preferred Intake")}</label>
                         <select
                           value={thirdChoice.intake}
                           onChange={e => setThirdChoice({ ...thirdChoice, intake: e.target.value })}
@@ -1625,51 +1519,39 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
               </div>
 
               {/* Informational Section: "How We Use Your Choices" */}
-              <div className="p-5 sm:p-6 rounded-2xl bg-[#FAF2F5] border border-[#EAD5DE] space-y-3">
+              <div className="p-5 sm:p-6 rounded-2xl bg-blush border border-[#EAD5DE] space-y-3">
                 <div className="flex items-center gap-2">
                   <Compass className="w-5 h-5 text-[#6D1838]" />
-                  <h3 className="font-bold text-sm sm:text-base text-[#18151B]">
-                    How We Use Your Choices
-                  </h3>
+                  <h3 className="font-bold text-sm sm:text-base text-ink">{tr("How We Use Your Choices")}</h3>
                 </div>
-                <p className="text-xs sm:text-sm text-[#575260] leading-relaxed">
-                  Your three choices help us evaluate different opportunities for your profile. If your first choice is unavailable, unsuitable, or does not provide a favorable scholarship opportunity, we can evaluate your second choice. If necessary, we can then consider your third choice.
-                </p>
-                <p className="text-xs sm:text-sm font-semibold text-[#6D1838] leading-relaxed">
-                  Our goal is to help you find the most suitable available study opportunity while maximizing your scholarship potential.
-                </p>
-                <div className="pt-2 border-t border-[#EAD5DE]/70 flex items-start gap-2 text-xs text-[#575260]">
+                <p className="text-xs sm:text-sm text-ink/65 leading-relaxed">{tr("Your three choices help us evaluate different opportunities for your profile. If your first choice is unavailable, unsuitable, or does not provide a favorable scholarship opportunity, we can evaluate your second choice. If necessary, we can then consider your third choice.")}</p>
+                <p className="text-xs sm:text-sm font-semibold text-[#6D1838] leading-relaxed">{tr("Our goal is to help you find the most suitable available study opportunity while maximizing your scholarship potential.")}</p>
+                <div className="pt-2 border-t border-[#EAD5DE]/70 flex items-start gap-2 text-xs text-ink/65">
                   <HelpCircle className="w-4 h-4 text-[#6D1838] shrink-0 mt-0.5" />
-                  <p>
-                    Evaluations are grounded in genuine academic criteria: program availability, applicant eligibility, academic profile, admission requirements, intake quotas, and scholarship funding allocations. We do not make misleading guarantees of automated placement.
-                  </p>
+                  <p>{tr("Evaluations are grounded in genuine academic criteria: program availability, applicant eligibility, academic profile, admission requirements, intake quotas, and scholarship funding allocations. We do not make misleading guarantees of automated placement.")}</p>
                 </div>
               </div>
 
               {/* Funding & Additional Notes */}
               <div className="space-y-4 pt-2 border-t border-neutral-100">
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-[#575260] mb-1.5">
-                    Scholarship & Funding Goal
-                  </label>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-ink/65 mb-1.5">{tr("Scholarship & Funding Goal")}</label>
                   <select
                     value={preferences.fundingPreference}
                     onChange={e => setPreferences({ ...preferences, fundingPreference: e.target.value })}
                     className="w-full p-3 text-sm rounded-xl border border-neutral-200 bg-neutral-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#6D1838]/20 focus:border-[#6D1838]"
                   >
-                    <option value="Full Chinese Government Scholarship (CSC) Preferred">Full CSC Scholarship Preferred (Tuition + Free Dorm + Monthly Stipend)</option>
-                    <option value="Provincial Government or Institutional Merit Scholarship">Provincial / Institutional Merit Scholarship (Tuition Waiver / Partial Grant)</option>
-                    <option value="Self-Funded / Open to Scholarships">Self-Funded (Priority on program quality, scholarships evaluated as a plus)</option>
+                    <option value="Full Chinese Government Scholarship (CSC) Preferred">{tr("Full CSC Scholarship Preferred (Tuition + Free Dorm + Monthly Stipend)")}</option>
+                    <option value="Provincial Government or Institutional Merit Scholarship">{tr("Provincial / Institutional Merit Scholarship (Tuition Waiver / Partial Grant)")}</option>
+                    <option value="Self-Funded / Open to Scholarships">{tr("Self-Funded (Priority on program quality, scholarships evaluated as a plus)")}</option>
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-[#575260] mb-1.5">
-                    Special Requests or Questions for Your Admissions Committee
-                  </label>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-ink/65 mb-1.5">{tr("Special Requests or Questions for Your Admissions Committee")}</label>
                   <textarea
                     rows={3}
-                    placeholder="Tell us about specific curriculum interests, city climates you prefer, or budget parameters..."
+                    placeholder={tr("Tell us about specific curriculum interests, city climates you prefer, or budget parameters...")}
                     value={preferences.additionalNotes}
                     onChange={e => setPreferences({ ...preferences, additionalNotes: e.target.value })}
                     className="w-full p-3 text-sm rounded-xl border border-neutral-200 bg-neutral-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#6D1838]/20 focus:border-[#6D1838]"
@@ -1685,24 +1567,16 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
               <div className="border-b border-neutral-100 pb-4">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <div>
-                    <span className="text-xs font-bold uppercase tracking-wider text-[#6D1838]">
-                      Credential Audit & Verification
-                    </span>
-                    <h2 className="text-xl sm:text-2xl font-bold text-[#18151B] mt-1">
-                      Upload Required Documents
-                    </h2>
-                    <p className="text-xs sm:text-sm text-[#575260] mt-1">
-                      Upload clean scanned PDF or JPG copies. Max 10MB per document.
-                    </p>
+                    <span className="text-xs font-bold uppercase tracking-wider text-[#6D1838]">{tr("Credential Audit & Verification")}</span>
+                    <h2 className="font-display text-xl sm:text-2xl font-semibold text-ink mt-1">{tr("Upload Required Documents")}</h2>
+                    <p className="text-xs sm:text-sm text-ink/65 mt-1">{tr("Upload clean scanned PDF or JPG copies. Max 10MB per document.")}</p>
                   </div>
                   {!exampleActive && <button
                     type="button"
                     onClick={handleFillDemoValues}
-                    className="self-start sm:self-center px-3 py-1.5 bg-[#FAF2F5] hover:bg-[#F3EEFA] text-[#6D1838] border border-[#EAD5DE] rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm"
+                    className="self-start sm:self-center px-3 py-1.5 bg-blush hover:bg-[#F3EEFA] text-[#6D1838] border border-[#EAD5DE] rounded-full text-xs font-bold flex items-center gap-1.5 shadow-sm"
                   >
-                    <Sparkles className="w-3.5 h-3.5" />
-                    See an Example
-                  </button>}
+                    <Sparkles className="w-3.5 h-3.5" />{tr("See an Example")}</button>}
                 </div>
               </div>
 
@@ -1711,8 +1585,8 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                 <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-700 flex items-start gap-2">
                   <AlertCircle className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
                   <div>
-                    <span className="font-bold">Missing Required Documents:</span>
-                    <p>Please upload the 4 mandatory files (Passport, Transcripts, Certificate, Photo) to proceed.</p>
+                    <span className="font-bold">{tr("Missing Required Documents:")}</span>
+                    <p>{tr("Please upload the 4 mandatory files (Passport, Transcripts, Certificate, Photo) to proceed.")}</p>
                   </div>
                 </div>
               )}
@@ -1720,12 +1594,9 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
               {/* Mandatory Checklist Section */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-[#18151B]">
-                    1. Mandatory Core Documents (Required for All Applicants)
-                  </h3>
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-ink">{tr("1. Mandatory Core Documents (Required for All Applicants)")}</h3>
                   <span className="text-[11px] text-neutral-500 font-medium">
-                    {['passport', 'transcript', 'certificate', 'photo'].filter(k => uploadedDocs[k]).length}/4 Uploaded
-                  </span>
+                    {['passport', 'transcript', 'certificate', 'photo'].filter(k => uploadedDocs[k]).length}{tr("/4 Uploaded")}</span>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
@@ -1736,10 +1607,10 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                     <div className="flex items-start justify-between">
                       <div>
                         <div className="flex items-center gap-1.5">
-                          <span className="font-bold text-xs sm:text-sm text-[#18151B]">International Passport</span>
-                          <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-rose-100 text-rose-700">Required</span>
+                          <span className="font-bold text-xs sm:text-sm text-ink">{tr("International Passport")}</span>
+                          <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-rose-100 text-rose-700">{tr("Required")}</span>
                         </div>
-                        <p className="text-[11px] text-[#575260] mt-0.5">Bio page with at least 18 months validity remaining.</p>
+                        <p className="text-[11px] text-ink/65 mt-0.5">{tr("Bio page with at least 18 months validity remaining.")}</p>
                       </div>
                       {uploadedDocs.passport ? (
                         <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
@@ -1759,7 +1630,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                           type="button"
                           onClick={() => handleRemoveDoc('passport')}
                           className="text-neutral-400 hover:text-rose-600 p-1"
-                          title="Remove file"
+                          title={tr("Remove file")}
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
@@ -1771,8 +1642,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                           onClick={() => handleSimulateUpload('passport')}
                           className="w-full py-2 bg-white hover:bg-neutral-100 border border-neutral-300 rounded-lg text-xs font-semibold text-neutral-700 transition-colors flex items-center justify-center gap-1.5"
                         >
-                          <Upload className="w-3.5 h-3.5" /> Select Passport Scan
-                        </button>
+                          <Upload className="w-3.5 h-3.5" />{' '}{tr("Select Passport Scan")}</button>
                       </div>
                     )}
                   </div>
@@ -1784,10 +1654,10 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                     <div className="flex items-start justify-between">
                       <div>
                         <div className="flex items-center gap-1.5">
-                          <span className="font-bold text-xs sm:text-sm text-[#18151B]">Academic Transcripts</span>
-                          <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-rose-100 text-rose-700">Required</span>
+                          <span className="font-bold text-xs sm:text-sm text-ink">{tr("Academic Transcripts")}</span>
+                          <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-rose-100 text-rose-700">{tr("Required")}</span>
                         </div>
-                        <p className="text-[11px] text-[#575260] mt-0.5">Official secondary or collegiate semester mark sheets.</p>
+                        <p className="text-[11px] text-ink/65 mt-0.5">{tr("Official secondary or collegiate semester mark sheets.")}</p>
                       </div>
                       {uploadedDocs.transcript ? (
                         <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
@@ -1818,8 +1688,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                           onClick={() => handleSimulateUpload('transcript')}
                           className="w-full py-2 bg-white hover:bg-neutral-100 border border-neutral-300 rounded-lg text-xs font-semibold text-neutral-700 transition-colors flex items-center justify-center gap-1.5"
                         >
-                          <Upload className="w-3.5 h-3.5" /> Select Transcripts
-                        </button>
+                          <Upload className="w-3.5 h-3.5" />{' '}{tr("Select Transcripts")}</button>
                       </div>
                     )}
                   </div>
@@ -1831,10 +1700,10 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                     <div className="flex items-start justify-between">
                       <div>
                         <div className="flex items-center gap-1.5">
-                          <span className="font-bold text-xs sm:text-sm text-[#18151B]">Graduation Diploma / Certificate</span>
-                          <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-rose-100 text-rose-700">Required</span>
+                          <span className="font-bold text-xs sm:text-sm text-ink">{tr("Graduation Diploma / Certificate")}</span>
+                          <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-rose-100 text-rose-700">{tr("Required")}</span>
                         </div>
-                        <p className="text-[11px] text-[#575260] mt-0.5">Or pre-graduation letter if you graduate this summer.</p>
+                        <p className="text-[11px] text-ink/65 mt-0.5">{tr("Or pre-graduation letter if you graduate this summer.")}</p>
                       </div>
                       {uploadedDocs.certificate ? (
                         <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
@@ -1865,8 +1734,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                           onClick={() => handleSimulateUpload('certificate')}
                           className="w-full py-2 bg-white hover:bg-neutral-100 border border-neutral-300 rounded-lg text-xs font-semibold text-neutral-700 transition-colors flex items-center justify-center gap-1.5"
                         >
-                          <Upload className="w-3.5 h-3.5" /> Select Diploma / Certificate
-                        </button>
+                          <Upload className="w-3.5 h-3.5" />{' '}{tr("Select Diploma / Certificate")}</button>
                       </div>
                     )}
                   </div>
@@ -1878,10 +1746,10 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                     <div className="flex items-start justify-between">
                       <div>
                         <div className="flex items-center gap-1.5">
-                          <span className="font-bold text-xs sm:text-sm text-[#18151B]">Passport-Size Digital ID Photo</span>
-                          <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-rose-100 text-rose-700">Required</span>
+                          <span className="font-bold text-xs sm:text-sm text-ink">{tr("Passport-Size Digital ID Photo")}</span>
+                          <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-rose-100 text-rose-700">{tr("Required")}</span>
                         </div>
-                        <p className="text-[11px] text-[#575260] mt-0.5">White background, formal attire, recent color photo.</p>
+                        <p className="text-[11px] text-ink/65 mt-0.5">{tr("White background, formal attire, recent color photo.")}</p>
                       </div>
                       {uploadedDocs.photo ? (
                         <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
@@ -1912,8 +1780,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                           onClick={() => handleSimulateUpload('photo')}
                           className="w-full py-2 bg-white hover:bg-neutral-100 border border-neutral-300 rounded-lg text-xs font-semibold text-neutral-700 transition-colors flex items-center justify-center gap-1.5"
                         >
-                          <Upload className="w-3.5 h-3.5" /> Select Photo File
-                        </button>
+                          <Upload className="w-3.5 h-3.5" />{' '}{tr("Select Photo File")}</button>
                       </div>
                     )}
                   </div>
@@ -1923,23 +1790,21 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
               {/* Optional / Recommended Supplementary Documents */}
               <div className="pt-4 border-t border-neutral-100 space-y-3">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-[#18151B]">
-                    2. Recommended Supplementary Documents (Boosts Admission & Scholarship)
-                  </h3>
-                  <span className="text-[11px] text-neutral-400">Can also be uploaded later in Dashboard</span>
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-ink">{tr("2. Recommended Supplementary Documents (Boosts Admission & Scholarship)")}</h3>
+                  <span className="text-[11px] text-neutral-400">{tr("Can also be uploaded later in Dashboard")}</span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   {[
-                    { key: 'study_plan', label: 'Study Plan / Statement of Purpose', desc: '500+ words' },
-                    { key: 'recommendation_1', label: 'Recommendation Letter 1', desc: 'From teacher or dean' },
-                    { key: 'english_test', label: 'English Test (IELTS/TOEFL/MOI)', desc: 'Optional if native' },
+                    { key: 'study_plan', label: tr("Study Plan / Statement of Purpose"), desc: tr("500+ words") },
+                    { key: 'recommendation_1', label: tr("Recommendation Letter 1"), desc: tr("From teacher or dean") },
+                    { key: 'english_test', label: tr("English Test (IELTS/TOEFL/MOI)"), desc: tr("Optional if native") },
                   ].map(doc => {
                     const isUploaded = Boolean(uploadedDocs[doc.key]);
                     return (
                       <div key={doc.key} className="p-3 bg-neutral-50 border border-neutral-200 rounded-xl text-xs">
-                        <p className="font-bold text-[#18151B]">{doc.label}</p>
-                        <p className="text-[11px] text-[#575260] mb-2">{doc.desc}</p>
+                        <p className="font-bold text-ink">{doc.label}</p>
+                        <p className="text-[11px] text-ink/65 mb-2">{doc.desc}</p>
                         {isUploaded ? (
                           <div className="flex items-center justify-between text-emerald-700 font-semibold bg-emerald-50 p-1.5 rounded">
                             <span className="truncate text-[11px]">{uploadedDocs[doc.key].name}</span>
@@ -1957,8 +1822,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                             onClick={() => handleSimulateUpload(doc.key)}
                             className="w-full py-1.5 bg-white border border-neutral-300 rounded text-neutral-600 hover:bg-neutral-100 transition-colors flex items-center justify-center gap-1 text-[11px] font-medium"
                           >
-                            <Upload className="w-3 h-3" /> Upload File
-                          </button>
+                            <Upload className="w-3 h-3" />{' '}{tr("Upload File")}</button>
                         )}
                       </div>
                     );
@@ -1972,15 +1836,9 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
           {currentStep === 5 && (
             <div className="space-y-6 animate-in fade-in duration-200">
               <div className="border-b border-neutral-100 pb-4">
-                <span className="text-xs font-bold uppercase tracking-wider text-[#6D1838]">
-                  Quality Audit & Final Check
-                </span>
-                <h2 className="text-xl sm:text-2xl font-bold text-[#18151B] mt-1">
-                  Review Your Application
-                </h2>
-                <p className="text-xs sm:text-sm text-[#575260] mt-1">
-                  Double check your dossier details. You can click 'Edit' on any section to make quick adjustments.
-                </p>
+                <span className="text-xs font-bold uppercase tracking-wider text-[#6D1838]">{tr("Quality Audit & Final Check")}</span>
+                <h2 className="font-display text-xl sm:text-2xl font-semibold text-ink mt-1">{tr("Review Your Application")}</h2>
+                <p className="text-xs sm:text-sm text-ink/65 mt-1">{tr("Double check your dossier details. You can click 'Edit' on any section to make quick adjustments.")}</p>
               </div>
 
               {/* Card 1: Personal Info */}
@@ -1988,42 +1846,38 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                 <div className="flex items-center justify-between border-b border-neutral-200 pb-2">
                   <div className="flex items-center gap-2">
                     <User className="w-4 h-4 text-[#6D1838]" />
-                    <h3 className="font-bold text-xs sm:text-sm text-[#18151B] uppercase tracking-wider">
-                      Personal Information
-                    </h3>
+                    <h3 className="font-bold text-xs sm:text-sm text-ink uppercase tracking-wider">{tr("Personal Information")}</h3>
                   </div>
                   <button
                     type="button"
                     onClick={() => setCurrentStep(1)}
                     className="text-xs font-bold text-[#6D1838] hover:underline"
-                  >
-                    Edit Step 1
-                  </button>
+                  >{tr("Edit Step 1")}</button>
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
                   <div>
-                    <span className="text-[#575260] block text-[11px]">Full Name:</span>
-                    <strong className="text-[#18151B]">{personal.firstName} {personal.lastName}</strong>
+                    <span className="text-ink/65 block text-[11px]">{tr("Full Name:")}</span>
+                    <strong className="text-ink">{personal.firstName} {personal.lastName}</strong>
                   </div>
                   <div>
-                    <span className="text-[#575260] block text-[11px]">Email:</span>
-                    <strong className="text-[#18151B]">{personal.email}</strong>
+                    <span className="text-ink/65 block text-[11px]">{tr("Email:")}</span>
+                    <strong className="text-ink">{personal.email}</strong>
                   </div>
                   <div>
-                    <span className="text-[#575260] block text-[11px]">WhatsApp:</span>
-                    <strong className="text-[#18151B]">{personal.whatsapp}</strong>
+                    <span className="text-ink/65 block text-[11px]">{tr("WhatsApp:")}</span>
+                    <strong className="text-ink">{personal.whatsapp}</strong>
                   </div>
                   <div>
-                    <span className="text-[#575260] block text-[11px]">Nationality:</span>
-                    <strong className="text-[#18151B]">{personal.nationality}</strong>
+                    <span className="text-ink/65 block text-[11px]">{tr("Nationality:")}</span>
+                    <strong className="text-ink">{personal.nationality}</strong>
                   </div>
                   <div>
-                    <span className="text-[#575260] block text-[11px]">Date of Birth:</span>
-                    <strong className="text-[#18151B]">{personal.dateOfBirth} ({personal.gender})</strong>
+                    <span className="text-ink/65 block text-[11px]">{tr("Date of Birth:")}</span>
+                    <strong className="text-ink">{personal.dateOfBirth} ({personal.gender})</strong>
                   </div>
                   <div>
-                    <span className="text-[#575260] block text-[11px]">Location:</span>
-                    <strong className="text-[#18151B]">{personal.currentCity}, {personal.currentCountry}</strong>
+                    <span className="text-ink/65 block text-[11px]">{tr("Location:")}</span>
+                    <strong className="text-ink">{personal.currentCity}, {personal.currentCountry}</strong>
                   </div>
                 </div>
               </div>
@@ -2033,42 +1887,38 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                 <div className="flex items-center justify-between border-b border-neutral-200 pb-2">
                   <div className="flex items-center gap-2">
                     <GraduationCap className="w-4 h-4 text-[#6D1838]" />
-                    <h3 className="font-bold text-xs sm:text-sm text-[#18151B] uppercase tracking-wider">
-                      Academic Background
-                    </h3>
+                    <h3 className="font-bold text-xs sm:text-sm text-ink uppercase tracking-wider">{tr("Academic Background")}</h3>
                   </div>
                   <button
                     type="button"
                     onClick={() => setCurrentStep(2)}
                     className="text-xs font-bold text-[#6D1838] hover:underline"
-                  >
-                    Edit Step 2
-                  </button>
+                  >{tr("Edit Step 2")}</button>
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
                   <div>
-                    <span className="text-[#575260] block text-[11px]">Education Level:</span>
-                    <strong className="text-[#18151B]">{education.highestEducation}</strong>
+                    <span className="text-ink/65 block text-[11px]">{tr("Education Level:")}</span>
+                    <strong className="text-ink">{education.highestEducation}</strong>
                   </div>
                   <div>
-                    <span className="text-[#575260] block text-[11px]">Institution:</span>
-                    <strong className="text-[#18151B]">{education.schoolName || 'Not specified'}</strong>
+                    <span className="text-ink/65 block text-[11px]">{tr("Institution:")}</span>
+                    <strong className="text-ink">{education.schoolName || tr("Not specified")}</strong>
                   </div>
                   <div>
-                    <span className="text-[#575260] block text-[11px]">GPA / Grade Average:</span>
-                    <strong className="text-[#18151B]">{education.gpaOrGrade}</strong>
+                    <span className="text-ink/65 block text-[11px]">{tr("GPA / Grade Average:")}</span>
+                    <strong className="text-ink">{education.gpaOrGrade}</strong>
                   </div>
                   <div>
-                    <span className="text-[#575260] block text-[11px]">English Level:</span>
-                    <strong className="text-[#18151B]">{education.englishProficiency}</strong>
+                    <span className="text-ink/65 block text-[11px]">{tr("English Level:")}</span>
+                    <strong className="text-ink">{education.englishProficiency}</strong>
                   </div>
                   <div>
-                    <span className="text-[#575260] block text-[11px]">Chinese Level:</span>
-                    <strong className="text-[#18151B]">{education.chineseProficiency}</strong>
+                    <span className="text-ink/65 block text-[11px]">{tr("Chinese Level:")}</span>
+                    <strong className="text-ink">{education.chineseProficiency}</strong>
                   </div>
                   <div>
-                    <span className="text-[#575260] block text-[11px]">Graduation Year:</span>
-                    <strong className="text-[#18151B]">{education.graduationYear}</strong>
+                    <span className="text-ink/65 block text-[11px]">{tr("Graduation Year:")}</span>
+                    <strong className="text-ink">{education.graduationYear}</strong>
                   </div>
                 </div>
               </div>
@@ -2078,11 +1928,9 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                 <div className="flex items-center justify-between border-b border-neutral-200 pb-2.5">
                   <div className="flex items-center gap-2">
                     <Compass className="w-4 h-4 text-[#6D1838]" />
-                    <h3 className="font-bold text-xs sm:text-sm text-[#18151B] uppercase tracking-wider">
-                      Your Program Preferences
-                    </h3>
+                    <h3 className="font-bold text-xs sm:text-sm text-ink uppercase tracking-wider">{tr("Your Program Preferences")}</h3>
                   </div>
-                  <span className="text-[11px] text-[#575260] font-medium">3-Choice Preference Hierarchy</span>
+                  <span className="text-[11px] text-ink/65 font-medium">{tr("3-Choice Preference Hierarchy")}</span>
                 </div>
 
                 <div className="space-y-3">
@@ -2090,39 +1938,35 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                   <div className="p-3.5 bg-white rounded-xl border-2 border-[#6D1838]/60 space-y-2">
                     <div className="flex items-center justify-between border-b border-neutral-100 pb-1.5">
                       <div className="flex items-center gap-2">
-                        <span className="px-2 py-0.5 bg-[#6D1838] text-white text-[10px] font-bold rounded uppercase">
-                          1st Choice
-                        </span>
-                        <strong className="text-xs text-[#18151B]">Primary Preference</strong>
+                        <span className="px-2 py-0.5 bg-[#6D1838] text-white text-[10px] font-bold rounded uppercase">{tr("1st Choice")}</span>
+                        <strong className="text-xs text-ink">{tr("Primary Preference")}</strong>
                       </div>
                       <button
                         type="button"
                         onClick={() => setCurrentStep(3)}
                         className="text-xs font-bold text-[#6D1838] hover:underline"
-                      >
-                        Edit 1st Choice
-                      </button>
+                      >{tr("Edit 1st Choice")}</button>
                     </div>
                     <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs">
                       <div>
-                        <span className="text-[#575260] block text-[10px]">Field:</span>
-                        <strong className="text-[#18151B] font-semibold">{firstChoice.fieldOfStudy}</strong>
+                        <span className="text-ink/65 block text-[10px]">{tr("Field:")}</span>
+                        <strong className="text-ink font-semibold">{firstChoice.fieldOfStudy}</strong>
                       </div>
                       <div className="sm:col-span-1">
-                        <span className="text-[#575260] block text-[10px]">Program:</span>
+                        <span className="text-ink/65 block text-[10px]">{tr("Program:")}</span>
                         <strong className="text-[#6D1838] font-bold">{firstChoice.program}</strong>
                       </div>
                       <div>
-                        <span className="text-[#575260] block text-[10px]">Degree:</span>
-                        <strong className="text-[#18151B]">{firstChoice.degreeLevel}</strong>
+                        <span className="text-ink/65 block text-[10px]">{tr("Degree:")}</span>
+                        <strong className="text-ink">{firstChoice.degreeLevel}</strong>
                       </div>
                       <div>
-                        <span className="text-[#575260] block text-[10px]">Language:</span>
-                        <strong className="text-[#18151B]">{firstChoice.studyLanguage}</strong>
+                        <span className="text-ink/65 block text-[10px]">{tr("Language:")}</span>
+                        <strong className="text-ink">{firstChoice.studyLanguage}</strong>
                       </div>
                       <div>
-                        <span className="text-[#575260] block text-[10px]">Intake:</span>
-                        <strong className="text-[#18151B]">{firstChoice.intake}</strong>
+                        <span className="text-ink/65 block text-[10px]">{tr("Intake:")}</span>
+                        <strong className="text-ink">{firstChoice.intake}</strong>
                       </div>
                     </div>
                   </div>
@@ -2131,39 +1975,35 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                   <div className="p-3.5 bg-white rounded-xl border border-neutral-200 space-y-2">
                     <div className="flex items-center justify-between border-b border-neutral-100 pb-1.5">
                       <div className="flex items-center gap-2">
-                        <span className="px-2 py-0.5 bg-[#6C3B9E] text-white text-[10px] font-bold rounded uppercase">
-                          2nd Choice
-                        </span>
-                        <strong className="text-xs text-[#18151B]">Alternative Option</strong>
+                        <span className="px-2 py-0.5 bg-[#6C3B9E] text-white text-[10px] font-bold rounded uppercase">{tr("2nd Choice")}</span>
+                        <strong className="text-xs text-ink">{tr("Alternative Option")}</strong>
                       </div>
                       <button
                         type="button"
                         onClick={() => setCurrentStep(3)}
                         className="text-xs font-bold text-[#6C3B9E] hover:underline"
-                      >
-                        Edit 2nd Choice
-                      </button>
+                      >{tr("Edit 2nd Choice")}</button>
                     </div>
                     <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs">
                       <div>
-                        <span className="text-[#575260] block text-[10px]">Field:</span>
-                        <strong className="text-[#18151B] font-semibold">{secondChoice.fieldOfStudy}</strong>
+                        <span className="text-ink/65 block text-[10px]">{tr("Field:")}</span>
+                        <strong className="text-ink font-semibold">{secondChoice.fieldOfStudy}</strong>
                       </div>
                       <div className="sm:col-span-1">
-                        <span className="text-[#575260] block text-[10px]">Program:</span>
-                        <strong className="text-[#18151B] font-semibold">{secondChoice.program}</strong>
+                        <span className="text-ink/65 block text-[10px]">{tr("Program:")}</span>
+                        <strong className="text-ink font-semibold">{secondChoice.program}</strong>
                       </div>
                       <div>
-                        <span className="text-[#575260] block text-[10px]">Degree:</span>
-                        <strong className="text-[#18151B]">{secondChoice.degreeLevel}</strong>
+                        <span className="text-ink/65 block text-[10px]">{tr("Degree:")}</span>
+                        <strong className="text-ink">{secondChoice.degreeLevel}</strong>
                       </div>
                       <div>
-                        <span className="text-[#575260] block text-[10px]">Language:</span>
-                        <strong className="text-[#18151B]">{secondChoice.studyLanguage}</strong>
+                        <span className="text-ink/65 block text-[10px]">{tr("Language:")}</span>
+                        <strong className="text-ink">{secondChoice.studyLanguage}</strong>
                       </div>
                       <div>
-                        <span className="text-[#575260] block text-[10px]">Intake:</span>
-                        <strong className="text-[#18151B]">{secondChoice.intake}</strong>
+                        <span className="text-ink/65 block text-[10px]">{tr("Intake:")}</span>
+                        <strong className="text-ink">{secondChoice.intake}</strong>
                       </div>
                     </div>
                   </div>
@@ -2172,39 +2012,35 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                   <div className="p-3.5 bg-white rounded-xl border border-neutral-200 space-y-2">
                     <div className="flex items-center justify-between border-b border-neutral-100 pb-1.5">
                       <div className="flex items-center gap-2">
-                        <span className="px-2 py-0.5 bg-neutral-800 text-white text-[10px] font-bold rounded uppercase">
-                          3rd Choice
-                        </span>
-                        <strong className="text-xs text-[#18151B]">Backup Option</strong>
+                        <span className="px-2 py-0.5 bg-neutral-800 text-white text-[10px] font-bold rounded uppercase">{tr("3rd Choice")}</span>
+                        <strong className="text-xs text-ink">{tr("Backup Option")}</strong>
                       </div>
                       <button
                         type="button"
                         onClick={() => setCurrentStep(3)}
                         className="text-xs font-bold text-neutral-700 hover:underline"
-                      >
-                        Edit 3rd Choice
-                      </button>
+                      >{tr("Edit 3rd Choice")}</button>
                     </div>
                     <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs">
                       <div>
-                        <span className="text-[#575260] block text-[10px]">Field:</span>
-                        <strong className="text-[#18151B] font-semibold">{thirdChoice.fieldOfStudy}</strong>
+                        <span className="text-ink/65 block text-[10px]">{tr("Field:")}</span>
+                        <strong className="text-ink font-semibold">{thirdChoice.fieldOfStudy}</strong>
                       </div>
                       <div className="sm:col-span-1">
-                        <span className="text-[#575260] block text-[10px]">Program:</span>
-                        <strong className="text-[#18151B] font-semibold">{thirdChoice.program}</strong>
+                        <span className="text-ink/65 block text-[10px]">{tr("Program:")}</span>
+                        <strong className="text-ink font-semibold">{thirdChoice.program}</strong>
                       </div>
                       <div>
-                        <span className="text-[#575260] block text-[10px]">Degree:</span>
-                        <strong className="text-[#18151B]">{thirdChoice.degreeLevel}</strong>
+                        <span className="text-ink/65 block text-[10px]">{tr("Degree:")}</span>
+                        <strong className="text-ink">{thirdChoice.degreeLevel}</strong>
                       </div>
                       <div>
-                        <span className="text-[#575260] block text-[10px]">Language:</span>
-                        <strong className="text-[#18151B]">{thirdChoice.studyLanguage}</strong>
+                        <span className="text-ink/65 block text-[10px]">{tr("Language:")}</span>
+                        <strong className="text-ink">{thirdChoice.studyLanguage}</strong>
                       </div>
                       <div>
-                        <span className="text-[#575260] block text-[10px]">Intake:</span>
-                        <strong className="text-[#18151B]">{thirdChoice.intake}</strong>
+                        <span className="text-ink/65 block text-[10px]">{tr("Intake:")}</span>
+                        <strong className="text-ink">{thirdChoice.intake}</strong>
                       </div>
                     </div>
                   </div>
@@ -2216,17 +2052,13 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                 <div className="flex items-center justify-between border-b border-neutral-200 pb-2">
                   <div className="flex items-center gap-2">
                     <FileCheck className="w-4 h-4 text-emerald-600" />
-                    <h3 className="font-bold text-xs sm:text-sm text-[#18151B] uppercase tracking-wider">
-                      Attached Documents ({Object.keys(uploadedDocs).length} files)
-                    </h3>
+                    <h3 className="font-bold text-xs sm:text-sm text-ink uppercase tracking-wider">{tr("Attached Documents (")}{Object.keys(uploadedDocs).length}{' '}{tr("files)")}</h3>
                   </div>
                   <button
                     type="button"
                     onClick={() => setCurrentStep(4)}
                     className="text-xs font-bold text-[#6D1838] hover:underline"
-                  >
-                    Edit Step 4
-                  </button>
+                  >{tr("Edit Step 4")}</button>
                 </div>
                 <div className="flex flex-wrap gap-2 text-xs">
                   {Object.entries(uploadedDocs).map(([k, d]) => (
@@ -2240,20 +2072,16 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
 
               {/* Declaration Checkbox */}
               <div className="pt-2">
-                <label className="flex items-start gap-3 p-4 rounded-xl border border-neutral-200 bg-[#FAF7F9] cursor-pointer hover:bg-neutral-100 transition-colors">
+                <label className="flex items-start gap-3 p-4 rounded-xl border border-neutral-200 bg-porcelain cursor-pointer hover:bg-neutral-100 transition-colors">
                   <input
                     type="checkbox"
                     checked={agreedToTerms}
                     onChange={e => setAgreedToTerms(e.target.checked)}
                     className="w-4 h-4 mt-0.5 accent-[#6D1838] rounded"
                   />
-                  <div className="text-xs text-[#575260]">
-                    <span className="font-bold text-[#18151B]">
-                      Applicant Declaration & Consent *
-                    </span>
-                    <p className="mt-0.5">
-                      I certify that all academic records, transcripts, and personal information submitted in this application are authentic. I authorize {siteConfig.brandName} to act as my designated admissions representative for degree program admissions and visa documentation in the People's Republic of China.
-                    </p>
+                  <div className="text-xs text-ink/65">
+                    <span className="font-bold text-ink">{tr("Applicant Declaration & Consent *")}</span>
+                    <p className="mt-0.5">{tr("I certify that all academic records, transcripts, and personal information submitted in this application are authentic. I authorize")}{' '}{siteConfig.brandName}{' '}{tr("to act as my designated admissions representative for degree program admissions and visa documentation in the People's Republic of China.")}</p>
                   </div>
                 </label>
                 {errors.terms && <p className="text-xs text-rose-500 mt-1">{errors.terms}</p>}
@@ -2265,108 +2093,78 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
           {currentStep === 6 && (
             <div className="space-y-6 animate-in fade-in duration-200">
               <div className="border-b border-neutral-100 pb-4">
-                <span className="text-xs font-bold uppercase tracking-wider text-[#6D1838]">
-                  Transparent 3-Stage Payment Plan
-                </span>
-                <h2 className="text-xl sm:text-2xl font-bold text-[#18151B] mt-1">
-                  Initial Deposit ($515 USD)
-                </h2>
-                <p className="text-xs sm:text-sm text-[#575260] mt-1">
-                  You only pay the initial $515 USD deposit today before application processing begins. Later payments unlock strictly upon verified results.
-                </p>
+                <span className="text-xs font-bold uppercase tracking-wider text-[#6D1838]">{tr("Transparent 3-Stage Payment Plan")}</span>
+                <h2 className="font-display text-xl sm:text-2xl font-semibold text-ink mt-1">{tr("Initial Deposit ($515 USD)")}</h2>
+                <p className="text-xs sm:text-sm text-ink/65 mt-1">{tr("You only pay the initial $515 USD deposit today before application processing begins. Later payments unlock strictly upon verified results.")}</p>
               </div>
 
               {/* Transparent Split Card */}
               <div className="p-5 rounded-2xl bg-gradient-to-br from-[#FAF2F5] via-white to-[#F8F5FD] border border-[#EAD5DE] shadow-sm">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-[#EAD5DE] gap-2">
                   <div>
-                    <span className="text-xs font-bold uppercase tracking-wider text-[#6D1838]">
-                      Total Comprehensive Service Fee
-                    </span>
-                    <h3 className="text-xl sm:text-2xl font-extrabold text-[#18151B]">
-                      ${siteConfig.pricing.totalUSD.toLocaleString()} USD
-                    </h3>
+                    <span className="text-xs font-bold uppercase tracking-wider text-[#6D1838]">{tr("Total Comprehensive Service Fee")}</span>
+                    <h3 className="text-xl sm:text-2xl font-extrabold text-ink">
+                      ${siteConfig.pricing.totalUSD.toLocaleString()}{' '}{tr("USD")}</h3>
                   </div>
-                  <span className="px-3 py-1 bg-white text-emerald-800 text-xs font-bold rounded-full border border-emerald-200 shadow-xs self-start sm:self-auto">
-                    $515 + $858 + $1,716 = $3,089 USD
-                  </span>
+                  <span className="px-3 py-1 bg-white text-emerald-800 text-xs font-bold rounded-full border border-emerald-200 shadow-xs self-start sm:self-auto">{tr("$515 + $858 + $1,716 = $3,089 USD")}</span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4">
                   {/* Stage 1: Active Now */}
                   <div className="p-4 bg-white rounded-xl border-2 border-[#6D1838] shadow-xs relative">
-                    <span className="absolute -top-2.5 right-3 px-2 py-0.5 bg-[#6D1838] text-white text-[10px] font-bold rounded-full uppercase">
-                      Payable Now
-                    </span>
+                    <span className="absolute -top-2.5 right-3 px-2 py-0.5 bg-[#6D1838] text-white text-[10px] font-bold rounded-full uppercase">{tr("Payable Now")}</span>
                     <div className="flex items-center justify-between mb-1">
-                      <span className="font-bold text-xs uppercase tracking-wider text-[#18151B]">
-                        01 — APPLICATION
-                      </span>
+                      <span className="font-bold text-xs uppercase tracking-wider text-ink">{tr("01 — APPLICATION")}</span>
                     </div>
                     <div className="text-lg font-extrabold text-[#6D1838] mb-1">
-                      ${siteConfig.pricing.depositUSD} USD
-                    </div>
-                    <p className="text-xs text-[#575260] leading-relaxed">
-                      Paid before application processing begins. Covers credential audit, study program matching strategy, document formatting, and initiating official degree applications.
-                    </p>
+                      ${siteConfig.pricing.depositUSD}{' '}{tr("USD")}</div>
+                    <p className="text-xs text-ink/65 leading-relaxed">{tr("Paid before application processing begins. Covers credential audit, study program matching strategy, document formatting, and initiating official degree applications.")}</p>
                   </div>
 
                   {/* Stage 2: Post Admission */}
                   <div className="p-4 bg-neutral-50/80 rounded-xl border border-neutral-200">
                     <div className="flex items-center justify-between mb-1">
-                      <span className="font-bold text-xs uppercase tracking-wider text-[#575260]">
-                        02 — ADMISSION
-                      </span>
+                      <span className="font-bold text-xs uppercase tracking-wider text-ink/65">{tr("02 — ADMISSION")}</span>
                     </div>
                     <div className="text-lg font-bold text-neutral-700 mb-1">
-                      ${siteConfig.pricing.admissionPaymentUSD} USD
-                    </div>
-                    <p className="text-xs text-[#575260] leading-relaxed">
-                      <strong>$0 due today.</strong> Paid after admission is confirmed.
-                    </p>
+                      ${siteConfig.pricing.admissionPaymentUSD}{' '}{tr("USD")}</div>
+                    <p className="text-xs text-ink/65 leading-relaxed">
+                      <strong>{tr("$0 due today.")}</strong>{' '}{tr("Paid after admission is confirmed.")}</p>
                   </div>
 
                   {/* Stage 3: After JW202 */}
                   <div className="p-4 bg-neutral-50/80 rounded-xl border border-neutral-200">
                     <div className="flex items-center justify-between mb-1">
-                      <span className="font-bold text-xs uppercase tracking-wider text-[#575260]">
-                        03 — JW202/JW201
-                      </span>
+                      <span className="font-bold text-xs uppercase tracking-wider text-ink/65">{tr("03 — JW202/JW201")}</span>
                     </div>
                     <div className="text-lg font-bold text-neutral-700 mb-1">
-                      ${siteConfig.pricing.finalPaymentUSD.toLocaleString()} USD
-                    </div>
-                    <p className="text-xs text-[#575260] leading-relaxed">
-                      <strong>$0 due today.</strong> Paid after the JW202/JW201 is received.
-                    </p>
+                      ${siteConfig.pricing.finalPaymentUSD.toLocaleString()}{' '}{tr("USD")}</div>
+                    <p className="text-xs text-ink/65 leading-relaxed">
+                      <strong>{tr("$0 due today.")}</strong>{' '}{tr("Paid after the JW202/JW201 is received.")}</p>
                   </div>
                 </div>
 
                 {/* Important Notice on Possible Institution Deposit */}
-                <div className="mt-4 p-3.5 bg-amber-50/80 border border-amber-200 rounded-xl text-xs text-[#18151B] space-y-1">
+                <div className="mt-4 p-3.5 bg-amber-50/80 border border-amber-200 rounded-xl text-xs text-ink space-y-1">
                   <div className="flex items-center gap-1.5 font-bold text-amber-900 text-[11px] uppercase tracking-wide">
-                    <span>Note: Possible Institution Deposit (Separate from Service Fees)</span>
+                    <span>{tr("Note: Possible Institution Deposit (Separate from Service Fees)")}</span>
                   </div>
-                  <p className="text-[#575260] leading-relaxed">
-                    Some institutions may require an additional deposit after pre-admission or admission to confirm your intention to secure the available place. This deposit is separate from Study In China's service fees. Depending on the institution and program, it may be deducted from tuition or accommodation costs. The applicable amount and conditions are determined by the institution.
-                  </p>
+                  <p className="text-ink/65 leading-relaxed">{tr("Some institutions may require an additional deposit after pre-admission or admission to confirm your intention to secure the available place. This deposit is separate from Study In China's service fees. Depending on the institution and program, it may be deducted from tuition or accommodation costs. The applicable amount and conditions are determined by the institution.")}</p>
                 </div>
               </div>
 
               {CLOUD && (
                 <div className="space-y-3">
                   <div className="p-4 rounded-2xl border border-[#EAD5DE] bg-white space-y-2">
-                    <p className="text-sm font-bold text-[#18151B]">How to pay the ${siteConfig.pricing.depositUSD} initial deposit</p>
-                    <ol className="list-decimal pl-5 text-xs sm:text-sm text-[#575260] space-y-1">
-                      <li>Submit your application below (no payment is taken online).</li>
-                      <li>Your advisor contacts you by email or WhatsApp with payment instructions.</li>
-                      <li>Once your deposit is confirmed, document review starts and you are notified by email.</li>
+                    <p className="text-sm font-bold text-ink">{tr("How to pay the $")}{siteConfig.pricing.depositUSD}{' '}{tr("initial deposit")}</p>
+                    <ol className="list-decimal pl-5 text-xs sm:text-sm text-ink/65 space-y-1">
+                      <li>{tr("Submit your application below (no payment is taken online).")}</li>
+                      <li>{tr("Your advisor contacts you by email or WhatsApp with payment instructions.")}</li>
+                      <li>{tr("Once your deposit is confirmed, document review starts and you are notified by email.")}</li>
                     </ol>
                   </div>
                   {!isAuthenticated && (
-                    <div className="p-3.5 rounded-xl border border-amber-300 bg-amber-50 text-xs sm:text-sm text-amber-900">
-                      You will be asked to <strong>sign in or create your account</strong> when you submit, so you can follow your application and documents.
-                    </div>
+                    <div className="p-3.5 rounded-xl border border-amber-300 bg-amber-50 text-xs sm:text-sm text-amber-900">{tr("You will be asked to")}{' '}<strong>{tr("sign in or create your account")}</strong>{' '}{tr("when you submit, so you can follow your application and documents.")}</div>
                   )}
                   {submitError && (
                     <div role="alert" className="p-3.5 rounded-xl border border-rose-200 bg-rose-50 text-xs sm:text-sm text-rose-800">{submitError}</div>
@@ -2376,9 +2174,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
 
               {/* Payment Method Selector */}
               {!CLOUD && <div className="space-y-4">
-                <label className="block text-xs font-bold uppercase tracking-wider text-[#575260]">
-                  Select Payment Method for ${siteConfig.pricing.depositUSD} USD Initial Deposit
-                </label>
+                <label className="block text-xs font-bold uppercase tracking-wider text-ink/65">{tr("Select Payment Method for $")}{siteConfig.pricing.depositUSD}{' '}{tr("USD Initial Deposit")}</label>
 
                 <div className="grid grid-cols-3 gap-3">
                   <button
@@ -2386,12 +2182,12 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                     onClick={() => setPaymentMethod('card')}
                     className={`p-3.5 rounded-xl border text-center font-semibold text-xs transition-all flex flex-col items-center justify-center gap-1.5 cursor-pointer ${
                       paymentMethod === 'card'
-                        ? 'border-[#6D1838] bg-[#FAF2F5] text-[#6D1838] shadow-xs'
+                        ? 'border-[#6D1838] bg-blush text-[#6D1838] shadow-xs'
                         : 'border-neutral-200 bg-neutral-50 text-neutral-700 hover:bg-neutral-100'
                     }`}
                   >
                     <CreditCard className="w-5 h-5" />
-                    <span>Credit / Debit Card</span>
+                    <span>{tr("Credit / Debit Card")}</span>
                   </button>
 
                   <button
@@ -2399,12 +2195,12 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                     onClick={() => setPaymentMethod('wire')}
                     className={`p-3.5 rounded-xl border text-center font-semibold text-xs transition-all flex flex-col items-center justify-center gap-1.5 cursor-pointer ${
                       paymentMethod === 'wire'
-                        ? 'border-[#6D1838] bg-[#FAF2F5] text-[#6D1838] shadow-xs'
+                        ? 'border-[#6D1838] bg-blush text-[#6D1838] shadow-xs'
                         : 'border-neutral-200 bg-neutral-50 text-neutral-700 hover:bg-neutral-100'
                     }`}
                   >
                     <Building className="w-5 h-5" />
-                    <span>SWIFT Bank Wire</span>
+                    <span>{tr("SWIFT Bank Wire")}</span>
                   </button>
 
                   <button
@@ -2412,30 +2208,29 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                     onClick={() => setPaymentMethod('alipay')}
                     className={`p-3.5 rounded-xl border text-center font-semibold text-xs transition-all flex flex-col items-center justify-center gap-1.5 cursor-pointer ${
                       paymentMethod === 'alipay'
-                        ? 'border-[#6D1838] bg-[#FAF2F5] text-[#6D1838] shadow-xs'
+                        ? 'border-[#6D1838] bg-blush text-[#6D1838] shadow-xs'
                         : 'border-neutral-200 bg-neutral-50 text-neutral-700 hover:bg-neutral-100'
                     }`}
                   >
                     <Sparkles className="w-5 h-5" />
-                    <span>Alipay / WeChat Pay</span>
+                    <span>{tr("Alipay / WeChat Pay")}</span>
                   </button>
                 </div>
 
                 {/* Card Fields Simulation */}
                 {paymentMethod === 'card' && (
                   <div className="p-4 bg-neutral-50 border border-neutral-200 rounded-xl space-y-3">
-                    <div className="flex items-center justify-between text-xs text-[#575260] mb-1">
+                    <div className="flex items-center justify-between text-xs text-ink/65 mb-1">
                       <span className="flex items-center gap-1">
-                        <Lock className="w-3.5 h-3.5 text-emerald-600" /> 256-Bit Encrypted Secure Checkout
-                      </span>
-                      <span>Verified Payment Gateway</span>
+                        <Lock className="w-3.5 h-3.5 text-emerald-600" />{' '}{tr("256-Bit Encrypted Secure Checkout")}</span>
+                      <span>{tr("Verified Payment Gateway")}</span>
                     </div>
 
                     <div>
-                      <label className="block text-[11px] font-bold text-[#575260] mb-1">Cardholder Name</label>
+                      <label className="block text-[11px] font-bold text-ink/65 mb-1">{tr("Cardholder Name")}</label>
                       <input
                         type="text"
-                        placeholder="e.g. David Alexander Osei"
+                        placeholder={tr("e.g. David Alexander Osei")}
                         value={cardName || `${personal.firstName} ${personal.lastName}`}
                         onChange={e => setCardName(e.target.value)}
                         className="w-full p-2.5 text-xs sm:text-sm bg-white border border-neutral-300 rounded-lg focus:outline-none focus:border-[#6D1838]"
@@ -2443,7 +2238,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                     </div>
 
                     <div>
-                      <label className="block text-[11px] font-bold text-[#575260] mb-1">Card Number</label>
+                      <label className="block text-[11px] font-bold text-ink/65 mb-1">{tr("Card Number")}</label>
                       <div className="relative">
                         <input
                           type="text"
@@ -2458,20 +2253,20 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
 
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-[11px] font-bold text-[#575260] mb-1">Expires (MM/YY)</label>
+                        <label className="block text-[11px] font-bold text-ink/65 mb-1">{tr("Expires (MM/YY)")}</label>
                         <input
                           type="text"
-                          placeholder="MM/YY"
+                          placeholder={tr("MM/YY")}
                           value={cardExpiry}
                           onChange={e => setCardExpiry(e.target.value)}
                           className="w-full p-2.5 text-xs sm:text-sm bg-white border border-neutral-300 rounded-lg focus:outline-none focus:border-[#6D1838]"
                         />
                       </div>
                       <div>
-                        <label className="block text-[11px] font-bold text-[#575260] mb-1">CVC / Security Code</label>
+                        <label className="block text-[11px] font-bold text-ink/65 mb-1">{tr("CVC / Security Code")}</label>
                         <input
                           type="text"
-                          placeholder="CVC"
+                          placeholder={tr("CVC")}
                           value={cardCvc}
                           onChange={e => setCardCvc(e.target.value)}
                           className="w-full p-2.5 text-xs sm:text-sm bg-white border border-neutral-300 rounded-lg focus:outline-none focus:border-[#6D1838]"
@@ -2484,32 +2279,26 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                 {/* Wire Transfer Details */}
                 {paymentMethod === 'wire' && (
                   <div className="p-4 bg-neutral-50 border border-neutral-200 rounded-xl space-y-2 text-xs">
-                    <p className="font-bold text-[#18151B]">International Wire Transfer Instructions (SWIFT):</p>
+                    <p className="font-bold text-ink">{tr("International Wire Transfer Instructions (SWIFT):")}</p>
                     <div className="p-3 bg-white border border-neutral-200 rounded-lg space-y-1 font-mono text-[11px]">
-                      <p><strong>Bank:</strong> Bank of China (Hong Kong / Beijing)</p>
-                      <p><strong>Beneficiary:</strong> Study In China International Education Ltd.</p>
-                      <p><strong>SWIFT / BIC:</strong> BKCHCNBJ998</p>
-                      <p><strong>Amount:</strong> $515 USD</p>
-                      <p><strong>Account (USD):</strong> 8019-2049-5510-9921</p>
-                      <p><strong>Reference:</strong> DEP-{personal.firstName.toUpperCase() || 'STUDENT'}-{new Date().getFullYear()}</p>
+                      <p><strong>{tr("Bank:")}</strong>{' '}{tr("Bank of China (Hong Kong / Beijing)")}</p>
+                      <p><strong>{tr("Beneficiary:")}</strong>{' '}{tr("Study In China International Education Ltd.")}</p>
+                      <p><strong>{tr("SWIFT / BIC:")}</strong>{' '}{tr("BKCHCNBJ998")}</p>
+                      <p><strong>{tr("Amount:")}</strong>{' '}{tr("$515 USD")}</p>
+                      <p><strong>{tr("Account (USD):")}</strong> 8019-2049-5510-9921</p>
+                      <p><strong>{tr("Reference:")}</strong>{' '}{tr("DEP-")}{personal.firstName.toUpperCase() || tr("STUDENT")}-{new Date().getFullYear()}</p>
                     </div>
-                    <p className="text-[11px] text-[#575260]">
-                      * If paying via wire, submit now and our billing desk will confirm receipt within 24 hours.
-                    </p>
+                    <p className="text-[11px] text-ink/65">{tr("* If paying via wire, submit now and our billing desk will confirm receipt within 24 hours.")}</p>
                   </div>
                 )}
 
                 {/* Alipay / WeChat Pay */}
                 {paymentMethod === 'alipay' && (
                   <div className="p-4 bg-neutral-50 border border-neutral-200 rounded-xl text-center space-y-2 text-xs">
-                    <p className="font-bold text-[#18151B]">Instant Alipay & WeChat Pay QR Code</p>
-                    <p className="text-[#575260] text-[11px]">
-                      Amount: $515 USD equivalent. Scan with Alipay or WeChat app.
-                    </p>
+                    <p className="font-bold text-ink">{tr("Instant Alipay & WeChat Pay QR Code")}</p>
+                    <p className="text-ink/65 text-[11px]">{tr("Amount: $515 USD equivalent. Scan with Alipay or WeChat app.")}</p>
                     <div className="w-32 h-32 bg-white border-2 border-neutral-300 mx-auto rounded-xl flex items-center justify-center p-2 shadow-xs">
-                      <div className="text-center font-mono text-[10px] text-neutral-400">
-                        [Alipay / WeChat Pay QR Simulator]
-                      </div>
+                      <div className="text-center font-mono text-[10px] text-neutral-400">{tr("[Alipay / WeChat Pay QR Simulator]")}</div>
                     </div>
                   </div>
                 )}
@@ -2518,10 +2307,8 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                 <div className="p-3 bg-emerald-50/70 border border-emerald-200 rounded-xl flex items-start gap-2.5 text-xs text-emerald-900">
                   <ShieldCheck className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5" />
                   <div>
-                    <span className="font-bold">Transparent Guarantee:</span>
-                    <p className="text-emerald-800 text-[11px] mt-0.5">
-                      Your $515 initial deposit triggers formal dossier review and submission. In the rare event that admission cannot be secured for a verified qualifying profile, our conditional refund terms apply.
-                    </p>
+                    <span className="font-bold">{tr("Transparent Guarantee:")}</span>
+                    <p className="text-emerald-800 text-[11px] mt-0.5">{tr("Your $515 initial deposit triggers formal dossier review and submission. In the rare event that admission cannot be secured for a verified qualifying profile, our conditional refund terms apply.")}</p>
                   </div>
                 </div>
               </div>}
@@ -2536,47 +2323,38 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
               </div>
 
               <div>
-                <span className="inline-block px-3 py-1 bg-[#FAF2F5] text-[#6D1838] rounded-full text-xs font-bold border border-[#EAD5DE] mb-2 uppercase tracking-wider">
-                  {CLOUD ? 'Application Submitted · Deposit instructions coming' : 'Dossier Initiated & $515 Deposit Confirmed'}
+                <span className="inline-block px-3 py-1 bg-blush text-[#6D1838] rounded-full text-xs font-bold border border-[#EAD5DE] mb-2 uppercase tracking-wider">
+                  {CLOUD ? tr("Application Submitted · Deposit instructions coming") : tr("Dossier Initiated & $515 Deposit Confirmed")}
                 </span>
-                <h2 className="text-2xl sm:text-3xl font-extrabold text-[#18151B]">
-                  Welcome to Study In China, {personal.firstName}!
+                <h2 className="font-display text-2xl sm:text-3xl font-semibold text-ink">{tr("Welcome to Study In China,")}{' '}{personal.firstName}!
                 </h2>
-                <p className="text-xs sm:text-sm text-[#575260] max-w-lg mx-auto mt-2">
+                <p className="text-xs sm:text-sm text-ink/65 max-w-lg mx-auto mt-2">
                   {CLOUD
-                    ? 'Your application and documents are safely stored. You will receive an email when your advisor sends deposit instructions or updates your file.'
-                    : 'Your formal international application file has been registered. Our admissions board is now auditing your credentials.'}
+                    ? tr("Your application and documents are safely stored. You will receive an email when your advisor sends deposit instructions or updates your file.")
+                    : tr("Your formal international application file has been registered. Our admissions board is now auditing your credentials.")}
                 </p>
 
                 {/* Application Ref Badge */}
                 <div className="mt-4 inline-flex flex-col items-center p-4 bg-neutral-50 border border-neutral-300 rounded-2xl shadow-xs">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-neutral-400">
-                    Your Official Application Reference ID
-                  </span>
-                  <span className="font-mono text-xl sm:text-2xl font-black text-[#18151B] mt-0.5">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-neutral-400">{tr("Your Official Application Reference ID")}</span>
+                  <span className="font-mono text-xl sm:text-2xl font-black text-ink mt-0.5">
                     {generatedAppId || `CSC-${new Date().getFullYear()}-78210`}
                   </span>
-                  <span className="text-[11px] text-emerald-700 font-semibold mt-1">
-                    ✓ Stage 1 Initial Deposit ($515 USD) Paid
-                  </span>
+                  <span className="text-[11px] text-emerald-700 font-semibold mt-1">{tr("✓ Stage 1 Initial Deposit ($515 USD) Paid")}</span>
                 </div>
               </div>
 
               {/* Next Steps Roadmap */}
-              <div className="max-w-xl mx-auto p-4 bg-[#FAF7F9] border border-neutral-200 rounded-2xl text-left space-y-3">
-                <h3 className="font-bold text-xs uppercase tracking-wider text-[#18151B]">
-                  What Happens Next (Admissions Roadmap)
-                </h3>
+              <div className="max-w-xl mx-auto p-4 bg-porcelain border border-neutral-200 rounded-2xl text-left space-y-3">
+                <h3 className="font-bold text-xs uppercase tracking-wider text-ink">{tr("What Happens Next (Admissions Roadmap)")}</h3>
                 <div className="space-y-2.5 text-xs">
                   <div className="flex items-start gap-2.5">
                     <span className="w-5 h-5 rounded-full bg-[#6D1838] text-white flex items-center justify-center font-bold text-[11px] shrink-0 mt-0.5">
                       1
                     </span>
                     <div>
-                      <strong className="text-[#18151B]">Admissions Director Outreach:</strong>
-                      <p className="text-[#575260] text-[11px]">
-                        Elena Zhao will contact your WhatsApp ({personal.whatsapp}) within 12 hours with your credential audit report and tailored program recommendations.
-                      </p>
+                      <strong className="text-ink">{tr("Admissions Director Outreach:")}</strong>
+                      <p className="text-ink/65 text-[11px]">{tr("Elena Zhao will contact your WhatsApp (")}{personal.whatsapp}{tr(") within 12 hours with your credential audit report and tailored program recommendations.")}</p>
                     </div>
                   </div>
 
@@ -2585,9 +2363,8 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                       2
                     </span>
                     <div>
-                      <strong className="text-[#18151B]">Official Application Lodging:</strong>
-                      <p className="text-[#575260] text-[11px]">
-                        Your finalized dossier will be lodged in the official admissions portal for {preferences.preferredField}.
+                      <strong className="text-ink">{tr("Official Application Lodging:")}</strong>
+                      <p className="text-ink/65 text-[11px]">{tr("Your finalized dossier will be lodged in the official admissions portal for")}{' '}{preferences.preferredField}.
                       </p>
                     </div>
                   </div>
@@ -2597,10 +2374,8 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                       3
                     </span>
                     <div>
-                      <strong className="text-[#18151B]">Admission & Milestone Payments:</strong>
-                      <p className="text-[#575260] text-[11px]">
-                        After admission is confirmed, Stage 2 ($858 USD) is due. Once your JW202/JW201 government visa authorization is received, Stage 3 ($1,716 USD) is due to release the original consular packet.
-                      </p>
+                      <strong className="text-ink">{tr("Admission & Milestone Payments:")}</strong>
+                      <p className="text-ink/65 text-[11px]">{tr("After admission is confirmed, Stage 2 ($858 USD) is due. Once your JW202/JW201 government visa authorization is received, Stage 3 ($1,716 USD) is due to release the original consular packet.")}</p>
                     </div>
                   </div>
                 </div>
@@ -2613,7 +2388,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                   onClick={() => onGoToDashboard(generatedAppId)}
                   className="w-full sm:w-auto px-7 py-3 bg-[#6D1838] hover:bg-[#58122c] text-white text-xs sm:text-sm font-bold rounded-xl transition-all shadow-md flex items-center justify-center gap-2"
                 >
-                  <span>Go to My Student Dashboard</span>
+                  <span>{tr("Go to My Student Dashboard")}</span>
                   <ArrowRight className="w-4 h-4" />
                 </button>
 
@@ -2623,17 +2398,15 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                   rel="noopener noreferrer"
                   className="w-full sm:w-auto px-6 py-3 bg-emerald-700 hover:bg-emerald-800 text-white text-xs sm:text-sm font-semibold rounded-xl transition-colors shadow-sm flex items-center justify-center gap-2"
                 >
-                  <span>Chat With Elena on WhatsApp</span>
+                  <span>{tr("Chat With Elena on WhatsApp")}</span>
                   <ExternalLink className="w-4 h-4" />
                 </a>
 
                 <button
                   type="button"
                   onClick={onBackToHome}
-                  className="w-full sm:w-auto px-5 py-3 border border-neutral-300 text-neutral-700 hover:bg-neutral-100 text-xs sm:text-sm font-semibold rounded-xl transition-colors"
-                >
-                  Return to Website
-                </button>
+                  className="w-full sm:w-auto px-5 py-3 border border-neutral-300 text-neutral-700 hover:bg-neutral-100 text-xs sm:text-sm font-semibold rounded-full transition-colors"
+                >{tr("Return to Website")}</button>
               </div>
             </div>
           )}
@@ -2645,27 +2418,24 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                 <button
                   type="button"
                   onClick={handleBack}
-                  className="flex items-center gap-1.5 px-4 py-2.5 text-xs font-semibold text-neutral-600 hover:text-neutral-900 border border-neutral-200 rounded-xl transition-colors hover:bg-neutral-50"
+                  className="flex items-center gap-1.5 px-4 py-2.5 text-xs font-semibold text-neutral-600 hover:text-neutral-900 border border-neutral-200 rounded-full transition-colors hover:bg-neutral-50"
                 >
-                  <ArrowLeft className="w-4 h-4" /> Back
-                </button>
+                  <ArrowLeft className="w-4 h-4" />{' '}{tr("Back")}</button>
               ) : (
                 <button
                   type="button"
                   onClick={onBackToHome}
                   className="text-xs text-neutral-500 hover:text-neutral-800 font-medium"
-                >
-                  Cancel & Exit
-                </button>
+                >{tr("Cancel & Exit")}</button>
               )}
 
               {currentStep < 6 ? (
                 <button
                   type="button"
                   onClick={handleNext}
-                  className="flex items-center gap-1.5 px-6 py-2.5 text-xs sm:text-sm font-bold text-white bg-[#6D1838] hover:bg-[#58122c] rounded-xl transition-all shadow-sm"
+                  className="flex items-center gap-1.5 px-6 py-2.5 text-xs sm:text-sm font-bold text-white bg-[#6D1838] hover:bg-[#58122c] rounded-full transition-all shadow-sm"
                 >
-                  <span>Continue</span>
+                  <span>{tr("Continue")}</span>
                   <ArrowRight className="w-4 h-4" />
                 </button>
               ) : (
@@ -2673,16 +2443,16 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                   type="button"
                   onClick={handleProcessPaymentAndSubmit}
                   disabled={isProcessingPayment}
-                  className="flex items-center gap-2 px-7 py-3 text-xs sm:text-sm font-bold text-white bg-[#6D1838] hover:bg-[#58122c] disabled:opacity-50 rounded-xl transition-all shadow-md"
+                  className="flex items-center gap-2 px-7 py-3 text-xs sm:text-sm font-bold text-white bg-[#6D1838] hover:bg-[#58122c] disabled:opacity-50 rounded-full transition-all shadow-md"
                 >
                   {isProcessingPayment ? (
                     <>
                       <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      <span>{CLOUD ? submitProgress || 'Submitting…' : 'Processing $515 Secure Deposit...'}</span>
+                      <span>{CLOUD ? submitProgress || tr("Submitting…") : tr("Processing $515 Secure Deposit...")}</span>
                     </>
                   ) : (
                     <>
-                      <span>{CLOUD ? 'Submit Application' : 'Pay $515 Deposit & Submit Application'}</span>
+                      <span>{CLOUD ? tr("Submit Application") : tr("Pay $515 Deposit & Submit Application")}</span>
                       <Sparkles className="w-4 h-4" />
                     </>
                   )}
