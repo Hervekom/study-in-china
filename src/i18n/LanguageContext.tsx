@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { en, Dictionary } from './en';
 import { fr } from './fr';
+import { setTrLanguage } from './tr';
 
 export type Lang = 'en' | 'fr';
 
@@ -28,6 +29,7 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 
 export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [lang, setLangState] = useState<Lang>(detect);
+  setTrLanguage(lang);
 
   useEffect(() => {
     document.documentElement.lang = lang;

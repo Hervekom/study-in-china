@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { tr, useTr } from '../i18n/tr';
 import { X, Lock, Mail, User, ShieldCheck, Sparkles, AlertCircle, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { siteConfig } from '../data/siteConfig';
@@ -18,6 +19,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   initialMode = 'login',
   onSuccess,
 }) => {
+  useTr();
   const { content: siteContent } = useSiteContent();
   const { login, register, loginAsDemo, forgotPassword } = useAuth();
 
@@ -44,7 +46,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     try {
       if (mode === 'login') {
         if (!email.trim() || !password.trim()) {
-          setError('Please provide both email and password.');
+          setError(tr("Please provide both email and password."));
           setLoading(false);
           return;
         }
@@ -60,17 +62,17 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         onClose();
       } else if (mode === 'register') {
         if (!firstName.trim() || !lastName.trim()) {
-          setError('First and last name are required.');
+          setError(tr("First and last name are required."));
           setLoading(false);
           return;
         }
         if (!email.trim() || !email.includes('@')) {
-          setError('Please enter a valid email address.');
+          setError(tr("Please enter a valid email address."));
           setLoading(false);
           return;
         }
         if (password.length < 6) {
-          setError('Password must be at least 6 characters.');
+          setError(tr("Password must be at least 6 characters."));
           setLoading(false);
           return;
         }
@@ -94,7 +96,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         onClose();
       } else if (mode === 'forgot') {
         if (!email.trim() || !email.includes('@')) {
-          setError('Please enter a valid email address.');
+          setError(tr("Please enter a valid email address."));
           setLoading(false);
           return;
         }
@@ -119,11 +121,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in">
       <div
-        className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl flex flex-col border border-neutral-200 overflow-hidden"
+        className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl flex flex-col ring-1 ring-ink/[0.07] overflow-hidden"
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="p-5 border-b border-neutral-100 bg-[#FAF7F9] relative">
+        <div className="p-5 border-b border-neutral-100 bg-porcelain relative">
           <button
             onClick={onClose}
             className="absolute top-4 right-4 p-1.5 text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 rounded-lg transition-colors"
@@ -132,23 +134,20 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           </button>
 
           <div className="flex items-center gap-2 mb-1">
-            <span className="w-6 h-6 rounded bg-[#6D1838] text-white font-bold text-[10px] flex items-center justify-center">
-              SIC
-            </span>
+            <span className="w-6 h-6 rounded bg-[#6D1838] text-white font-bold text-[10px] flex items-center justify-center">{tr("SIC")}</span>
             <span className="text-xs font-bold uppercase tracking-wider text-[#6D1838]">
-              {siteConfig.brandName} Portal
-            </span>
+              {siteConfig.brandName}{' '}{tr("Portal")}</span>
           </div>
 
-          <h2 className="text-lg sm:text-xl font-bold text-[#18151B]">
-            {mode === 'login' ? 'Sign In to Your Account' : mode === 'register' ? 'Create Student Account' : 'Reset Password'}
+          <h2 className="font-display text-lg sm:text-xl font-semibold text-ink">
+            {mode === 'login' ? tr("Sign In to Your Account") : mode === 'register' ? tr("Create Student Account") : tr("Reset Password")}
           </h2>
-          <p className="text-xs text-[#575260] mt-0.5">
+          <p className="text-xs text-ink/65 mt-0.5">
             {mode === 'login'
-              ? 'Access your student applications, document vault, and JW202 visa status.'
+              ? tr("Access your student applications, document vault, and JW202 visa status.")
               : mode === 'register'
-              ? 'Start your admission journey. Account role defaults to Student.'
-              : 'Enter your registered email to receive password reset instructions.'}
+              ? tr("Start your admission journey. Account role defaults to Student.")
+              : tr("Enter your registered email to receive password reset instructions.")}
           </p>
         </div>
 
@@ -163,9 +162,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   ? 'border-[#6D1838] text-[#6D1838] bg-white'
                   : 'border-transparent text-neutral-500 hover:text-neutral-900'
               }`}
-            >
-              Sign In
-            </button>
+            >{tr("Sign In")}</button>
             <button
               type="button"
               onClick={() => { setMode('register'); setError(null); }}
@@ -174,9 +171,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   ? 'border-[#6D1838] text-[#6D1838] bg-white'
                   : 'border-transparent text-neutral-500 hover:text-neutral-900'
               }`}
-            >
-              Create Account
-            </button>
+            >{tr("Create Account")}</button>
           </div>
         )}
 
@@ -201,12 +196,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             <>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[11px] font-bold text-[#575260] uppercase mb-1">
-                    First Name *
-                  </label>
+                  <label className="block text-[11px] font-bold text-ink/65 uppercase mb-1">{tr("First Name *")}</label>
                   <input
                     type="text"
-                    placeholder="e.g. David"
+                    placeholder={tr("e.g. David")}
                     value={firstName}
                     onChange={e => setFirstName(e.target.value)}
                     required
@@ -214,12 +207,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-bold text-[#575260] uppercase mb-1">
-                    Last Name *
-                  </label>
+                  <label className="block text-[11px] font-bold text-ink/65 uppercase mb-1">{tr("Last Name *")}</label>
                   <input
                     type="text"
-                    placeholder="e.g. Osei"
+                    placeholder={tr("e.g. Osei")}
                     value={lastName}
                     onChange={e => setLastName(e.target.value)}
                     required
@@ -230,9 +221,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[11px] font-bold text-[#575260] uppercase mb-1">
-                    WhatsApp Number
-                  </label>
+                  <label className="block text-[11px] font-bold text-ink/65 uppercase mb-1">{tr("WhatsApp Number")}</label>
                   <input
                     type="text"
                     placeholder="+233 50 123 4567"
@@ -242,12 +231,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-bold text-[#575260] uppercase mb-1">
-                    Nationality
-                  </label>
+                  <label className="block text-[11px] font-bold text-ink/65 uppercase mb-1">{tr("Nationality")}</label>
                   <input
                     type="text"
-                    placeholder="e.g. Ghanaian"
+                    placeholder={tr("e.g. Ghanaian")}
                     value={nationality}
                     onChange={e => setNationality(e.target.value)}
                     className="w-full p-2.5 bg-neutral-50 border border-neutral-300 rounded-xl focus:outline-none focus:border-[#6D1838]"
@@ -259,9 +246,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
           {/* Email */}
           <div>
-            <label className="block text-[11px] font-bold text-[#575260] uppercase mb-1">
-              Email Address *
-            </label>
+            <label className="block text-[11px] font-bold text-ink/65 uppercase mb-1">{tr("Email Address *")}</label>
             <div className="relative">
               <input
                 type="email"
@@ -279,17 +264,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           {mode !== 'forgot' && (
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label className="text-[11px] font-bold text-[#575260] uppercase">
-                  Password *
-                </label>
+                <label className="text-[11px] font-bold text-ink/65 uppercase">{tr("Password *")}</label>
                 {mode === 'login' && (
                   <button
                     type="button"
                     onClick={() => { setMode('forgot'); setError(null); }}
                     className="text-[11px] text-[#6D1838] hover:underline"
-                  >
-                    Forgot password?
-                  </button>
+                  >{tr("Forgot password?")}</button>
                 )}
               </div>
               <div className="relative">
@@ -317,7 +298,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             ) : (
               <>
                 <span>
-                  {mode === 'login' ? 'Sign In to Dashboard' : mode === 'register' ? 'Register Student Account' : 'Send Reset Link'}
+                  {mode === 'login' ? tr("Sign In to Dashboard") : mode === 'register' ? tr("Register Student Account") : tr("Send Reset Link")}
                 </span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </>
@@ -329,24 +310,20 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               type="button"
               onClick={() => { setMode('login'); setError(null); }}
               className="w-full text-center text-xs text-neutral-500 hover:text-neutral-800"
-            >
-              Back to Sign In
-            </button>
+            >{tr("Back to Sign In")}</button>
           )}
 
           {/* Quick Demo Switcher (local demo only) */}
           {DEMO_MODE && <div className="pt-3 border-t border-neutral-100 space-y-2">
-            <span className="block text-[10px] font-bold uppercase tracking-wider text-neutral-400 text-center">
-              Quick 1-Click Evaluator Access
-            </span>
+            <span className="block text-[10px] font-bold uppercase tracking-wider text-neutral-400 text-center">{tr("Quick 1-Click Evaluator Access")}</span>
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
                 onClick={() => handleDemoLogin('student')}
-                className="p-2 bg-[#FAF2F5] hover:bg-[#F3EEFA] border border-[#EAD5DE] text-[#6D1838] rounded-lg font-bold text-[11px] text-center transition-colors flex items-center justify-center gap-1"
+                className="p-2 bg-blush hover:bg-[#F3EEFA] border border-[#EAD5DE] text-[#6D1838] rounded-lg font-bold text-[11px] text-center transition-colors flex items-center justify-center gap-1"
               >
                 <Sparkles className="w-3 h-3" />
-                <span>Demo Student</span>
+                <span>{tr("Demo Student")}</span>
               </button>
               <button
                 type="button"
@@ -354,7 +331,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 className="p-2 bg-neutral-100 hover:bg-neutral-200 border border-neutral-300 text-neutral-800 rounded-lg font-bold text-[11px] text-center transition-colors flex items-center justify-center gap-1"
               >
                 <ShieldCheck className="w-3 h-3 text-[#6D1838]" />
-                <span>Demo Admin</span>
+                <span>{tr("Demo Admin")}</span>
               </button>
             </div>
           </div>}
