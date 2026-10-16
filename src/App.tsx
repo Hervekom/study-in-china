@@ -4,6 +4,8 @@ import { ToastProvider } from './context/ToastContext';
 import { SiteContentProvider } from './context/SiteContentContext';
 import { SyncErrorToast } from './components/SyncErrorToast';
 import { AuthModal } from './components/AuthModal';
+import { HomePage } from './components/site/HomePage';
+import { LanguageProvider } from './i18n/LanguageContext';
 
 import { Navbar } from './components/Navbar';
 import { Hero } from './components/Hero';
@@ -251,94 +253,20 @@ function MainApp() {
     return null;
   }
 
-  // View 5: Default Commercial Landing Website
+  // View 5: Public website (v2 design, English / French)
   return (
-    <div className="min-h-screen bg-white text-[#18151B] font-sans antialiased selection:bg-[#6D1838] selection:text-white">
-      {/* Navigation */}
-      <Navbar
-        onOpenApplication={() => handleOpenApplication()}
+    <>
+      <HomePage
+        onApply={(program, degree) => handleOpenApplication(program || '', degree)}
         onNavigate={(view) => handleNavigate(view)}
         onOpenAuth={(mode) => {
           setAuthModalMode(mode || 'login');
           setIsAuthModalOpen(true);
         }}
-        currentView={currentView}
-      />
-
-      {/* Main Content Sections */}
-      <main>
-        {/* 1. Hero */}
-        <Hero
-          onStartApplication={() => handleOpenApplication()}
-          onHowItWorks={handleExplorePrograms}
-        />
-
-        {/* 2. Trust Indicators */}
-        <TrustSection />
-
-        {/* 3. Why Study in China */}
-        <WhyStudyInChina />
-
-        {/* 4. Choose a Field: Academic Field Exploration */}
-        <FieldSelection onSelectField={handleSelectField} />
-
-        {/* 5. Three-Choice Study Opportunity System (Replaces outdated catalog) */}
-        <StudyPreferencesSection
-          onStartApplication={() => handleOpenApplication()}
-          onHowItWorks={handleExplorePrograms}
-        />
-
-        {/* 6. Find Your Study Path (General Degree Options) */}
-        <StudyOptions
-          onSelectDegree={handleSelectDegreePath}
-          onExplorePrograms={handleExplorePrograms}
-        />
-
-        {/* 7. How It Works Timeline */}
-        <HowItWorksTimeline
-          onStartApplication={() => handleOpenApplication()}
-        />
-
-        {/* 8. Pricing & Transparent 3-Stage Payment Plan ($515 + $858 + $1,716) */}
-        <PricingSection
-          onStartWithDeposit={() => handleOpenApplication()}
-          onOpenRefundPolicy={() => setActivePolicy('refund')}
-        />
-
-        {/* 9. What is Included */}
-        <WhatIsIncluded />
-
-        {/* 10. Mid-funnel Application Call to Action */}
-        <ApplicationCTA
-          onStartApplication={() => handleOpenApplication()}
-        />
-
-        {/* 11. FAQ Accordion */}
-        <FAQAccordion />
-
-        {/* 12. Guides & Student Resources */}
-        <ResourcesSection
-          onReadArticle={(article) => setSelectedArticle(article)}
-        />
-
-        {/* 13. About Us & Our Mission */}
-        <AboutSection />
-
-        {/* 14. Contact Form & Direct WhatsApp */}
-        <ContactSection />
-      </main>
-
-      {/* Footer */}
-      <Footer
         onOpenPolicy={(policy) => setActivePolicy(policy)}
-        onOpenApplication={() => handleOpenApplication()}
-        onNavigate={(view) => handleNavigate(view)}
+        onReadArticle={(article) => setSelectedArticle(article)}
       />
 
-      {/* Floating WhatsApp Action button */}
-      <FloatingWhatsApp />
-
-      {/* Interactive Modals */}
       <ArticleDetailModal
         article={selectedArticle}
         onClose={() => setSelectedArticle(null)}
@@ -357,12 +285,13 @@ function MainApp() {
         onClose={() => setIsAuthModalOpen(false)}
         onSuccess={() => handleNavigate('dashboard')}
       />
-    </div>
+    </>
   );
 }
 
 export default function App() {
   return (
+    <LanguageProvider>
     <ToastProvider>
       <AuthProvider>
         <SiteContentProvider>
@@ -371,5 +300,6 @@ export default function App() {
         </SiteContentProvider>
       </AuthProvider>
     </ToastProvider>
+    </LanguageProvider>
   );
 }
