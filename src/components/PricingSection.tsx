@@ -342,7 +342,7 @@ export const PricingSection: React.FC<PricingSectionProps> = ({
                     <span>Important Deduction & Policy Rules</span>
                   </div>
                   <p className="text-xs text-[#575260] leading-relaxed mb-3">
-                    <strong>Separate from Study In China service fees:</strong> {institutionDepositNotice.deductionNote}
+                    <strong>Separate from ChinaStudyPath service fees:</strong> {institutionDepositNotice.deductionNote}
                   </p>
                   <div className="p-3.5 rounded-xl bg-white border border-amber-200 space-y-1.5 text-xs text-[#575260]">
                     <div className="font-bold text-amber-900 flex items-center gap-1.5 text-[11px] uppercase tracking-wide">
@@ -353,7 +353,7 @@ export const PricingSection: React.FC<PricingSectionProps> = ({
                       {institutionDepositNotice.disclaimer}
                     </p>
                     <p className="text-[11px] leading-relaxed text-[#575260]">
-                      Study In China never guarantees admission, refund, seat reservation, or tuition credit unless explicitly confirmed by the institution.
+                      ChinaStudyPath never guarantees admission, refund, seat reservation, or tuition credit unless explicitly confirmed by the institution.
                     </p>
                   </div>
                 </div>

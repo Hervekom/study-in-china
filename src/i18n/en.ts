@@ -123,7 +123,7 @@ export const en = {
   about: {
     title: 'Who we are',
     text1:
-      'Study In China was started by international alumni and education advisors living in China. We went through foreign admission portals, JW202 paperwork and embassy interviews ourselves, so we built the guidance we wish we had.',
+      'ChinaStudyPath was started by international alumni and education advisors living in China. We went through foreign admission portals, JW202 paperwork and embassy interviews ourselves, so we built the guidance we wish we had.',
     text2:
       'Our rule is simple: transparent prices, honest advice about your chances, and one advisor who follows your file until your first day on campus.',
     values: [

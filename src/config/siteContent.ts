@@ -67,7 +67,7 @@ export const SITE_IMAGES = [
 ];
 
 export const DEFAULT_SITE_CONTENT: SiteContent = {
-  brandName: 'Study In China',
+  brandName: 'ChinaStudyPath',
   announcement: {
     enabled: false,
     text: 'Applications for the March 2027 intake are open.',
@@ -96,7 +96,7 @@ export const DEFAULT_SITE_CONTENT: SiteContent = {
     intro:
       'We are dedicated education consultants committed to making higher education in China accessible, straightforward, and secure through honest guidance and fixed, transparent fees.',
     whoWeAre:
-      'Study In China was established by experienced international alumni and higher education advisors based in China. Having experienced the complexities of foreign admission portals, JW202 government documentation, and embassy interviews ourselves, we created a streamlined pathway for international applicants worldwide.',
+      'ChinaStudyPath was established by experienced international alumni and higher education advisors based in China. Having experienced the complexities of foreign admission portals, JW202 government documentation, and embassy interviews ourselves, we created a streamlined pathway for international applicants worldwide.',
     whoWeAre2:
       'We bridge the communication gap between overseas applicants and institutional admissions boards, ensuring dossiers are accurate, compliant, and submitted ahead of competitive deadlines.',
     mission:
@@ -111,7 +111,7 @@ export const DEFAULT_SITE_CONTENT: SiteContent = {
   contact: {
     email: 'admissions@studyinchina.com',
     whatsappNumber: '+86 159 5201 5038',
-    whatsappMessage: 'Hello Study In China, I am interested in studying in China',
+    whatsappMessage: 'Hello ChinaStudyPath, I am interested in studying in China',
     officeAddress: 'Zhongguancun International Education Hub, Haidian District, Beijing, China',
     businessHours: 'Monday – Saturday: 09:00 – 19:00 (GMT+8 / Beijing Time)',
   },

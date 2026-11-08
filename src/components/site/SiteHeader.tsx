@@ -118,7 +118,7 @@ export const SiteHeader: React.FC<Props> = ({ onApply, onNavigate, onOpenAuth })
           className="flex items-center gap-2.5 min-w-0"
           aria-label={content.brandName}
         >
-          <span className="w-9 h-9 shrink-0 rounded-xl bg-bordeaux text-white grid place-items-center text-[11px] font-bold tracking-wide">SIC</span>
+          <span className="w-9 h-9 shrink-0 rounded-xl bg-bordeaux text-white grid place-items-center text-[11px] font-bold tracking-wide">CSP</span>
           <span className={`font-display text-lg sm:text-[22px] font-semibold truncate transition-colors ${solid ? 'text-ink' : 'text-white'}`}>
             {content.brandName}
           </span>

@@ -125,7 +125,7 @@ export const fr: Dictionary = {
   about: {
     title: 'Qui sommes-nous',
     text1:
-      'Study In China a été créé par d’anciens étudiants internationaux et des conseillers en éducation vivant en Chine. Nous avons vécu nous-mêmes les portails d’admission, le JW202 et les entretiens à l’ambassade : nous avons construit l’accompagnement que nous aurions aimé avoir.',
+      'ChinaStudyPath a été créé par d’anciens étudiants internationaux et des conseillers en éducation vivant en Chine. Nous avons vécu nous-mêmes les portails d’admission, le JW202 et les entretiens à l’ambassade : nous avons construit l’accompagnement que nous aurions aimé avoir.',
     text2:
       'Notre règle est simple : des prix transparents, des conseils honnêtes sur vos chances, et un conseiller qui suit votre dossier jusqu’à votre premier jour sur le campus.',
     values: [

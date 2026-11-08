@@ -24,7 +24,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenPolicy, onOpenApplication,
           <div className="lg:col-span-2 space-y-4">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-lg bg-[#6D1838] flex items-center justify-center text-white font-bold text-xs shadow-sm">
-                SIC
+                CSP
               </div>
               <span className="text-xl font-extrabold tracking-tight text-white">
                 {siteConfig.brandName}

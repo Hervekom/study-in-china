@@ -226,7 +226,7 @@ export const AdminSecurityCenter: React.FC<{ onToast: (msg: string) => void }> =
 
     const backup = {
       meta: {
-        app: 'Study In China',
+        app: 'ChinaStudyPath',
         version: 1,
         exportedAt: new Date().toISOString(),
         exportedBy: actorLabel,
@@ -241,7 +241,7 @@ export const AdminSecurityCenter: React.FC<{ onToast: (msg: string) => void }> =
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `StudyInChina_backup_${new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')}.json`;
+    a.download = `ChinaStudyPath_backup_${new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')}.json`;
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -266,8 +266,8 @@ export const AdminSecurityCenter: React.FC<{ onToast: (msg: string) => void }> =
       onToast(tr("This file is not valid JSON."));
       return;
     }
-    if (parsed?.meta?.app !== 'Study In China') {
-      onToast(tr("This file is not a Study In China backup."));
+    if (!['ChinaStudyPath', 'ChinaStudyPath'].includes(parsed?.meta?.app)) {
+      onToast(tr("This file is not a ChinaStudyPath backup."));
       return;
     }
     if (
@@ -572,7 +572,7 @@ export const AdminSecurityCenter: React.FC<{ onToast: (msg: string) => void }> =
                 <Database className="w-5 h-5" />
               </div>
               <div>
-                <p className="text-sm font-bold text-ink">{tr("Full backup of Study In China")}</p>
+                <p className="text-sm font-bold text-ink">{tr("Full backup of ChinaStudyPath")}</p>
                 <p className="text-xs text-ink/65 mt-0.5">{tr("Includes accounts, applications, documents list, payments, messages, programs, blog, FAQs and the audit trail. Uploaded files (passports, diplomas) stay in Supabase Storage and are not in the file.")}</p>
               </div>
             </div>

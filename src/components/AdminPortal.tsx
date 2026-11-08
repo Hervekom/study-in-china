@@ -410,7 +410,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
             </button>
             <div className="hidden sm:block h-4 w-px bg-neutral-200" />
             <div className="flex items-center gap-2 min-w-0">
-              <span className="w-7 h-7 shrink-0 rounded-md bg-[#6D1838] text-white font-bold text-[10px] flex items-center justify-center">{tr("SIC")}</span>
+              <span className="w-7 h-7 shrink-0 rounded-md bg-[#6D1838] text-white font-bold text-[10px] flex items-center justify-center">CSP</span>
               <div className="min-w-0 leading-tight">
                 <span className="block font-extrabold text-sm sm:text-base text-ink truncate">
                   <span className="sm:hidden">{tr("Admin Portal")}</span>

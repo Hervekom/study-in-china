@@ -69,7 +69,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onSuccess, onBackToHome })
           onClick={onBackToHome}
           className="flex items-center gap-2 group text-ink transition-colors text-left"
         >
-          <div className="w-8 h-8 rounded-lg bg-[#6D1838] flex items-center justify-center text-white font-bold text-xs shadow-xs group-hover:bg-[#58122c] transition-colors">{tr("SIC")}</div>
+          <div className="w-8 h-8 rounded-lg bg-[#6D1838] flex items-center justify-center text-white font-bold text-xs shadow-xs group-hover:bg-[#58122c] transition-colors">CSP</div>
           <span className="text-lg font-extrabold tracking-tight text-ink">
             {siteConfig.brandName}
           </span>
@@ -93,7 +93,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onSuccess, onBackToHome })
           {/* Card Header */}
           <div className="p-6 pb-5 border-b border-neutral-100 bg-porcelain">
             <div className="flex items-center gap-2 mb-1.5">
-              <span className="w-5 h-5 rounded bg-[#6D1838] text-white font-bold text-[10px] flex items-center justify-center">{tr("SIC")}</span>
+              <span className="w-5 h-5 rounded bg-[#6D1838] text-white font-bold text-[10px] flex items-center justify-center">CSP</span>
               <span className="text-[11px] font-bold uppercase tracking-wider text-[#6D1838]">{tr("Student Admissions Portal")}</span>
             </div>
             <h1 className="font-display text-xl font-semibold text-ink">{tr("Sign In to Student Portal")}</h1>

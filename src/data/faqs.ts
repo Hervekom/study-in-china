@@ -29,7 +29,7 @@ export const faqsData: FAQItem[] = [
     id: 'faq-institution-deposit',
     category: 'Pricing & Payments',
     question: 'Does the host institution require an additional deposit?',
-    answer: "Some institutions may require an additional deposit after pre-admission or admission to confirm your intention to secure the available place. This deposit is separate from Study In China's service fees. Depending on the institution and program, it may be deducted from tuition or accommodation costs. The applicable amount and conditions are determined by the institution."
+    answer: "Some institutions may require an additional deposit after pre-admission or admission to confirm your intention to secure the available place. This deposit is separate from ChinaStudyPath's service fees. Depending on the institution and program, it may be deducted from tuition or accommodation costs. The applicable amount and conditions are determined by the institution."
   },
   {
     id: 'faq-documents-needed',

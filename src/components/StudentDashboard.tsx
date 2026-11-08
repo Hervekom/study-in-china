@@ -267,7 +267,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
 
   // WhatsApp (quick questions only), number managed in the site content editor
   const studentWhatsappUrl = `https://wa.me/${whatsappDigits(siteContent.contact.whatsappNumber)}?text=${encodeURIComponent(
-    activeApp ? `Hello Study In China, my application reference is ${activeApp.id}.` : siteContent.contact.whatsappMessage
+    activeApp ? `Hello ChinaStudyPath, my application reference is ${activeApp.id}.` : siteContent.contact.whatsappMessage
   )}`;
 
   // ---- Secure inbox: unread tracking (per device) ----
@@ -497,7 +497,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
             </button>
             <div className="hidden sm:block h-4 w-px bg-neutral-200" />
             <div className="flex items-center gap-2 min-w-0">
-              <span className="w-7 h-7 shrink-0 rounded-md bg-[#6D1838] text-white font-bold text-[10px] flex items-center justify-center">{tr("SIC")}</span>
+              <span className="w-7 h-7 shrink-0 rounded-md bg-[#6D1838] text-white font-bold text-[10px] flex items-center justify-center">CSP</span>
               <span className="font-extrabold text-sm sm:text-base text-ink truncate">
                 <span className="hidden">{tr("Dashboard")}</span>
                 <span className="hidden sm:inline">{tr("Student Dashboard")}</span>
@@ -777,7 +777,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
                   <p className="font-semibold text-[#6D1838]">
                     {matchingInfo.desc}
                   </p>
-                  <p className="text-[11px] text-ink/65">{tr("Evaluation Hierarchy: 1st Choice → 2nd Choice → 3rd Choice. Study In China evaluates options based on availability, eligibility, and scholarship potential without requiring institution pre-selection.")}</p>
+                  <p className="text-[11px] text-ink/65">{tr("Evaluation Hierarchy: 1st Choice → 2nd Choice → 3rd Choice. ChinaStudyPath evaluates options based on availability, eligibility, and scholarship potential without requiring institution pre-selection.")}</p>
                 </div>
 
                 {/* 3 Choices Priority Blocks */}
@@ -1079,7 +1079,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
                     </div>
                   </div>
 
-                  <p className="text-[11px] text-ink/65 leading-relaxed">{tr("Some institutions may require an additional deposit after pre-admission or admission to confirm your intention to secure the available place. This deposit is separate from Study In China's service fees. Depending on the institution and program, it may be deducted from tuition or accommodation costs. The applicable amount and conditions are determined by the institution.")}</p>
+                  <p className="text-[11px] text-ink/65 leading-relaxed">{tr("Some institutions may require an additional deposit after pre-admission or admission to confirm your intention to secure the available place. This deposit is separate from ChinaStudyPath's service fees. Depending on the institution and program, it may be deducted from tuition or accommodation costs. The applicable amount and conditions are determined by the institution.")}</p>
 
                   <div className="pt-2 flex items-center justify-between">
                     <button
@@ -1536,7 +1536,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
                   <div>
                     <div className="flex items-center gap-2">
                       <h3 className="text-base font-bold text-ink">{tr("Institution Deposit Required")}</h3>
-                      <span className="text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300 px-2 py-0.5 rounded-full">{tr("Separate from Study In China service fees")}</span>
+                      <span className="text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300 px-2 py-0.5 rounded-full">{tr("Separate from ChinaStudyPath service fees")}</span>
                     </div>
                     <p className="text-xs text-ink/65">{tr("Notice and conditions regarding potential place confirmation deposits requested by host institutions.")}</p>
                   </div>
@@ -1556,7 +1556,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
               {activeApp.institutionDeposit && activeApp.institutionDeposit.required ? (
                 <div className="space-y-4">
                   <div className="p-4 rounded-xl bg-amber-50/50 border border-amber-200 text-xs text-ink leading-relaxed">
-                    <p className="font-medium">{tr("\"Some institutions may require an additional deposit after pre-admission or admission to confirm your intention to secure the available place. This deposit is separate from Study In China's service fees. Depending on the institution and program, it may be deducted from tuition or accommodation costs. The applicable amount and conditions are determined by the institution.\"")}</p>
+                    <p className="font-medium">{tr("\"Some institutions may require an additional deposit after pre-admission or admission to confirm your intention to secure the available place. This deposit is separate from ChinaStudyPath's service fees. Depending on the institution and program, it may be deducted from tuition or accommodation costs. The applicable amount and conditions are determined by the institution.\"")}</p>
                   </div>
 
                   {/* Details Grid */}
@@ -1643,7 +1643,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
               ) : (
                 <div className="p-4 bg-neutral-50 rounded-xl border border-neutral-200 text-xs text-ink/65 space-y-2">
                   <p className="font-semibold text-ink">{tr("No Additional Institution Deposit Currently Required For Your Profile.")}</p>
-                  <p className="leading-relaxed">{tr("Some institutions may require an additional deposit after pre-admission or admission to confirm your intention to secure the available place. This deposit is separate from Study In China's service fees. Depending on the institution and program, it may be deducted from tuition or accommodation costs. The applicable amount and conditions are determined by the institution.")}</p>
+                  <p className="leading-relaxed">{tr("Some institutions may require an additional deposit after pre-admission or admission to confirm your intention to secure the available place. This deposit is separate from ChinaStudyPath's service fees. Depending on the institution and program, it may be deducted from tuition or accommodation costs. The applicable amount and conditions are determined by the institution.")}</p>
                 </div>
               )}
             </div>
@@ -1914,7 +1914,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
               ) : (
                 <div className="space-y-1 text-xs text-ink/65">
                   <p><strong>{tr("Card:")}</strong>{' '}{tr("4242 •••• •••• 4242 (Stripe Verified)")}</p>
-                  <p><strong>{tr("Beneficiary:")}</strong>{' '}{tr("Study In China International Education Ltd.")}</p>
+                  <p><strong>{tr("Beneficiary:")}</strong>{' '}{tr("ChinaStudyPath International Education Ltd.")}</p>
                 </div>
               )}
             </div>

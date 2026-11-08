@@ -103,7 +103,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           aria-label={`${siteConfig.brandName} home`}
         >
           <div className="w-9 h-9 shrink-0 rounded-lg bg-[#6D1838] flex items-center justify-center text-white font-bold text-xs shadow-xs group-hover:bg-[#58122c] transition-colors">
-            SIC
+            CSP
           </div>
           <span className="text-lg sm:text-xl font-extrabold tracking-tight text-[#18151B] whitespace-nowrap truncate">
             {siteConfig.brandName}

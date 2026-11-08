@@ -33,7 +33,7 @@ export const PolicyModal: React.FC<PolicyModalProps> = ({ isOpen, onClose, polic
                 {policyType === 'terms' && tr("Terms of Service & Application Protocol")}
                 {policyType === 'refund' && tr("Fee Schedule & Refund Policy")}
               </h3>
-              <p className="text-xs text-ink/65">{tr("Study In China Official Legal Information")}</p>
+              <p className="text-xs text-ink/65">{tr("ChinaStudyPath Official Legal Information")}</p>
             </div>
           </div>
           <button
@@ -49,7 +49,7 @@ export const PolicyModal: React.FC<PolicyModalProps> = ({ isOpen, onClose, polic
         <div className="px-6 py-6 overflow-y-auto text-sm text-ink/65 leading-relaxed space-y-4">
           {policyType === 'privacy' && (
             <>
-              <p>{tr("At Study In China, we respect and safeguard the personal and academic documentation of all prospective international students. This Privacy Policy details our handling of passport copies, academic transcripts, and personal contact channels.")}</p>
+              <p>{tr("At ChinaStudyPath, we respect and safeguard the personal and academic documentation of all prospective international students. This Privacy Policy details our handling of passport copies, academic transcripts, and personal contact channels.")}</p>
               <h4 className="font-semibold text-ink text-base pt-2">{tr("1. Collection of Application Records")}</h4>
               <p>{tr("We exclusively collect documents required by accredited higher education admissions directorates and municipal education bureaus in China. This encompasses your identification, academic qualifications, study plans, and health examinations.")}</p>
               <h4 className="font-semibold text-ink text-base pt-2">{tr("2. Secure Transmission to Admissions")}</h4>
@@ -63,13 +63,13 @@ export const PolicyModal: React.FC<PolicyModalProps> = ({ isOpen, onClose, polic
 
           {policyType === 'terms' && (
             <>
-              <p>{tr("By enrolling in the Study In China advisory pathway, you agree to these transparent engagement standards designed to ensure accurate submission and high admission success.")}</p>
+              <p>{tr("By enrolling in the ChinaStudyPath advisory pathway, you agree to these transparent engagement standards designed to ensure accurate submission and high admission success.")}</p>
               <h4 className="font-semibold text-ink text-base pt-2">{tr("1. Scope of Representation")}</h4>
-              <p>{tr("Study In China acts as your professional international education advisor, guiding program selection, application dossier formulation, submission follow-up, admission notice collection, and JW202/JW201 government verification.")}</p>
+              <p>{tr("ChinaStudyPath acts as your professional international education advisor, guiding program selection, application dossier formulation, submission follow-up, admission notice collection, and JW202/JW201 government verification.")}</p>
               <h4 className="font-semibold text-ink text-base pt-2">{tr("2. Applicant Authenticity")}</h4>
               <p>{tr("The student affirms that all submitted academic transcripts, diplomas, and identity documents are authentic. Forged credentials result in immediate termination of support and reporting to educational and consular authorities.")}</p>
               <h4 className="font-semibold text-ink text-base pt-2">{tr("3. Consular and Visa Autonomy")}</h4>
-              <p>{tr("While Study In China provides full document verification and interview coaching, final visa issuance remains the sovereign authority of the Chinese Embassy or Consulate.")}</p>
+              <p>{tr("While ChinaStudyPath provides full document verification and interview coaching, final visa issuance remains the sovereign authority of the Chinese Embassy or Consulate.")}</p>
             </>
           )}
 
@@ -98,7 +98,7 @@ export const PolicyModal: React.FC<PolicyModalProps> = ({ isOpen, onClose, polic
 
               <div className="p-3.5 bg-amber-50 rounded-xl border border-amber-200 text-xs text-ink space-y-1">
                 <span className="font-bold text-amber-900 block">{tr("Separate Institution Deposit Clarification")}</span>
-                <p className="text-ink/65">{tr("Some institutions may require an additional deposit after pre-admission or admission to confirm your intention to secure the available place. This deposit is separate from Study In China's service fees. Depending on the institution and program, it may be deducted from tuition or accommodation costs. The applicable amount and conditions are determined by the institution.")}</p>
+                <p className="text-ink/65">{tr("Some institutions may require an additional deposit after pre-admission or admission to confirm your intention to secure the available place. This deposit is separate from ChinaStudyPath's service fees. Depending on the institution and program, it may be deducted from tuition or accommodation costs. The applicable amount and conditions are determined by the institution.")}</p>
               </div>
 
               <h4 className="font-semibold text-ink text-base pt-2">{tr("Conditional Refund Protection")}</h4>

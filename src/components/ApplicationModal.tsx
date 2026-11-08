@@ -497,7 +497,7 @@ export const ApplicationModal: React.FC<ApplicationModalProps> = ({
 
                 <div className="mt-2.5 p-2 rounded-lg bg-amber-50/70 border border-amber-200/80 text-[11px] text-[#575260]">
                   <span className="font-bold text-amber-900 block">Note on Possible Institution Deposit:</span>
-                  Some institutions may require an additional deposit after pre-admission or admission to confirm your intention to secure the available place. This deposit is separate from Study In China's service fees.
+                  Some institutions may require an additional deposit after pre-admission or admission to confirm your intention to secure the available place. This deposit is separate from ChinaStudyPath's service fees.
                 </div>
               </div>
 
@@ -532,7 +532,7 @@ export const ApplicationModal: React.FC<ApplicationModalProps> = ({
                   Application Dossier Initiated
                 </span>
                 <h3 className="text-xl font-bold text-[#18151B]">
-                  Welcome to Study In China, {formData.fullName.split(' ')[0]}!
+                  Welcome to ChinaStudyPath, {formData.fullName.split(' ')[0]}!
                 </h3>
                 <p className="text-xs sm:text-sm text-[#575260] max-w-md mx-auto mt-1">
                   Your admissions file has been registered under reference number:

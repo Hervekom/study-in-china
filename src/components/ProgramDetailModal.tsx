@@ -418,7 +418,7 @@ export const ProgramDetailModal: React.FC<ProgramDetailModalProps> = ({
           <div className="flex items-start gap-2.5 text-xs text-[#575260] bg-[#FAF2F5] p-3.5 rounded-xl border border-[#EAD5DE]">
             <ShieldCheck className="w-4 h-4 text-[#6D1838] shrink-0 mt-0.5" />
             <span className="leading-relaxed">
-              <strong>Simple, Transparent Payment Plan:</strong> Total service fee is ${pricing.total.usd.toLocaleString()} USD. You start with only ${pricing.initialDeposit.usd} USD initial deposit; subsequent payments are made only after admission (${pricing.admissionPayment.usd} USD) and after your JW202 visa document is issued (${pricing.finalPayment.usd} USD). Where applicable, any separate institution deposit requested by the school to confirm a place is separate from Study In China service fees.
+              <strong>Simple, Transparent Payment Plan:</strong> Total service fee is ${pricing.total.usd.toLocaleString()} USD. You start with only ${pricing.initialDeposit.usd} USD initial deposit; subsequent payments are made only after admission (${pricing.admissionPayment.usd} USD) and after your JW202 visa document is issued (${pricing.finalPayment.usd} USD). Where applicable, any separate institution deposit requested by the school to confirm a place is separate from ChinaStudyPath service fees.
             </span>
           </div>
         </div>

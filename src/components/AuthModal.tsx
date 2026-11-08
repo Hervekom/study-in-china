@@ -134,7 +134,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           </button>
 
           <div className="flex items-center gap-2 mb-1">
-            <span className="w-6 h-6 rounded bg-[#6D1838] text-white font-bold text-[10px] flex items-center justify-center">{tr("SIC")}</span>
+            <span className="w-6 h-6 rounded bg-[#6D1838] text-white font-bold text-[10px] flex items-center justify-center">CSP</span>
             <span className="text-xs font-bold uppercase tracking-wider text-[#6D1838]">
               {siteConfig.brandName}{' '}{tr("Portal")}</span>
           </div>

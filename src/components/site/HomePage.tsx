@@ -409,7 +409,7 @@ export const HomePage: React.FC<Props> = ({ onApply, onNavigate, onOpenAuth, onO
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-14 grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
           <div>
             <div className="flex items-center gap-2.5">
-              <span className="w-9 h-9 rounded-xl bg-bordeaux text-white grid place-items-center text-[11px] font-bold">SIC</span>
+              <span className="w-9 h-9 rounded-xl bg-bordeaux text-white grid place-items-center text-[11px] font-bold">CSP</span>
               <span className="font-display text-xl font-semibold text-white">{content.brandName}</span>
             </div>
             <p className="mt-4 text-sm leading-relaxed max-w-xs">{t.footer.tagline}</p>

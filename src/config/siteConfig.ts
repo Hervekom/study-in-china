@@ -73,8 +73,8 @@ export const pricing = {
 export const institutionDepositNotice = {
   title: 'Additional Institution Deposit',
   subtitle: 'Some institutions may require a separate deposit after pre-admission or admission to confirm your place.',
-  badge: 'Separate from Study In China service fees',
-  statement: "Some institutions may require an additional deposit after pre-admission or admission to confirm your intention to secure the available place. This deposit is separate from Study In China's service fees. Depending on the institution and program, it may be deducted from tuition or accommodation costs. The applicable amount and conditions are determined by the institution.",
+  badge: 'Separate from ChinaStudyPath service fees',
+  statement: "Some institutions may require an additional deposit after pre-admission or admission to confirm your intention to secure the available place. This deposit is separate from ChinaStudyPath's service fees. Depending on the institution and program, it may be deducted from tuition or accommodation costs. The applicable amount and conditions are determined by the institution.",
   deductionNote: 'Where applicable, this deposit may be deducted from tuition or accommodation fees depending on the institution and program.',
   disclaimer: 'Amount, payment deadline, refundability and deduction conditions are determined by the institution.',
   programTypesExplanation: 'Treatment of an institution deposit may vary depending on the program structure, including Self-Support Programs and Partial Scholarship / Partial Support Programs. Do not assume that the same payment rules apply to every program. The final amount, purpose, and deduction conditions must always be presented as subject to the institution’s specific policy.',
@@ -88,7 +88,7 @@ export const institutionDepositNotice = {
 export const USE_MOCK_DATA = true;
 
 export const siteConfig = {
-  brandName: 'Study In China',
+  brandName: 'ChinaStudyPath',
   tagline: 'Your Journey to Study in China Starts Here.',
   subtitle: 'Professional guidance from field & program discovery to official admission, JW202 visa documentation, and your arrival in China.',
 

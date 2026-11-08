@@ -33,7 +33,7 @@ ok(pub.status === 200, `public site content readable -> ${pub.status}`);
 
 // 3) Pages render with real Supabase, no CSP blocks, no JS errors
 const browser = await chromium.launch();
-for (const [path, expect] of [['/', /Study In China/i], ['/apply', /Personal Information|Informations personnelles/i], ['/login', /Sign in|Connexion/i], ['/admin', /Restricted|réservé/i], ['/student/dashboard', /Sign in|Connexion|Study In China/i]]) {
+for (const [path, expect] of [['/', /ChinaStudyPath/i], ['/apply', /Personal Information|Informations personnelles/i], ['/login', /Sign in|Connexion/i], ['/admin', /Restricted|réservé/i], ['/student/dashboard', /Sign in|Connexion|ChinaStudyPath/i]]) {
   for (const width of [390, 1440]) {
     const page = await browser.newPage({ viewport: { width, height: 900 } });
     const errs = []; const blocked = [];

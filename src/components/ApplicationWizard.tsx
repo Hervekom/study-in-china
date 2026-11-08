@@ -584,7 +584,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
             id: `msg-${Date.now()}`,
             sender: 'advisor',
             senderName: 'Elena Zhao (Senior Admissions Director)',
-            content: `Welcome to Study In China, ${personal.firstName}! Your $515 initial deposit has been received and your application reference is ${generatedId}. We are auditing your documents for ${preferences.preferredField}.`,
+            content: `Welcome to ChinaStudyPath, ${personal.firstName}! Your $515 initial deposit has been received and your application reference is ${generatedId}. We are auditing your documents for ${preferences.preferredField}.`,
             timestamp: new Date().toISOString(),
           },
         ],
@@ -756,7 +756,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
             </button>
             <div className="hidden sm:block h-4 w-px bg-neutral-200" />
             <div className="flex items-center gap-2 min-w-0">
-              <span className="w-7 h-7 shrink-0 rounded-md bg-[#6D1838] text-white font-bold text-[10px] flex items-center justify-center">{tr("SIC")}</span>
+              <span className="w-7 h-7 shrink-0 rounded-md bg-[#6D1838] text-white font-bold text-[10px] flex items-center justify-center">CSP</span>
               <span className="font-extrabold text-sm sm:text-base text-ink truncate">
                 <span className="sm:hidden">{tr("Application")}</span>
                 <span className="hidden sm:inline">{siteConfig.brandName}{' '}{tr("Application")}</span>
@@ -2159,7 +2159,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                   <div className="flex items-center gap-1.5 font-bold text-amber-900 text-[11px] uppercase tracking-wide">
                     <span>{tr("Note: Possible Institution Deposit (Separate from Service Fees)")}</span>
                   </div>
-                  <p className="text-ink/65 leading-relaxed">{tr("Some institutions may require an additional deposit after pre-admission or admission to confirm your intention to secure the available place. This deposit is separate from Study In China's service fees. Depending on the institution and program, it may be deducted from tuition or accommodation costs. The applicable amount and conditions are determined by the institution.")}</p>
+                  <p className="text-ink/65 leading-relaxed">{tr("Some institutions may require an additional deposit after pre-admission or admission to confirm your intention to secure the available place. This deposit is separate from ChinaStudyPath's service fees. Depending on the institution and program, it may be deducted from tuition or accommodation costs. The applicable amount and conditions are determined by the institution.")}</p>
                 </div>
               </div>
 
@@ -2292,7 +2292,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                     <p className="font-bold text-ink">{tr("International Wire Transfer Instructions (SWIFT):")}</p>
                     <div className="p-3 bg-white border border-neutral-200 rounded-lg space-y-1 font-mono text-[11px]">
                       <p><strong>{tr("Bank:")}</strong>{' '}{tr("Bank of China (Hong Kong / Beijing)")}</p>
-                      <p><strong>{tr("Beneficiary:")}</strong>{' '}{tr("Study In China International Education Ltd.")}</p>
+                      <p><strong>{tr("Beneficiary:")}</strong>{' '}{tr("ChinaStudyPath International Education Ltd.")}</p>
                       <p><strong>{tr("SWIFT / BIC:")}</strong>{' '}{tr("BKCHCNBJ998")}</p>
                       <p><strong>{tr("Amount:")}</strong>{' '}{tr("$515 USD")}</p>
                       <p><strong>{tr("Account (USD):")}</strong> 8019-2049-5510-9921</p>
@@ -2336,7 +2336,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                 <span className="inline-block px-3 py-1 bg-blush text-[#6D1838] rounded-full text-xs font-bold border border-[#EAD5DE] mb-2 uppercase tracking-wider">
                   {CLOUD ? tr("Application Submitted · Deposit instructions coming") : tr("Dossier Initiated & $515 Deposit Confirmed")}
                 </span>
-                <h2 className="font-display text-2xl sm:text-3xl font-semibold text-ink">{tr("Welcome to Study In China,")}{' '}{personal.firstName}!
+                <h2 className="font-display text-2xl sm:text-3xl font-semibold text-ink">{tr("Welcome to ChinaStudyPath,")}{' '}{personal.firstName}!
                 </h2>
                 <p className="text-xs sm:text-sm text-ink/65 max-w-lg mx-auto mt-2">
                   {CLOUD
@@ -2410,7 +2410,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                 >{tr("Return to Website")}</button>
               </div>
               <p className="text-center text-xs text-ink/60">{tr("Quick question?")}{' '}
-                <a href={`https://wa.me/${siteContent.contact.whatsappNumber.replace(/[^\d]/g, '')}?text=${encodeURIComponent(`Hello Study In China, my application reference is ${generatedAppId}.`)}`} target="_blank" rel="noopener noreferrer" className="font-semibold text-emerald-800 underline underline-offset-2">{tr("Write to us on WhatsApp")}</a>
+                <a href={`https://wa.me/${siteContent.contact.whatsappNumber.replace(/[^\d]/g, '')}?text=${encodeURIComponent(`Hello ChinaStudyPath, my application reference is ${generatedAppId}.`)}`} target="_blank" rel="noopener noreferrer" className="font-semibold text-emerald-800 underline underline-offset-2">{tr("Write to us on WhatsApp")}</a>
               </p>
             </div>
           )}

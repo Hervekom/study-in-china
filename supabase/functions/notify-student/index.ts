@@ -29,12 +29,12 @@ type Kind = "account_update" | "application_received";
 const COPY: Record<Kind, Record<Lang, { subject: string; title: string; body: string }>> = {
   account_update: {
     en: {
-      subject: "New message in your Study In China account",
+      subject: "New message in your ChinaStudyPath account",
       title: "You have a new message",
       body: "There is a new message or update about your application {ref} in your account. For your security, we do not send the details by email. Sign in to your account to read it.",
     },
     fr: {
-      subject: "Nouveau message dans votre compte Study In China",
+      subject: "Nouveau message dans votre compte ChinaStudyPath",
       title: "Vous avez un nouveau message",
       body: "Un nouveau message ou une mise à jour concernant votre candidature {ref} est disponible dans votre compte. Pour votre sécurité, nous n’envoyons pas les détails par e-mail. Connectez-vous à votre compte pour le lire.",
     },
@@ -56,11 +56,11 @@ const COPY: Record<Kind, Record<Lang, { subject: string; title: string; body: st
 const FOOTER: Record<Lang, { button: string; safety: string }> = {
   en: {
     button: "Sign in to my account",
-    safety: "Study In China will never ask for your password, card details or a payment by email, phone or WhatsApp. If a message asks you to, do not answer it.",
+    safety: "ChinaStudyPath will never ask for your password, card details or a payment by email, phone or WhatsApp. If a message asks you to, do not answer it.",
   },
   fr: {
     button: "Me connecter à mon compte",
-    safety: "Study In China ne vous demandera jamais votre mot de passe, vos données de carte ou un paiement par e-mail, téléphone ou WhatsApp. Si un message vous le demande, n’y répondez pas.",
+    safety: "ChinaStudyPath ne vous demandera jamais votre mot de passe, vos données de carte ou un paiement par e-mail, téléphone ou WhatsApp. Si un message vous le demande, n’y répondez pas.",
   },
 };
 
@@ -73,7 +73,7 @@ Deno.serve(async (req: Request) => {
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
   const brevoKey = Deno.env.get("BREVO_API_KEY");
   const fromEmail = Deno.env.get("MAIL_FROM_EMAIL");
-  const fromName = Deno.env.get("MAIL_FROM_NAME") || "Study In China";
+  const fromName = Deno.env.get("MAIL_FROM_NAME") || "ChinaStudyPath";
 
   let body: any;
   try {
