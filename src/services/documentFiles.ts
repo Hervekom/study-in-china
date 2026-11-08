@@ -8,6 +8,12 @@ import { supabase, isSupabaseConfigured } from '../lib/supabase';
 
 export const DOCUMENT_BUCKET = 'student-documents';
 export const MAX_DOCUMENT_BYTES = 10 * 1024 * 1024;
+const MIME_BY_EXT: Record<string, string> = {
+  pdf: 'application/pdf', jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', webp: 'image/webp',
+  heic: 'image/heic', doc: 'application/msword',
+  docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+};
+
 export const ACCEPTED_DOCUMENT_TYPES = '.pdf,.jpg,.jpeg,.png,.webp,.heic,.doc,.docx';
 
 export const formatBytes = (n: number) =>
@@ -16,6 +22,8 @@ export const formatBytes = (n: number) =>
 export const validateDocumentFile = (file: File): string | null => {
   if (file.size > MAX_DOCUMENT_BYTES) return `"${file.name}" is larger than 10 MB. Please upload a smaller scan.`;
   if (file.size === 0) return `"${file.name}" is empty.`;
+  const ext = (file.name.split('.').pop() || '').toLowerCase();
+  if (!MIME_BY_EXT[ext]) return `"${file.name}": only PDF, JPG, PNG, WebP, HEIC or Word files are accepted.`;
   return null;
 };
 
@@ -40,7 +48,7 @@ export const uploadDocumentFile = async (
 
   const { error } = await supabase.storage.from(DOCUMENT_BUCKET).upload(storagePath, file, {
     upsert: false,
-    contentType: file.type || 'application/octet-stream',
+    contentType: file.type || MIME_BY_EXT[ext] || 'application/pdf',
   });
   if (error) throw new Error(`Upload failed for "${file.name}": ${error.message}`);
 

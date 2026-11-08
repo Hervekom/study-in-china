@@ -115,7 +115,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
   const [secondChoice, setSecondChoice] = useState<ProgramPreference>({
     priority: 2,
     fieldOfStudy: 'Software Engineering & IT',
-    program: 'Software Engineering & Information Systems',
+    program: CLOUD ? '' : 'Software Engineering & Information Systems',
     degreeLevel: (prefillDegree || 'Bachelor') as DegreeLevel,
     studyLanguage: 'English',
     intake: defaultIntakeOption,
@@ -124,7 +124,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
   const [thirdChoice, setThirdChoice] = useState<ProgramPreference>({
     priority: 3,
     fieldOfStudy: 'Engineering & Technology',
-    program: 'Artificial Intelligence & Robotics Engineering',
+    program: CLOUD ? '' : 'Artificial Intelligence & Robotics Engineering',
     degreeLevel: (prefillDegree || 'Bachelor') as DegreeLevel,
     studyLanguage: 'English',
     intake: defaultIntakeOption,
@@ -161,7 +161,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
   const [submitProgress, setSubmitProgress] = useState<string | null>(null);
 
   // Step 5: Review Checkbox
-  const [agreedToTerms, setAgreedToTerms] = useState<boolean>(true);
+  const [agreedToTerms, setAgreedToTerms] = useState<boolean>(false);
 
   // Step 6: Payment
   const [paymentMethod, setPaymentMethod] = useState<'card' | 'wire' | 'alipay'>('card');
@@ -298,6 +298,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
     }
     setDocFiles(prev => ({ ...prev, [key]: file }));
     setUploadedDocs(prev => ({ ...prev, [key]: { name: file.name, size: formatBytes(file.size) } }));
+    setErrors(prev => { const next = { ...prev }; delete next[key]; return next; });
     setErrors(prev => {
       const copy = { ...prev };
       delete copy[key];
@@ -326,6 +327,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
     };
 
     const fileName = customName || fileNames[key] || `${key}_document.pdf`;
+    setErrors(prev => { const next = { ...prev }; delete next[key]; return next; });
     setUploadedDocs(prev => ({
       ...prev,
       [key]: {
@@ -621,7 +623,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
       const entries = Object.entries(docFiles);
       for (let i = 0; i < entries.length; i++) {
         const [key, file] = entries[i];
-        setSubmitProgress(`Uploading documents (${i + 1}/${entries.length})…`);
+        setSubmitProgress(`${tr("Uploading documents")} (${i + 1}/${entries.length})…`);
         const up = await uploadDocumentFile(appId, key, file);
         const template = DEFAULT_REQUIRED_DOCUMENTS.find(d => d.type === key);
         documents.push({
@@ -900,7 +902,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                       errors.firstName ? 'border-rose-500 bg-rose-50/30' : 'border-neutral-200 focus:border-[#6D1838]'
                     }`}
                   />
-                  {errors.firstName && <p className="text-xs text-rose-500 mt-1">{errors.firstName}</p>}
+                  {errors.firstName && <p className="text-xs text-rose-500 mt-1">{tr(errors.firstName)}</p>}
                 </div>
 
                 {/* Last Name */}
@@ -915,7 +917,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                       errors.lastName ? 'border-rose-500 bg-rose-50/30' : 'border-neutral-200 focus:border-[#6D1838]'
                     }`}
                   />
-                  {errors.lastName && <p className="text-xs text-rose-500 mt-1">{errors.lastName}</p>}
+                  {errors.lastName && <p className="text-xs text-rose-500 mt-1">{tr(errors.lastName)}</p>}
                 </div>
 
                 {/* Email Address */}
@@ -930,7 +932,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                       errors.email ? 'border-rose-500 bg-rose-50/30' : 'border-neutral-200 focus:border-[#6D1838]'
                     }`}
                   />
-                  {errors.email && <p className="text-xs text-rose-500 mt-1">{errors.email}</p>}
+                  {errors.email && <p className="text-xs text-rose-500 mt-1">{tr(errors.email)}</p>}
                   <p className="text-[11px] text-neutral-400 mt-1">{tr("Your official admission offer and embassy notifications will be sent here.")}</p>
                 </div>
 
@@ -946,7 +948,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                       errors.whatsapp ? 'border-rose-500 bg-rose-50/30' : 'border-neutral-200 focus:border-[#6D1838]'
                     }`}
                   />
-                  {errors.whatsapp && <p className="text-xs text-rose-500 mt-1">{errors.whatsapp}</p>}
+                  {errors.whatsapp && <p className="text-xs text-rose-500 mt-1">{tr(errors.whatsapp)}</p>}
                   <p className="text-[11px] text-neutral-400 mt-1">{tr("Your senior advisor communicates real-time updates via WhatsApp.")}</p>
                 </div>
 
@@ -962,7 +964,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                       errors.nationality ? 'border-rose-500 bg-rose-50/30' : 'border-neutral-200 focus:border-[#6D1838]'
                     }`}
                   />
-                  {errors.nationality && <p className="text-xs text-rose-500 mt-1">{errors.nationality}</p>}
+                  {errors.nationality && <p className="text-xs text-rose-500 mt-1">{tr(errors.nationality)}</p>}
                 </div>
 
                 {/* Date of Birth */}
@@ -976,7 +978,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                       errors.dateOfBirth ? 'border-rose-500 bg-rose-50/30' : 'border-neutral-200 focus:border-[#6D1838]'
                     }`}
                   />
-                  {errors.dateOfBirth && <p className="text-xs text-rose-500 mt-1">{errors.dateOfBirth}</p>}
+                  {errors.dateOfBirth && <p className="text-xs text-rose-500 mt-1">{tr(errors.dateOfBirth)}</p>}
                 </div>
 
                 {/* Gender */}
@@ -1012,7 +1014,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                       errors.country ? 'border-rose-500 bg-rose-50/30' : 'border-neutral-200 focus:border-[#6D1838]'
                     }`}
                   />
-                  {errors.country && <p className="text-xs text-rose-500 mt-1">{errors.country}</p>}
+                  {errors.country && <p className="text-xs text-rose-500 mt-1">{tr(errors.country)}</p>}
                 </div>
 
                 {/* Current City */}
@@ -1027,7 +1029,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                       errors.currentCity ? 'border-rose-500 bg-rose-50/30' : 'border-neutral-200 focus:border-[#6D1838]'
                     }`}
                   />
-                  {errors.currentCity && <p className="text-xs text-rose-500 mt-1">{errors.currentCity}</p>}
+                  {errors.currentCity && <p className="text-xs text-rose-500 mt-1">{tr(errors.currentCity)}</p>}
                 </div>
 
                 {/* Address (Optional) */}
@@ -1084,7 +1086,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                         errors.schoolName ? 'border-rose-500 bg-rose-50/30' : 'border-neutral-200 focus:border-[#6D1838]'
                       }`}
                     />
-                    {errors.schoolName && <p className="text-xs text-rose-500 mt-1">{errors.schoolName}</p>}
+                    {errors.schoolName && <p className="text-xs text-rose-500 mt-1">{tr(errors.schoolName)}</p>}
                   </div>
 
                   {/* Field of Study */}
@@ -1123,7 +1125,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                         errors.gpaOrGrade ? 'border-rose-500 bg-rose-50/30' : 'border-neutral-200 focus:border-[#6D1838]'
                       }`}
                     />
-                    {errors.gpaOrGrade && <p className="text-xs text-rose-500 mt-1">{errors.gpaOrGrade}</p>}
+                    {errors.gpaOrGrade && <p className="text-xs text-rose-500 mt-1">{tr(errors.gpaOrGrade)}</p>}
                   </div>
                 </div>
 
@@ -1243,7 +1245,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                         <option value="Other / Customized Field">{tr("Other / Interdisciplinary Study")}</option>
                       </select>
                       {errors.firstChoiceField && (
-                        <p className="text-xs text-red-600 mt-1 font-semibold">{errors.firstChoiceField}</p>
+                        <p className="text-xs text-red-600 mt-1 font-semibold">{tr(errors.firstChoiceField)}</p>
                       )}
                     </div>
 
@@ -1258,7 +1260,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                         className="w-full p-3 text-sm rounded-xl border border-neutral-200 bg-neutral-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#6D1838]/20 focus:border-[#6D1838]"
                       />
                       {errors.firstChoiceProgram && (
-                        <p className="text-xs text-red-600 mt-1 font-semibold">{errors.firstChoiceProgram}</p>
+                        <p className="text-xs text-red-600 mt-1 font-semibold">{tr(errors.firstChoiceProgram)}</p>
                       )}
                     </div>
 
@@ -1353,7 +1355,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
 
                     {/* Desired Program */}
                     <div>
-                      <label className="block text-xs font-bold uppercase tracking-wider text-ink/65 mb-1.5">{tr("Desired Program")}</label>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-ink/65 mb-1.5">{tr("Desired Program")} *</label>
                       <input
                         type="text"
                         placeholder={tr("e.g. B.Eng. Software Engineering & Information Systems")}
@@ -1361,6 +1363,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                         onChange={e => setSecondChoice({ ...secondChoice, program: e.target.value })}
                         className="w-full p-3 text-sm rounded-xl border border-neutral-200 bg-neutral-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#6C3B9E]/20 focus:border-[#6C3B9E]"
                       />
+                      {errors.secondChoiceProgram && <p className="text-xs text-rose-600 mt-1">{tr(errors.secondChoiceProgram)}</p>}
                     </div>
 
                     {/* Degree Level */}
@@ -1453,7 +1456,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
 
                     {/* Desired Program */}
                     <div>
-                      <label className="block text-xs font-bold uppercase tracking-wider text-ink/65 mb-1.5">{tr("Desired Program")}</label>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-ink/65 mb-1.5">{tr("Desired Program")} *</label>
                       <input
                         type="text"
                         placeholder={tr("e.g. B.Eng. Electrical Engineering or Chinese Language")}
@@ -1461,6 +1464,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                         onChange={e => setThirdChoice({ ...thirdChoice, program: e.target.value })}
                         className="w-full p-3 text-sm rounded-xl border border-neutral-200 bg-neutral-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-neutral-400/20 focus:border-neutral-500"
                       />
+                      {errors.thirdChoiceProgram && <p className="text-xs text-rose-600 mt-1">{tr(errors.thirdChoiceProgram)}</p>}
                     </div>
 
                     {/* Degree Level */}
@@ -2084,7 +2088,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                     <p className="mt-0.5">{tr("I certify that all academic records, transcripts, and personal information submitted in this application are authentic. I authorize")}{' '}{siteConfig.brandName}{' '}{tr("to act as my designated admissions representative for degree program admissions and visa documentation in the People's Republic of China.")}</p>
                   </div>
                 </label>
-                {errors.terms && <p className="text-xs text-rose-500 mt-1">{errors.terms}</p>}
+                {errors.terms && <p className="text-xs text-rose-500 mt-1">{tr(errors.terms)}</p>}
               </div>
             </div>
           )}

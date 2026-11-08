@@ -56,6 +56,7 @@ export const getActiveApplicationId = (): string => {
 export const setActiveApplicationId = (id: string): void => {
   if (typeof window === 'undefined') return;
   try {
+    if (localStorage.getItem(ACTIVE_APP_KEY) === id) return; // unchanged: no event (avoids update loops)
     localStorage.setItem(ACTIVE_APP_KEY, id);
     window.dispatchEvent(new Event('chinastudy_active_app_updated'));
   } catch (e) {

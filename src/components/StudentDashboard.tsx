@@ -1,3 +1,4 @@
+import { isCloudMode } from '../services/applicationSync';
 import React, { useState, useEffect } from 'react';
 import { tr, useTr } from '../i18n/tr';
 import { LanguageSwitch } from './site/SiteHeader';
@@ -255,7 +256,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
       },
     };
     setActiveApp(updated);
-    showToast(`Institution deposit ($${activeApp.institutionDeposit.amountUSD} USD) recorded as settled!`);
+    showToast(`${tr("Institution deposit")} ($${activeApp.institutionDeposit.amountUSD} USD) ${tr("recorded as settled!")}`);
   };
 
   const handleSendMessage = (e: React.FormEvent) => {
@@ -274,7 +275,8 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
 
     if (updated) setActiveApp(updated);
 
-    // Auto-reply simulation from advisor after 1.5s
+    // Demo only: simulated advisor reply. Real replies come from the admissions team.
+    if (isCloudMode()) return;
     setTimeout(() => {
       const counselorReplies = [
         `Thank you for your message, ${activeApp.personal.firstName}. I have reviewed your file and our admissions team is in direct communication with the admissions faculty.`,

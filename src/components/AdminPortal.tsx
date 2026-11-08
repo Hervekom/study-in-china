@@ -921,7 +921,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                           : 'bg-emerald-700 text-white hover:bg-emerald-800'
                       }`}
                     >
-                      {selectedApp.payments.deposit.paid ? tr("Mark Unpaid") : `Mark Paid ($${pricing.depositUSD})`}
+                      {selectedApp.payments.deposit.paid ? tr("Mark Unpaid") : `${tr("Mark Paid")} ($${pricing.depositUSD})`}
                     </button>
                   </div>
 
@@ -940,7 +940,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                           : 'bg-[#6C3B9E] text-white hover:bg-[#582e82]'
                       }`}
                     >
-                      {selectedApp.payments.admissionPayment?.paid ? tr("Mark Unpaid") : `Mark Paid ($${pricing.admissionPaymentUSD})`}
+                      {selectedApp.payments.admissionPayment?.paid ? tr("Mark Unpaid") : `${tr("Mark Paid")} ($${pricing.admissionPaymentUSD})`}
                     </button>
                   </div>
 
@@ -959,7 +959,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                           : 'bg-[#6D1838] text-white hover:bg-[#58122c]'
                       }`}
                     >
-                      {selectedApp.payments.finalPayment.paid ? tr("Mark Unpaid") : `Mark Paid ($${pricing.finalPaymentUSD.toLocaleString()})`}
+                      {selectedApp.payments.finalPayment.paid ? tr("Mark Unpaid") : `${tr("Mark Paid")} ($${pricing.finalPaymentUSD.toLocaleString()})`}
                     </button>
                   </div>
                 </div>

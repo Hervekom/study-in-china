@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 import { useSiteContent } from '../context/SiteContentContext';
 import { useAuth } from '../context/AuthContext';
-import { DEFAULT_SITE_CONTENT, SITE_IMAGES, SiteContent, HeroSlide, whatsappUrl } from '../config/siteContent';
+import { DEFAULT_SITE_CONTENT, SITE_IMAGES, SiteContent, HeroSlide, whatsappUrl, mergeSiteContent } from '../config/siteContent';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { auditService } from '../services/auditService';
 
@@ -80,7 +80,7 @@ export const AdminContentEditor: React.FC<{ onToast: (msg: string) => void }> = 
   const [uploading, setUploading] = useState(false);
 
   // When saved content changes elsewhere (first load), refresh the draft if untouched
-  const dirty = useMemo(() => JSON.stringify(draft) !== JSON.stringify(content), [draft, content]);
+  const dirty = useMemo(() => JSON.stringify(mergeSiteContent(draft)) !== JSON.stringify(content), [draft, content]);
   useEffect(() => {
     if (!dirty) setDraft(clone(content));
     // eslint-disable-next-line react-hooks/exhaustive-deps
