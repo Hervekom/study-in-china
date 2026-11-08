@@ -1,6 +1,6 @@
 // Read-only check of the live site, run from GitHub Actions (no sign-in, no data written).
 import { chromium } from 'playwright';
-const SITE = process.env.SITE_URL || 'https://study-in-china-psi.vercel.app';
+const SITE = process.env.SITE_URL || 'https://chinastudypath.vercel.app';
 const SB = 'https://gtmzayvorvajufhcpxjk.supabase.co';
 const KEY = 'sb_publishable_1t6w_YnKEylif06X2wAcbw_CBdwu9PM';
 const out = []; let fails = 0;
