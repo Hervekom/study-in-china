@@ -6,7 +6,7 @@
 // type "application_received" -> the student who owns the application (or an admin),
 //                                within 30 minutes of submitting it
 //
-// Email delivery via Brevo (secrets: BREVO_API_KEY, MAIL_FROM_EMAIL, MAIL_FROM_NAME).
+// Email delivery via Brevo (secrets: BREVO_API_KEY, MAIL_FROM_EMAIL; optional MAIL_FROM_NAME, MAIL_REPLY_TO).
 import { createClient } from "npm:@supabase/supabase-js@2.45.4";
 
 const cors = {
@@ -74,6 +74,8 @@ Deno.serve(async (req: Request) => {
   const brevoKey = Deno.env.get("BREVO_API_KEY");
   const fromEmail = Deno.env.get("MAIL_FROM_EMAIL");
   const fromName = Deno.env.get("MAIL_FROM_NAME") || "ChinaStudyPath";
+  // Replies from students go to the public contact mailbox
+  const replyTo = Deno.env.get("MAIL_REPLY_TO") || "chinastudypath@proton.me";
 
   let body: any;
   try {
@@ -151,6 +153,7 @@ Deno.serve(async (req: Request) => {
     headers: { "api-key": brevoKey, "Content-Type": "application/json", Accept: "application/json" },
     body: JSON.stringify({
       sender: { name: fromName, email: fromEmail },
+      replyTo: { email: replyTo, name: fromName },
       to: [{ email: to, name: firstName || undefined }],
       subject: `${main.subject} · ${applicationId}`,
       htmlContent: html,
