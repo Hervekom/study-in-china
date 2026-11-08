@@ -117,8 +117,20 @@ export const pushNewApplication = async (app: StudentApplication): Promise<boole
   return true;
 };
 
-export const pushApplicationUpdate = async (app: StudentApplication): Promise<boolean> => {
-  if (!isCloudMode()) return true;
+// Saves for the same application are sent one after another, so a quick
+// second change (e.g. status + account message) never gets overwritten.
+const pushQueue = new Map<string, Promise<boolean>>();
+
+export const pushApplicationUpdate = (app: StudentApplication): Promise<boolean> => {
+  if (!isCloudMode()) return Promise.resolve(true);
+  const prev = pushQueue.get(app.id) || Promise.resolve(true);
+  const next: Promise<boolean> = prev.catch(() => true).then(() => sendApplicationUpdate(app, () => pushQueue.get(app.id) === next));
+  pushQueue.set(app.id, next);
+  void next.finally(() => { if (pushQueue.get(app.id) === next) pushQueue.delete(app.id); });
+  return next;
+};
+
+const sendApplicationUpdate = async (app: StudentApplication, isLatest: () => boolean): Promise<boolean> => {
   const { data, error } = await supabase
     .from('student_applications')
     .update({ data: toData(app) })
@@ -130,6 +142,6 @@ export const pushApplicationUpdate = async (app: StudentApplication): Promise<bo
     await pullApplications();
     return false;
   }
-  replaceInCache(fromRow(data));
+  if (isLatest()) replaceInCache(fromRow(data));
   return true;
 };

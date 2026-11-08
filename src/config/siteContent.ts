@@ -110,7 +110,7 @@ export const DEFAULT_SITE_CONTENT: SiteContent = {
   },
   contact: {
     email: 'admissions@studyinchina.com',
-    whatsappNumber: '+86 186 2100 8954',
+    whatsappNumber: '+86 159 5201 5038',
     whatsappMessage: 'Hello Study In China, I am interested in studying in China',
     officeAddress: 'Zhongguancun International Education Hub, Haidian District, Beijing, China',
     businessHours: 'Monday – Saturday: 09:00 – 19:00 (GMT+8 / Beijing Time)',

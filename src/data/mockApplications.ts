@@ -323,7 +323,7 @@ export const INITIAL_APPLICATIONS: StudentApplication[] = [
       name: 'Elena Zhao',
       title: 'Senior Director of International Admissions',
       email: 'elena.zhao@studyinchina.com',
-      whatsapp: '+86 186 2100 8954',
+      whatsapp: '+86 159 5201 5038',
       avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80',
     },
     admissionNotice: {
@@ -567,7 +567,7 @@ export const INITIAL_APPLICATIONS: StudentApplication[] = [
       name: 'David Chen',
       title: 'Senior Admissions & Visa Specialist',
       email: 'david.chen@studyinchina.com',
-      whatsapp: '+86 186 2100 8954',
+      whatsapp: '+86 159 5201 5038',
       avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
     },
     admissionNotice: {
@@ -763,7 +763,7 @@ export const INITIAL_APPLICATIONS: StudentApplication[] = [
       name: 'Elena Zhao',
       title: 'Senior Director of International Admissions',
       email: 'elena.zhao@studyinchina.com',
-      whatsapp: '+86 186 2100 8954',
+      whatsapp: '+86 159 5201 5038',
       avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80',
     },
   },

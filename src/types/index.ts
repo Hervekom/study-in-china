@@ -215,6 +215,10 @@ export interface AdvisorMessage {
   senderName: string;
   content: string;
   timestamp: string;
+  /** Short title shown in the account inbox (team messages). */
+  subject?: string;
+  /** What the message is about: used for the inbox icon. */
+  kind?: 'message' | 'status' | 'document' | 'payment' | 'system';
 }
 
 export interface PersonalInfo {
@@ -302,6 +306,8 @@ export interface StudentApplication {
   id: string;
   createdAt: string;
   updatedAt: string;
+  /** Language the student used when applying: emails are written in it. */
+  preferredLanguage?: 'en' | 'fr';
   status: ApplicationStatus;
   personal: PersonalInfo;
   education: EducationInfo;

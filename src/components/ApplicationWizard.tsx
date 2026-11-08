@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { tr, useTr } from '../i18n/tr';
+import { useLanguage } from '../i18n/LanguageContext';
+import { notifyStudent } from '../services/studentNotifier';
 import { LanguageSwitch } from './site/SiteHeader';
 import {
   Check,
@@ -60,6 +62,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
   prefillDegree,
 }) => {
   useTr();
+  const { lang } = useLanguage();
   const { content: siteContent } = useSiteContent();
   const [currentStep, setCurrentStep] = useState<number>(1);
   const [saveToast, setSaveToast] = useState<string | null>(null);
@@ -236,7 +239,6 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
       if (!personal.firstName.trim()) errs.firstName = 'First name is required';
       if (!personal.lastName.trim()) errs.lastName = 'Last name is required';
       if (!personal.email.trim() || !personal.email.includes('@')) errs.email = 'Valid email is required';
-      if (!personal.whatsapp.trim()) errs.whatsapp = 'WhatsApp number with country code is required (e.g. +233...)';
       if (!personal.country.trim()) errs.country = 'Country of residence is required';
       if (!personal.nationality.trim()) errs.nationality = 'Passport nationality is required';
       if (!personal.currentCity.trim()) errs.currentCity = 'Current city is required';
@@ -590,7 +592,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
           name: 'Elena Zhao',
           title: 'Senior Director of International Admissions',
           email: 'elena.zhao@studyinchina.com',
-          whatsapp: '+86 186 2100 8954',
+          whatsapp: '+86 159 5201 5038',
           avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80',
         },
       };
@@ -650,6 +652,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         status: 'deposit_pending',
+        preferredLanguage: lang,
         personal: { ...personal },
         education: { ...education },
         preferences: {
@@ -671,7 +674,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
         },
         timeline: [
           { id: 'tl-1', title: 'Application Submitted', description: 'Your application and documents were received online.', date: today, completed: true },
-          { id: 'tl-2', title: `Stage 1: Initial Deposit ($${siteConfig.pricing.depositUSD} USD)`, description: 'Your advisor sends you payment instructions. Processing starts once the deposit is confirmed.', date: 'Pending', completed: false, current: true },
+          { id: 'tl-2', title: `Stage 1: Initial Deposit ($${siteConfig.pricing.depositUSD} USD)`, description: 'Payment instructions are posted in your Messages. Processing starts once the deposit is confirmed.', date: 'Pending', completed: false, current: true },
           { id: 'tl-3', title: 'Credentials & Document Verification', description: 'The admissions team reviews your documents.', date: 'Upcoming', completed: false },
           { id: 'tl-4', title: 'Official Application Lodging', description: 'Formal submission to the institution admissions office.', date: 'Upcoming', completed: false },
           { id: 'tl-5', title: 'Official Admission Notice', description: `Unlocks Stage 2 payment ($${siteConfig.pricing.admissionPaymentUSD} USD).`, date: 'Upcoming', completed: false },
@@ -683,8 +686,10 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
             id: `msg-${Date.now()}`,
             sender: 'advisor',
             senderName: `${siteConfig.brandName} Admissions`,
-            content: `Welcome ${personal.firstName}! Your application ${appId} has been received. An advisor will contact you shortly with instructions for the $${siteConfig.pricing.depositUSD} initial deposit.`,
+            content: `Welcome ${personal.firstName}! Your application ${appId} has been received. All communication about your file happens here, in your account: your advisor will post the instructions for the $${siteConfig.pricing.depositUSD} initial deposit in these Messages, and you will receive an email each time a new message arrives.`,
             timestamp: new Date().toISOString(),
+            subject: 'Application received',
+            kind: 'system',
           },
         ],
         advisor: {
@@ -698,6 +703,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
 
       const ok = await createNewApplicationAsync(newApp);
       if (!ok) throw new Error('Your application could not be saved. Please try again.');
+      void notifyStudent({ applicationId: appId, type: 'application_received' });
       setGeneratedAppId(appId);
       setPaymentSuccess(true);
       localStorage.removeItem(DRAFT_STORAGE_KEY);
@@ -938,7 +944,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
 
                 {/* WhatsApp Number */}
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-ink/65 mb-1.5">{tr("WhatsApp Number (with Country Code) *")}</label>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-ink/65 mb-1.5">{tr("Phone number (optional)")}</label>
                   <input
                     type="text"
                     placeholder="+233 50 123 4567"
@@ -949,7 +955,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                     }`}
                   />
                   {errors.whatsapp && <p className="text-xs text-rose-500 mt-1">{tr(errors.whatsapp)}</p>}
-                  <p className="text-[11px] text-neutral-400 mt-1">{tr("Your senior advisor communicates real-time updates via WhatsApp.")}</p>
+                  <p className="text-[11px] text-neutral-400 mt-1">{tr("All updates are posted in your account and announced by email. We only use this number if we cannot reach you.")}</p>
                 </div>
 
                 {/* Nationality */}
@@ -2163,7 +2169,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                     <p className="text-sm font-bold text-ink">{tr("How to pay the $")}{siteConfig.pricing.depositUSD}{' '}{tr("initial deposit")}</p>
                     <ol className="list-decimal pl-5 text-xs sm:text-sm text-ink/65 space-y-1">
                       <li>{tr("Submit your application below (no payment is taken online).")}</li>
-                      <li>{tr("Your advisor contacts you by email or WhatsApp with payment instructions.")}</li>
+                      <li>{tr("The payment instructions are posted in the Messages of your account, and you receive an email.")}</li>
                       <li>{tr("Once your deposit is confirmed, document review starts and you are notified by email.")}</li>
                     </ol>
                   </div>
@@ -2357,8 +2363,8 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                       1
                     </span>
                     <div>
-                      <strong className="text-ink">{tr("Admissions Director Outreach:")}</strong>
-                      <p className="text-ink/65 text-[11px]">{tr("Elena Zhao will contact your WhatsApp (")}{personal.whatsapp}{tr(") within 12 hours with your credential audit report and tailored program recommendations.")}</p>
+                      <strong className="text-ink">{tr("First message in your account:")}</strong>
+                      <p className="text-ink/65 text-[11px]">{tr("Within 1–2 business days, your advisor posts your file review and next steps in the Messages of your account. You receive an email as soon as it is there.")}</p>
                     </div>
                   </div>
 
@@ -2396,15 +2402,6 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                   <ArrowRight className="w-4 h-4" />
                 </button>
 
-                <a
-                  href={`https://wa.me/8618621008954?text=Hello%20Study%20In%20China%2C%20my%20application%20reference%20is%20${generatedAppId}.%20My%20name%20is%20${encodeURIComponent(personal.firstName + ' ' + personal.lastName)}.`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full sm:w-auto px-6 py-3 bg-emerald-700 hover:bg-emerald-800 text-white text-xs sm:text-sm font-semibold rounded-xl transition-colors shadow-sm flex items-center justify-center gap-2"
-                >
-                  <span>{tr("Chat With Elena on WhatsApp")}</span>
-                  <ExternalLink className="w-4 h-4" />
-                </a>
 
                 <button
                   type="button"
@@ -2412,6 +2409,9 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                   className="w-full sm:w-auto px-5 py-3 border border-neutral-300 text-neutral-700 hover:bg-neutral-100 text-xs sm:text-sm font-semibold rounded-full transition-colors"
                 >{tr("Return to Website")}</button>
               </div>
+              <p className="text-center text-xs text-ink/60">{tr("Quick question?")}{' '}
+                <a href={`https://wa.me/${siteContent.contact.whatsappNumber.replace(/[^\d]/g, '')}?text=${encodeURIComponent(`Hello Study In China, my application reference is ${generatedAppId}.`)}`} target="_blank" rel="noopener noreferrer" className="font-semibold text-emerald-800 underline underline-offset-2">{tr("Write to us on WhatsApp")}</a>
+              </p>
             </div>
           )}
 

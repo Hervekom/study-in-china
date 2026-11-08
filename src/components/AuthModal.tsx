@@ -221,7 +221,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[11px] font-bold text-ink/65 uppercase mb-1">{tr("WhatsApp Number")}</label>
+                  <label className="block text-[11px] font-bold text-ink/65 uppercase mb-1">{tr("Phone number (optional)")}</label>
                   <input
                     type="text"
                     placeholder="+233 50 123 4567"
