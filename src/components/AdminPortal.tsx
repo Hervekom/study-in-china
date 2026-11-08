@@ -56,6 +56,21 @@ interface AdminPortalProps {
 
 const formatStatus = (status: string) => status.replace(/_/g, ' ').toUpperCase();
 
+/** Plain-language stage names used in the student's account messages. */
+const STATUS_LABELS: Record<string, string> = {
+  deposit_pending: 'Initial deposit pending',
+  deposit_paid: 'Initial deposit received',
+  document_review: 'Document review',
+  university_submitted: 'Submitted to the admissions committee',
+  interview_evaluation: 'Faculty evaluation / interview',
+  admission_granted: 'Admission granted',
+  admission_payment_pending: 'Admission payment pending',
+  jw202_issued: 'JW202 / JW201 issued',
+  final_payment_pending: 'Final payment pending',
+  visa_preparation: 'Visa preparation',
+  pre_departure: 'Ready for departure',
+};
+
 const statusBadgeClass = (status: string) => {
   if (['admission_granted', 'jw202_issued', 'visa_preparation', 'pre_departure', 'completed'].includes(status)) {
     return 'bg-emerald-50 text-emerald-700 border-emerald-200';
@@ -122,14 +137,22 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
 
   const staffName = [profile?.firstName, profile?.lastName].filter(Boolean).join(' ') || 'Admissions Team';
   const [adminMessage, setAdminMessage] = useState('');
+  const [adminSubject, setAdminSubject] = useState('');
   const [docBusy, setDocBusy] = useState<string | null>(null);
 
-  /** Email the student about a change (production only). */
-  const emailStudent = (app: StudentApplication, subject: string, headline: string, message: string) => {
+  /** Email the student that something new is in their account (no details in the email). */
+  const emailStudent = (app: StudentApplication) => {
     if (!isSupabaseConfigured()) return;
-    void notifyStudent({ applicationId: app.id, subject, headline, message }).then(res => {
-      showToast(res.sent ? `Email sent to ${app.personal.email}` : `Saved, but the email was not sent (${res.error}).`);
+    void notifyStudent({ applicationId: app.id }).then(res => {
+      showToast(res.sent ? `${tr('Email notification sent to')} ${app.personal.email}` : `${tr('Saved, but the email was not sent')} (${res.error}).`);
     });
+  };
+
+  /** Post a message in the student's account inbox, then email them a notice. */
+  const notifyAccount = (app: StudentApplication, subject: string, content: string, kind: 'status' | 'document' | 'payment' | 'message') => {
+    const updated = addAdvisorMessage(app.id, 'advisor', staffName, content, { subject, kind });
+    if (updated) setSelectedApp(updated);
+    emailStudent(app);
   };
 
   const handleOpenDoc = async (doc: DocumentItem, download: boolean) => {
@@ -162,25 +185,22 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
       setSelectedApp(updated);
       audit('document_acknowledged', selectedApp.id, { document: doc.title });
       showToast(`Acknowledgment sent to ${selectedApp.personal.firstName}.`);
-      emailStudent(
-        selectedApp,
-        `We received your ${doc.title}`,
-        'Document received',
-        `We have received your document "${doc.title}". Our admissions team will review it and let you know if anything else is needed.`
-      );
+      emailStudent(selectedApp);
     }
   };
 
   const handleSendAdminMessage = () => {
     if (!selectedApp || !adminMessage.trim()) return;
     const text = adminMessage.trim();
-    const updated = addAdvisorMessage(selectedApp.id, 'advisor', staffName, text);
+    const subject = adminSubject.trim() || 'Message from the admissions team';
+    const updated = addAdvisorMessage(selectedApp.id, 'advisor', staffName, text, { subject, kind: 'message' });
     if (updated) {
       setSelectedApp(updated);
       setAdminMessage('');
+      setAdminSubject('');
       audit('message_sent', selectedApp.id, { length: text.length });
       showToast(tr("Message sent to the student dashboard."));
-      emailStudent(selectedApp, 'New message from your advisor', 'You have a new message', text);
+      emailStudent(selectedApp);
     }
   };
 
@@ -230,11 +250,11 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
     if (updated) {
       setSelectedApp(updated);
       audit('status_changed', selectedApp.id, { from: selectedApp.status, to: targetStatus, student: selectedApp.personal.email, note: statusNote.trim() || undefined });
-      emailStudent(
-        selectedApp,
-        'Your application status has been updated',
-        `New status: ${formatStatus(targetStatus)}`,
-        statusNote.trim() || 'Your application has moved to a new stage. Sign in to your dashboard to see the details.'
+      notifyAccount(
+        updated,
+        `Application update: ${STATUS_LABELS[targetStatus] || formatStatus(targetStatus)}`,
+        statusNote.trim() || `Your application has moved to a new stage: ${STATUS_LABELS[targetStatus] || formatStatus(targetStatus)}. See the progress tracker in your account for details.`,
+        'status'
       );
       showToast(`Status updated to ${formatStatus(targetStatus)} for ${selectedApp.personal.firstName}!`);
     }
@@ -247,7 +267,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
       setSelectedApp(updated);
       const approvedTitle = selectedApp.documents.find(d => d.id === docId)?.title || 'document';
       audit('document_approved', selectedApp.id, { document: approvedTitle });
-      emailStudent(selectedApp, `Your ${approvedTitle} has been verified`, 'Document verified', `Good news: your document "${approvedTitle}" has been checked and verified by our admissions team.`);
+      notifyAccount(updated, `Document verified: ${approvedTitle}`, `Your document "${approvedTitle}" has been checked and verified by our admissions team. No action is needed.`, 'document');
       showToast(tr("Document verified and stamped approved!"));
     }
   };
@@ -261,7 +281,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
     if (updated) {
       setSelectedApp(updated);
       audit('document_fix_requested', selectedApp.id, { document: feedbackDoc.title, note });
-      emailStudent(selectedApp, `Action needed: ${feedbackDoc.title}`, 'Please update a document', `Our team needs a new version of "${feedbackDoc.title}": ${note} Sign in to your dashboard to upload it.`);
+      notifyAccount(updated, `Action required: ${feedbackDoc.title}`, `We need a new version of your document "${feedbackDoc.title}".\n\n${note}\n\nPlease upload it from the Documents tab of your account.`, 'document');
       setFeedbackDoc(null);
       setFeedbackText('');
       showToast(tr("Document flagged: Feedback sent to student dashboard!"));
@@ -279,7 +299,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
     if (updated) {
       setSelectedApp(updated);
       audit('payment_updated', selectedApp.id, { stage: 'deposit', paid: !isCurrentlyPaid, amountUSD: pricing.depositUSD });
-      if (!isCurrentlyPaid) emailStudent(selectedApp, 'Payment confirmed', 'Payment received', `We confirm receipt of your Stage 1 initial deposit ($${pricing.depositUSD.toLocaleString()} USD). Thank you!`);
+      if (!isCurrentlyPaid) notifyAccount(updated, 'Payment received: Stage 1', `We confirm receipt of your Stage 1 initial deposit ($${pricing.depositUSD.toLocaleString()} USD). Your receipt is available in the Payments tab. Thank you!`, 'payment');
       showToast(`Stage 1 Deposit marked as ${!isCurrentlyPaid ? 'PAID' : 'PENDING'}`);
     }
   };
@@ -295,7 +315,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
     if (updated) {
       setSelectedApp(updated);
       audit('payment_updated', selectedApp.id, { stage: 'admission', paid: !isCurrentlyPaid, amountUSD: pricing.admissionPaymentUSD });
-      if (!isCurrentlyPaid) emailStudent(selectedApp, 'Payment confirmed', 'Payment received', `We confirm receipt of your Stage 2 admission payment ($${pricing.admissionPaymentUSD.toLocaleString()} USD). Thank you!`);
+      if (!isCurrentlyPaid) notifyAccount(updated, 'Payment received: Stage 2', `We confirm receipt of your Stage 2 admission payment ($${pricing.admissionPaymentUSD.toLocaleString()} USD). Your receipt is available in the Payments tab. Thank you!`, 'payment');
       showToast(`Stage 2 Admission Payment marked as ${!isCurrentlyPaid ? 'PAID' : 'PENDING'}`);
     }
   };
@@ -311,7 +331,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
     if (updated) {
       setSelectedApp(updated);
       audit('payment_updated', selectedApp.id, { stage: 'final', paid: !isCurrentlyPaid, amountUSD: pricing.finalPaymentUSD });
-      if (!isCurrentlyPaid) emailStudent(selectedApp, 'Payment confirmed', 'Payment received', `We confirm receipt of your Stage 3 final payment ($${pricing.finalPaymentUSD.toLocaleString()} USD). Thank you!`);
+      if (!isCurrentlyPaid) notifyAccount(updated, 'Payment received: Stage 3', `We confirm receipt of your Stage 3 final payment ($${pricing.finalPaymentUSD.toLocaleString()} USD). Your receipt is available in the Payments tab. Thank you!`, 'payment');
       showToast(`Stage 3 Final Payment marked as ${!isCurrentlyPaid ? 'PAID' : 'PENDING'}`);
     }
   };
@@ -557,7 +577,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
             <div key={app.id} className="bg-white rounded-3xl ring-1 ring-ink/[0.07] shadow-xs p-4 space-y-3">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="font-bold text-sm text-ink truncate">{app.personal.firstName} {app.personal.lastName}</p>
+                  <p className="font-bold text-sm text-ink truncate">{app.personal.firstName} {app.personal.lastName}{app.messages[app.messages.length - 1]?.sender === 'student' && <span className="ml-1.5 inline-block align-middle px-1.5 py-0.5 rounded-full bg-[#6C3B9E] text-white text-[9px] font-bold uppercase">{tr("New message")}</span>}</p>
                   <p className="text-[11px] text-ink/65 truncate">{app.personal.nationality} · {app.personal.email}</p>
                 </div>
                 <span className="font-mono text-[10px] font-bold text-[#6D1838] bg-blush px-2 py-0.5 rounded border border-[#EAD5DE] shrink-0">
@@ -627,7 +647,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                         {app.id}
                       </td>
                       <td className="py-3.5 px-4">
-                        <strong className="text-ink block">{app.personal.firstName} {app.personal.lastName}</strong>
+                        <strong className="text-ink block">{app.personal.firstName} {app.personal.lastName}{app.messages[app.messages.length - 1]?.sender === 'student' && <span className="ml-1.5 inline-block align-middle px-1.5 py-0.5 rounded-full bg-[#6C3B9E] text-white text-[9px] font-bold uppercase">{tr("New message")}</span>}</strong>
                         <span className="text-[11px] text-ink/65">{app.personal.nationality} · {app.personal.email}</span>
                       </td>
                       <td className="py-3.5 px-4 max-w-[260px]">
@@ -873,19 +893,27 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
 
               {/* Message the student */}
               <div className="p-4 bg-white rounded-3xl ring-1 ring-ink/[0.07] space-y-2.5">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-[#6D1838]">{tr("Message the student")}</span>
-                <p className="text-[11px] text-ink/65">{tr("Appears in the student's dashboard (Messages)")}{isSupabaseConfigured() ? tr(" and is sent by email") : ''}{tr(". Use it for payment instructions, requests or updates.")}</p>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#6D1838]">{tr("Account messages")}</span>
+                <p className="text-[11px] text-ink/65">{tr("All communication with the student goes through their account. Each message appears in their Messages tab and they receive an email telling them to sign in (the email never contains the details).")}</p>
                 {selectedApp.messages.length > 0 && (
                   <div className="max-h-48 overflow-y-auto space-y-1.5 p-2 bg-neutral-50 rounded-xl border border-neutral-200">
                     {selectedApp.messages.slice(-6).map(m => (
                       <div key={m.id} className={`text-[11px] p-2 rounded-lg ${m.sender === 'student' ? 'bg-white border border-neutral-200' : 'bg-blush'}`}>
                         <span className="font-bold text-ink">{m.sender === 'student' ? tr("Student") : m.senderName}</span>
                         <span className="text-neutral-400"> · {new Date(m.timestamp).toLocaleString()}</span>
+                        {m.subject && <p className="font-semibold text-ink mt-0.5">{m.subject}</p>}
                         <p className="text-ink/65 whitespace-pre-line mt-0.5">{m.content}</p>
                       </div>
                     ))}
                   </div>
                 )}
+                <input
+                  value={adminSubject}
+                  onChange={e => setAdminSubject(e.target.value)}
+                  maxLength={120}
+                  placeholder={tr("Subject (e.g. Payment instructions for your deposit)")}
+                  className="w-full p-3 text-sm bg-neutral-50 border border-neutral-300 rounded-xl focus:outline-none focus:border-[#6D1838]"
+                />
                 <textarea
                   value={adminMessage}
                   onChange={e => setAdminMessage(e.target.value)}

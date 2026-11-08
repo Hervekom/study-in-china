@@ -1,6 +1,7 @@
 import { isCloudMode } from '../services/applicationSync';
 import React, { useState, useEffect } from 'react';
 import { tr, useTr } from '../i18n/tr';
+import { useLanguage } from '../i18n/LanguageContext';
 import { LanguageSwitch } from './site/SiteHeader';
 import {
   CheckCircle2,
@@ -31,7 +32,9 @@ import {
   RefreshCw,
   Info,
   Bell,
-  LogOut
+  LogOut,
+  Mail,
+  Inbox
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { StudentApplication, ApplicationStatus, DocumentType, DocumentItem } from '../types';
@@ -214,9 +217,11 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
     if (CLOUD) {
       const stageLabel = payingStage === 'admissionPayment' ? `Stage 2 Admission Payment ($${pricing.admissionPaymentUSD})` : `Stage 3 Final Payment ($${pricing.finalPaymentUSD.toLocaleString()})`;
       const text = `Hello, I would like to pay the ${stageLabel} for my application ${activeApp.id}. Could you send me the payment instructions?`;
-      window.open(`https://wa.me/${siteConfig.contact.whatsappNumber.replace(/[^\d]/g, '')}?text=${encodeURIComponent(text)}`, '_blank', 'noopener');
+      const updated = addAdvisorMessage(activeApp.id, 'student', `${activeApp.personal.firstName} ${activeApp.personal.lastName}`, text, { subject: 'Payment instructions request', kind: 'payment' });
+      if (updated) setActiveApp(updated);
       setPayingStage(null);
-      showToast(tr("Your advisor will send you payment instructions and confirm the payment in your dashboard."));
+      setActiveTab('messages');
+      showToast(tr("Request sent. The payment instructions will arrive in your Messages and you will get an email."));
       return;
     }
     setPaymentProcessing(true);
@@ -258,6 +263,29 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
     setActiveApp(updated);
     showToast(`${tr("Institution deposit")} ($${activeApp.institutionDeposit.amountUSD} USD) ${tr("recorded as settled!")}`);
   };
+
+  // ---- Secure inbox: unread tracking (per device) ----
+  const { lang } = useLanguage();
+  const [storedSeen, setStoredSeen] = useState('');
+  const [seenAt, setSeenAt] = useState('');
+  useEffect(() => {
+    if (!activeApp) return;
+    let v = '';
+    try { v = localStorage.getItem(`sic_inbox_seen_${activeApp.id}`) || ''; } catch { /* ignore */ }
+    setStoredSeen(v);
+    setSeenAt(v);
+  }, [activeApp?.id]);
+  useEffect(() => {
+    if (activeTab !== 'messages' || !activeApp) return;
+    const now = new Date().toISOString();
+    setSeenAt(storedSeen);
+    setStoredSeen(now);
+    try { localStorage.setItem(`sic_inbox_seen_${activeApp.id}`, now); } catch { /* ignore */ }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab, activeApp?.id, activeApp?.messages.length]);
+  const unreadCount = activeApp && activeTab !== 'messages'
+    ? activeApp.messages.filter(m => m.sender !== 'student' && m.timestamp > storedSeen).length
+    : 0;
 
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
@@ -609,25 +637,29 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
 
             {/* Quick Stats or Actions */}
             <div className="flex items-center gap-2 self-start md:self-center shrink-0">
-              <a
-                href={siteConfig.contact.whatsappDirectUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-full text-xs font-bold flex items-center gap-1.5 shadow-xs transition-colors"
-              >
-                <span>{tr("WhatsApp Advisor")}</span>
-                <ExternalLink className="w-3.5 h-3.5" />
-              </a>
               <button
                 onClick={() => setActiveTab('messages')}
-                className="px-4 py-2 border border-neutral-300 hover:bg-neutral-100 text-neutral-700 rounded-full text-xs font-semibold transition-colors flex items-center gap-1.5"
+                className={`px-4 py-2 rounded-full text-xs font-bold transition-colors flex items-center gap-1.5 ${unreadCount ? 'bg-[#6D1838] hover:bg-[#58122c] text-white' : 'border border-neutral-300 hover:bg-neutral-100 text-neutral-700'}`}
               >
-                <MessageSquare className="w-3.5 h-3.5" />
-                <span>{tr("Advisor Messages (")}{activeApp.messages.length})</span>
+                <Mail className="w-3.5 h-3.5" />
+                <span>{unreadCount ? `${unreadCount} ${tr(unreadCount > 1 ? 'new messages' : 'new message')}` : tr("My messages")}</span>
               </button>
             </div>
           </div>
         </div>
+
+        {unreadCount > 0 && activeTab !== 'messages' && (
+          <aside aria-label={tr("New messages")} className="p-4 rounded-2xl bg-white ring-2 ring-[#6D1838]/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-xl bg-[#6D1838] text-white flex items-center justify-center shrink-0"><Mail className="w-5 h-5" /></div>
+              <div>
+                <p className="text-sm font-bold text-ink">{unreadCount > 1 ? `${unreadCount} ${tr('new messages in your account')}` : tr('You have a new message in your account')}</p>
+                <p className="text-xs text-ink/65">{tr("Read it to see what changed in your file and whether any action is needed.")}</p>
+              </div>
+            </div>
+            <button onClick={() => setActiveTab('messages')} className="px-4 py-2 bg-[#6D1838] hover:bg-[#58122c] text-white rounded-full text-xs font-bold shrink-0">{tr("Read my messages")}</button>
+          </aside>
+        )}
 
         {/* Dynamic Action Required Banner */}
         {activeApp.status === 'admission_granted' && (
@@ -694,7 +726,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
             { id: 'admission_visa', label: tr("Admission & Visa"), icon: Award },
             { id: 'payments', label: tr("Payments"), icon: CreditCard },
             { id: 'predeparture', label: tr("Pre-Departure"), icon: Plane },
-            { id: 'messages', label: `${tr("Messages")} (${activeApp.messages.length})`, icon: MessageSquare },
+            { id: 'messages', label: unreadCount ? `${tr("Messages")} (${unreadCount} ${tr(unreadCount > 1 ? 'new' : 'new')})` : tr("Messages"), icon: Mail },
           ].map(tab => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -877,37 +909,17 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
                 </div>
 
                 <div className="p-3 bg-neutral-50 rounded-xl border border-neutral-200 text-xs space-y-2">
-                  <div className="flex items-center justify-between text-ink/65">
-                    <span>{tr("Email:")}</span>
-                    <a href={`mailto:${activeApp.advisor.email}`} className="font-medium text-ink hover:text-[#6D1838]">
-                      {activeApp.advisor.email}
-                    </a>
-                  </div>
-                  <div className="flex items-center justify-between text-ink/65">
-                    <span>{tr("Direct WhatsApp:")}</span>
-                    <span className="font-medium text-ink">{activeApp.advisor.whatsapp}</span>
-                  </div>
+                  <p className="text-ink/65 leading-relaxed">{tr("All communication about your file happens in your account. We reply in your Messages within 1–2 business days and email you each time something new arrives.")}</p>
                   <div className="flex items-center justify-between text-ink/65">
                     <span>{tr("Working Hours:")}</span>
                     <span className="text-neutral-700">{tr("09:00 – 19:00 (GMT+8 Beijing)")}</span>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2">
-                  <a
-                    href={siteConfig.contact.whatsappDirectUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="py-2.5 px-3 bg-emerald-700 hover:bg-emerald-800 text-white text-center rounded-full text-xs font-bold transition-colors flex items-center justify-center gap-1.5"
-                  >
-                    <span>{tr("WhatsApp")}</span>
-                    <ExternalLink className="w-3 h-3" />
-                  </a>
-                  <button
-                    onClick={() => setActiveTab('messages')}
-                    className="py-2.5 px-3 border border-neutral-300 hover:bg-neutral-100 text-neutral-700 text-center rounded-full text-xs font-semibold transition-colors"
-                  >{tr("In-App Chat")}</button>
-                </div>
+                <button
+                  onClick={() => setActiveTab('messages')}
+                  className="w-full py-2.5 px-3 bg-[#6D1838] hover:bg-[#58122c] text-white text-center rounded-full text-xs font-bold transition-colors"
+                >{tr("Write a message")}</button>
               </div>
 
               {/* 3-Stage Payment Summary */}
@@ -1678,81 +1690,68 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
           </div>
         )}
 
-        {/* ================= TAB 6: ADVISOR MESSAGES ================= */}
+        {/* ================= TAB 6: ACCOUNT MESSAGES (secure inbox) ================= */}
         {activeTab === 'messages' && (
-          <div className="bg-white rounded-3xl ring-1 ring-ink/[0.07] shadow-xs flex flex-col h-[560px] overflow-hidden animate-in fade-in duration-200">
-            {/* Chat Header */}
-            <div className="p-4 border-b border-neutral-200 bg-porcelain flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <AdvisorAvatar
-                  src={activeApp.advisor.avatar}
-                  name={activeApp.advisor.name}
-                  className="w-10 h-10 rounded-xl text-xs border border-neutral-200"
-                />
-                <div>
-                  <h3 className="font-bold text-xs sm:text-sm text-ink">
-                    {activeApp.advisor.name}
-                  </h3>
-                  <p className="text-[11px] text-emerald-700 flex items-center gap-1 font-medium">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />{tr("Online · Senior Admissions Director")}</p>
-                </div>
+          <div className="bg-white rounded-3xl ring-1 ring-ink/[0.07] shadow-xs overflow-hidden animate-in fade-in duration-200">
+            <div className="p-5 border-b border-neutral-200 bg-porcelain flex items-start gap-3">
+              <div className="w-10 h-10 rounded-xl bg-[#6D1838] text-white flex items-center justify-center shrink-0">
+                <Inbox className="w-5 h-5" />
               </div>
-
-              <a
-                href={siteConfig.contact.whatsappDirectUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-full text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-xs"
-              >
-                <span>{tr("WhatsApp")}</span>
-                <ExternalLink className="w-3.5 h-3.5" />
-              </a>
+              <div className="min-w-0">
+                <h2 className="font-display text-lg font-semibold text-ink">{tr("Messages")}</h2>
+                <p className="text-xs text-ink/65 leading-relaxed">{tr("Every official message about your application is posted here. We email you each time a new message arrives, but the email never contains the details: sign in to read it.")}</p>
+              </div>
             </div>
 
-            {/* Chat Messages Feed */}
-            <div className="flex-1 p-4 overflow-y-auto space-y-3 bg-[#FCFBFD]">
-              {activeApp.messages.map(msg => {
-                const isStudent = msg.sender === 'student';
-                return (
-                  <div
-                    key={msg.id}
-                    className={`flex flex-col ${isStudent ? 'items-end' : 'items-start'}`}
-                  >
-                    <div className="text-[10px] text-neutral-400 mb-1 px-1">
-                      {msg.senderName} · {msg.timestamp.split('T')[0]}
-                    </div>
-                    <div
-                      className={`max-w-md p-3.5 rounded-2xl text-xs leading-relaxed ${
-                        isStudent
-                          ? 'bg-[#6D1838] text-white rounded-tr-xs shadow-xs'
-                          : 'bg-white border border-neutral-200 text-neutral-800 rounded-tl-xs shadow-xs'
-                      }`}
-                    >
-                      {msg.content}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Chat Input */}
-            <form onSubmit={handleSendMessage} className="p-3 border-t border-neutral-200 bg-white flex items-center gap-2">
-              <input
-                type="text"
-                placeholder={tr("Type your message or question for Elena...")}
+            <form onSubmit={handleSendMessage} className="p-4 sm:p-5 border-b border-neutral-200 space-y-2">
+              <label htmlFor="sic-msg" className="block text-xs font-bold text-ink">{tr("Write to the admissions team")}</label>
+              <textarea
+                id="sic-msg"
+                rows={3}
+                maxLength={2000}
+                placeholder={tr("Your question or information about your file…")}
                 value={chatInput}
                 onChange={e => setChatInput(e.target.value)}
-                className="flex-1 p-2.5 text-xs sm:text-sm bg-neutral-50 border border-neutral-200 rounded-xl focus:outline-none focus:bg-white focus:border-[#6D1838]"
+                className="w-full p-3 text-sm bg-neutral-50 border border-neutral-200 rounded-xl focus:outline-none focus:bg-white focus:border-[#6D1838]"
               />
-              <button
-                type="submit"
-                disabled={!chatInput.trim()}
-                className="px-4 py-2.5 bg-[#6D1838] hover:bg-[#58122c] disabled:opacity-50 text-white text-xs font-bold rounded-full transition-colors flex items-center gap-1.5"
-              >
-                <span>{tr("Send")}</span>
-                <Send className="w-3.5 h-3.5" />
-              </button>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <span className="text-[11px] text-ink/50">{tr("We reply within 1–2 business days.")}</span>
+                <button
+                  type="submit"
+                  disabled={!chatInput.trim()}
+                  className="px-4 py-2.5 bg-[#6D1838] hover:bg-[#58122c] disabled:opacity-50 text-white text-xs font-bold rounded-full transition-colors flex items-center gap-1.5"
+                >
+                  <span>{tr("Send message")}</span>
+                  <Send className="w-3.5 h-3.5" />
+                </button>
+              </div>
             </form>
+
+            <ul className="divide-y divide-neutral-100">
+              {activeApp.messages.length === 0 && (
+                <li className="p-6 text-center text-sm text-ink/60">{tr("No messages yet. Updates from our team will appear here.")}</li>
+              )}
+              {[...activeApp.messages].reverse().map(msg => {
+                const isStudent = msg.sender === 'student';
+                const isNew = !isStudent && msg.timestamp > seenAt;
+                const title = msg.subject ? tr(msg.subject) : isStudent ? tr("Your message") : tr("Message from the admissions team");
+                return (
+                  <li key={msg.id} className={`p-4 sm:p-5 ${isNew ? 'bg-blush/60' : ''}`}>
+                    <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+                      <p className="text-sm font-semibold text-ink flex items-center gap-2">
+                        {isNew && <span className="w-2 h-2 rounded-full bg-[#6D1838] shrink-0" aria-label={tr("New")} />}
+                        {title}
+                      </p>
+                      <time className="text-[11px] text-ink/50" dateTime={msg.timestamp}>
+                        {new Date(msg.timestamp).toLocaleString(lang === 'fr' ? 'fr-FR' : 'en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                      </time>
+                    </div>
+                    <p className="text-[11px] text-ink/50 mt-0.5">{isStudent ? tr("Sent by you") : `${tr("From")} ${msg.senderName} · ${tr("Admissions team")}`}</p>
+                    <p className="text-sm text-ink/80 leading-relaxed whitespace-pre-line mt-2">{tr(msg.content)}</p>
+                  </li>
+                );
+              })}
+            </ul>
           </div>
         )}
       </main>
@@ -1893,7 +1892,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
                 </span>
               </div>
               {CLOUD ? (
-                <p className="text-xs text-ink/65 leading-relaxed">{tr("Payments are arranged directly with your advisor (bank transfer, Alipay / WeChat Pay or mobile money). Tap the button below to request payment instructions on WhatsApp. Your dashboard is updated as soon as your payment is confirmed.")}</p>
+                <p className="text-xs text-ink/65 leading-relaxed">{tr("Tap the button below to request the payment instructions. They will be posted in your Messages and you will receive an email. Your account is updated as soon as your payment is confirmed.")}</p>
               ) : (
                 <div className="space-y-1 text-xs text-ink/65">
                   <p><strong>{tr("Card:")}</strong>{' '}{tr("4242 •••• •••• 4242 (Stripe Verified)")}</p>

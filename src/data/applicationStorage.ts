@@ -1,4 +1,4 @@
-import { StudentApplication, ApplicationStatus, DocumentType, DocumentItem, PaymentDetails } from '../types';
+import { StudentApplication, ApplicationStatus, DocumentType, DocumentItem, PaymentDetails, AdvisorMessage } from '../types';
 import { INITIAL_APPLICATIONS, DEFAULT_REQUIRED_DOCUMENTS } from './mockApplications';
 import { isCloudMode, readCloudCache, writeCloudCache, pushNewApplication, pushApplicationUpdate } from '../services/applicationSync';
 
@@ -327,15 +327,18 @@ export const addAdvisorMessage = (
   appId: string,
   sender: 'advisor' | 'student',
   senderName: string,
-  content: string
+  content: string,
+  extra?: { subject?: string; kind?: AdvisorMessage['kind'] }
 ): StudentApplication | undefined => {
   return updateApplication(appId, (app) => {
-    const newMessage = {
-      id: `msg-${Date.now()}`,
+    const newMessage: AdvisorMessage = {
+      id: `msg-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
       sender,
       senderName,
       content,
       timestamp: new Date().toISOString(),
+      ...(extra?.subject ? { subject: extra.subject } : {}),
+      ...(extra?.kind ? { kind: extra.kind } : {}),
     };
     return {
       ...app,
@@ -365,6 +368,8 @@ export const acknowledgeDocument = (
           senderName: staffName,
           content: `Acknowledgment of receipt: we have received your document "${doc.title}"${doc.name ? ` (${doc.name})` : ''}. Our team will review it and let you know if anything is needed.`,
           timestamp: now,
+          subject: `Document received: ${doc.title}`,
+          kind: 'document' as const,
         },
       ],
     };
