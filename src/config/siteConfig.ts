@@ -114,15 +114,15 @@ export const siteConfig = {
   contact: {
     email: 'admissions@studyinchina.com',
     supportEmail: 'support@studyinchina.com',
-    whatsappNumber: '+86 186 2100 8954',
-    whatsappFormatted: '+86 186 2100 8954',
-    whatsappDirectUrl: 'https://wa.me/8618621008954?text=Hello%20Study%20In%20China%2C%20I%20am%20interested%20in%20studying%20in%20China',
+    whatsappNumber: '+86 159 5201 5038',
+    whatsappFormatted: '+86 159 5201 5038',
+    whatsappDirectUrl: 'https://wa.me/8615952015038?text=Hello%20Study%20In%20China%2C%20I%20am%20interested%20in%20studying%20in%20China',
     officeAddress: 'Zhongguancun International Education Hub, Haidian District, Beijing, China',
     businessHours: 'Monday – Saturday: 09:00 – 19:00 (GMT+8 / Beijing Time)',
   },
 
   socialLinks: {
-    whatsapp: 'https://wa.me/8618621008954',
+    whatsapp: 'https://wa.me/8615952015038',
     facebook: 'https://facebook.com',
     instagram: 'https://instagram.com',
     tiktok: 'https://tiktok.com',

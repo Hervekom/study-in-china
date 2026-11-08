@@ -1003,7 +1003,7 @@
  "Used in the contact section, footer, WhatsApp buttons and student dashboard.": "Utilisé dans la section contact, le pied de page, les boutons WhatsApp et l’espace étudiant.",
  "Email": "E-mail",
  "WhatsApp number": "Numéro WhatsApp",
- "With country code, e.g. +86 186 2100 8954": "Avec l’indicatif pays, ex. +86 186 2100 8954",
+ "With country code, e.g. +86 159 5201 5038": "Avec l’indicatif pays, ex. +86 159 5201 5038",
  "Pre-filled WhatsApp message": "Message WhatsApp prérempli",
  "Office address": "Adresse du bureau",
  "Opening hours": "Horaires d’ouverture",
@@ -1084,5 +1084,8 @@
  "Final payment pending": "Paiement final en attente",
  "Visa preparation": "Préparation du visa",
  "Ready for departure": "Prêt pour le départ",
- "Payment instructions are posted in your Messages. Processing starts once the deposit is confirmed.": "Les instructions de paiement sont publiées dans vos Messages. Le traitement commence dès que l’acompte est confirmé."
+ "Payment instructions are posted in your Messages. Processing starts once the deposit is confirmed.": "Les instructions de paiement sont publiées dans vos Messages. Le traitement commence dès que l’acompte est confirmé.",
+ "WhatsApp is for quick questions. Decisions, documents and payment instructions are always posted in your Messages.": "WhatsApp sert aux questions rapides. Les décisions, documents et instructions de paiement sont toujours publiés dans vos Messages.",
+ "Quick question?": "Une question rapide ?",
+ "Write to us on WhatsApp": "Écrivez-nous sur WhatsApp"
 }

@@ -52,6 +52,7 @@ import {
   addAdvisorMessage
 } from '../data/applicationStorage';
 import { useSiteContent } from '../context/SiteContentContext';
+import { whatsappDigits } from '../config/siteContent';
 import { useCloudSync } from '../hooks/useCloudSync';
 import { isSupabaseConfigured } from '../lib/supabase';
 import { uploadDocumentFile, getDocumentUrl, validateDocumentFile, formatBytes, ACCEPTED_DOCUMENT_TYPES } from '../services/documentFiles';
@@ -263,6 +264,11 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
     setActiveApp(updated);
     showToast(`${tr("Institution deposit")} ($${activeApp.institutionDeposit.amountUSD} USD) ${tr("recorded as settled!")}`);
   };
+
+  // WhatsApp (quick questions only), number managed in the site content editor
+  const studentWhatsappUrl = `https://wa.me/${whatsappDigits(siteContent.contact.whatsappNumber)}?text=${encodeURIComponent(
+    activeApp ? `Hello Study In China, my application reference is ${activeApp.id}.` : siteContent.contact.whatsappMessage
+  )}`;
 
   // ---- Secure inbox: unread tracking (per device) ----
   const { lang } = useLanguage();
@@ -916,10 +922,22 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
                   </div>
                 </div>
 
-                <button
-                  onClick={() => setActiveTab('messages')}
-                  className="w-full py-2.5 px-3 bg-[#6D1838] hover:bg-[#58122c] text-white text-center rounded-full text-xs font-bold transition-colors"
-                >{tr("Write a message")}</button>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    onClick={() => setActiveTab('messages')}
+                    className="py-2.5 px-3 bg-[#6D1838] hover:bg-[#58122c] text-white text-center rounded-full text-xs font-bold transition-colors"
+                  >{tr("Write a message")}</button>
+                  <a
+                    href={studentWhatsappUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="py-2.5 px-3 border border-emerald-700 text-emerald-800 hover:bg-emerald-50 text-center rounded-full text-xs font-bold transition-colors flex items-center justify-center gap-1.5"
+                  >
+                    <span>WhatsApp</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                </div>
+                <p className="text-[11px] text-ink/50 leading-relaxed">{tr("WhatsApp is for quick questions. Decisions, documents and payment instructions are always posted in your Messages.")}</p>
               </div>
 
               {/* 3-Stage Payment Summary */}
@@ -1715,7 +1733,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
                 className="w-full p-3 text-sm bg-neutral-50 border border-neutral-200 rounded-xl focus:outline-none focus:bg-white focus:border-[#6D1838]"
               />
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <span className="text-[11px] text-ink/50">{tr("We reply within 1–2 business days.")}</span>
+                <span className="text-[11px] text-ink/50">{tr("We reply within 1–2 business days.")}{' '}{tr("Quick question?")}{' '}<a href={studentWhatsappUrl} target="_blank" rel="noopener noreferrer" className="font-semibold text-emerald-800 underline underline-offset-2">{tr("Write to us on WhatsApp")}</a></span>
                 <button
                   type="submit"
                   disabled={!chatInput.trim()}

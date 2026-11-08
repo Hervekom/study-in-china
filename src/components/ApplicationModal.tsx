@@ -560,7 +560,7 @@ export const ApplicationModal: React.FC<ApplicationModalProps> = ({
 
               <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
                 <a
-                  href={`https://wa.me/8618621008954?text=Hello%20Study%20In%20China%2C%20my%20application%20reference%20is%20${submittedId}.%20My%20name%20is%20${encodeURIComponent(formData.fullName)}.`}
+                  href={`https://wa.me/8615952015038?text=Hello%20Study%20In%20China%2C%20my%20application%20reference%20is%20${submittedId}.%20My%20name%20is%20${encodeURIComponent(formData.fullName)}.`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-full sm:w-auto px-6 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold rounded-xl transition-colors shadow-sm flex items-center justify-center gap-2"

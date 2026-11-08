@@ -592,7 +592,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
           name: 'Elena Zhao',
           title: 'Senior Director of International Admissions',
           email: 'elena.zhao@studyinchina.com',
-          whatsapp: '+86 186 2100 8954',
+          whatsapp: '+86 159 5201 5038',
           avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80',
         },
       };
@@ -2409,6 +2409,9 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                   className="w-full sm:w-auto px-5 py-3 border border-neutral-300 text-neutral-700 hover:bg-neutral-100 text-xs sm:text-sm font-semibold rounded-full transition-colors"
                 >{tr("Return to Website")}</button>
               </div>
+              <p className="text-center text-xs text-ink/60">{tr("Quick question?")}{' '}
+                <a href={`https://wa.me/${siteContent.contact.whatsappNumber.replace(/[^\d]/g, '')}?text=${encodeURIComponent(`Hello Study In China, my application reference is ${generatedAppId}.`)}`} target="_blank" rel="noopener noreferrer" className="font-semibold text-emerald-800 underline underline-offset-2">{tr("Write to us on WhatsApp")}</a>
+              </p>
             </div>
           )}
 

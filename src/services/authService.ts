@@ -37,7 +37,7 @@ export const DEMO_ADMIN_PROFILE: UserProfile = {
   firstName: 'Elena',
   lastName: 'Zhao',
   email: 'admin@studyinchina.com',
-  whatsapp: '+86 186 2100 8954',
+  whatsapp: '+86 159 5201 5038',
   nationality: 'Chinese',
   country: 'China',
   city: 'Beijing',

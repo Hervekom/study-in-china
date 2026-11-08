@@ -344,7 +344,7 @@ export const AdminContentEditor: React.FC<{ onToast: (msg: string) => void }> = 
         <Card title={tr("Contact details")} subtitle="Used in the contact section, footer, WhatsApp buttons and student dashboard.">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Field label="Email" type="email" value={draft.contact.email} onChange={v => set('contact', { email: v })} />
-            <Field label="WhatsApp number" value={draft.contact.whatsappNumber} onChange={v => set('contact', { whatsappNumber: v })} hint="With country code, e.g. +86 186 2100 8954" />
+            <Field label="WhatsApp number" value={draft.contact.whatsappNumber} onChange={v => set('contact', { whatsappNumber: v })} hint="With country code, e.g. +86 159 5201 5038" />
           </div>
           <Field label="Pre-filled WhatsApp message" value={draft.contact.whatsappMessage} onChange={v => set('contact', { whatsappMessage: v })} />
           <a href={whatsappUrl(draft.contact)} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 hover:underline">
